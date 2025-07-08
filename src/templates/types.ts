@@ -23,7 +23,7 @@ export interface BaseTemplate {
 export interface BackendTemplate extends BaseTemplate {
   framework: string;
   displayName: string;
-  language: 'typescript' | 'javascript' | 'python' | 'rust' | 'go' | 'java' | 'csharp' | 'php' | 'ruby' | 'lua' | 'cpp';
+  language: 'typescript' | 'javascript' | 'python' | 'rust' | 'go' | 'java' | 'csharp' | 'php' | 'ruby' | 'lua' | 'cpp' | 'kotlin' | 'scala' | 'elixir' | 'swift' | 'dart' | 'crystal' | 'zig' | 'nim' | 'v' | 'gleam' | 'haskell' | 'fsharp' | 'clojure' | 'perl';
   port?: number;
   features?: BackendFeature[];
 }
@@ -84,7 +84,10 @@ export type BackendFeature =
   | 'ci-cd'
   | 'queue'
   | 'routing'
-  | 'middleware';
+  | 'middleware'
+  | 'streaming'
+  | 'swagger'
+  | 'channels';
 
 export type FrontendFeature =
   | 'routing'

@@ -12,6 +12,46 @@ import { springBootTemplate } from './spring-boot';
 import { quarkusTemplate } from './quarkus';
 import { micronautTemplate } from './micronaut';
 import { vertxTemplate } from './vertx';
+// Kotlin
+import { ktorTemplate } from './ktor';
+import { http4kTemplate } from './http4k';
+// Scala
+import { akkaHttpTemplate } from './akka-http';
+import { playScalaTemplate } from './play-scala';
+// Deno
+import { oakDenoTemplate } from './oak-deno';
+import { freshDenoTemplate } from './fresh-deno';
+// Bun
+import { elysiaBunTemplate } from './elysia-bun';
+import { honoTemplate } from './hono';
+// Elixir
+import { phoenixTemplate } from './phoenix';
+// Crystal
+import { kemalTemplate } from './kemal';
+// Zig
+import { zigHttpTemplate } from './zig-http';
+// Nim
+import { jesterTemplate } from './jester';
+// V
+import { vwebTemplate } from './vweb';
+// Gleam
+import { wispTemplate } from './wisp';
+// Haskell
+import { servantTemplate } from './servant';
+import { yesodHsTemplate } from './yesod-hs';
+import { scottyHsTemplate } from './scotty-hs';
+import { spockHsTemplate } from './spock-hs';
+// F#
+import { giraffeTemplate } from './giraffe';
+import { saturnFsTemplate } from './saturn-fs';
+import { suaveFsTemplate } from './suave-fs';
+// Clojure
+import { compojureTemplate } from './compojure';
+import { luminusCljTemplate } from './luminus-clj';
+import { reititCljTemplate } from './reitit-clj';
+import { pedestalCljTemplate } from './pedestal-clj';
+// Perl
+import { mojoliciousTemplate } from './mojolicious-perl';
 import { aspnetCoreWebApiTemplate } from './aspnet-core-webapi';
 import { aspnetCoreMinimalTemplate } from './aspnet-core-minimal';
 import { blazorServerTemplate } from './blazor-server';
@@ -62,7 +102,7 @@ import { fastifyTemplate } from './fastify';
 import { loopbackTemplate } from './loopback';
 import { adonisjsTemplate } from './adonisjs';
 import { restifyTemplate } from './restify';
-import { feathersjsTemplate } from './feathersjs';
+import { feathersJsTemplate } from './feathersjs';
 import { moleculerTemplate } from './moleculer';
 import { sailsjsTemplate } from './sailsjs';
 import { strapiTemplate } from './strapi';
@@ -91,7 +131,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'loopback': loopbackTemplate,
   'adonisjs': adonisjsTemplate,
   'restify': restifyTemplate,
-  'feathersjs': feathersjsTemplate,
+  'feathersjs': feathersJsTemplate,
   'moleculer': moleculerTemplate,
   'sailsjs': sailsjsTemplate,
   'strapi': strapiTemplate,
@@ -168,6 +208,46 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'shelf': shelfTemplate,
   'angel3': angel3Template,
   'conduit': conduitTemplate,
+  // Kotlin
+  'ktor': ktorTemplate,
+  'http4k': http4kTemplate,
+  // Scala
+  'akka-http': akkaHttpTemplate,
+  'play-scala': playScalaTemplate,
+  // Deno
+  'oak-deno': oakDenoTemplate,
+  'fresh-deno': freshDenoTemplate,
+  // Bun
+  'elysia-bun': elysiaBunTemplate,
+  'hono': honoTemplate,
+  // Elixir
+  'phoenix': phoenixTemplate,
+  // Crystal
+  'kemal': kemalTemplate,
+  // Zig
+  'zig-http': zigHttpTemplate,
+  // Nim
+  'jester': jesterTemplate,
+  // V
+  'vweb': vwebTemplate,
+  // Gleam
+  'wisp': wispTemplate,
+  // Haskell
+  'servant': servantTemplate,
+  'yesod-hs': yesodHsTemplate,
+  'scotty-hs': scottyHsTemplate,
+  'spock-hs': spockHsTemplate,
+  // F#
+  'giraffe': giraffeTemplate,
+  'saturn-fs': saturnFsTemplate,
+  'suave-fs': suaveFsTemplate,
+  // Clojure
+  'compojure': compojureTemplate,
+  'luminus-clj': luminusCljTemplate,
+  'reitit-clj': reititCljTemplate,
+  'pedestal-clj': pedestalCljTemplate,
+  // Perl
+  'mojolicious': mojoliciousTemplate,
 };
 
 export function getBackendTemplate(id: string): BackendTemplate | undefined {
@@ -251,7 +331,7 @@ export { fastifyTemplate } from './fastify';
 export { loopbackTemplate } from './loopback';
 export { adonisjsTemplate } from './adonisjs';
 export { restifyTemplate } from './restify';
-export { feathersjsTemplate } from './feathersjs';
+export { feathersJsTemplate } from './feathersjs';
 export { moleculerTemplate } from './moleculer';
 export { sailsjsTemplate } from './sailsjs';
 export { strapiTemplate } from './strapi';
@@ -279,3 +359,43 @@ export { generateCppSanitizersFiles } from './cpp-sanitizers';
 export type { CppSanitizersConfig } from './cpp-sanitizers';
 export { generateCppQualityToolsFiles } from './cpp-quality-tools';
 export type { CppQualityToolsConfig } from './cpp-quality-tools';
+// Kotlin
+export { ktorTemplate } from './ktor';
+export { http4kTemplate } from './http4k';
+// Scala
+export { akkaHttpTemplate } from './akka-http';
+export { playScalaTemplate } from './play-scala';
+// Deno
+export { oakDenoTemplate } from './oak-deno';
+export { freshDenoTemplate } from './fresh-deno';
+// Bun
+export { elysiaBunTemplate } from './elysia-bun';
+export { honoTemplate } from './hono';
+// Elixir
+export { phoenixTemplate } from './phoenix';
+// Crystal
+export { kemalTemplate } from './kemal';
+// Zig
+export { zigHttpTemplate } from './zig-http';
+// Nim
+export { jesterTemplate } from './jester';
+// V
+export { vwebTemplate } from './vweb';
+// Gleam
+export { wispTemplate } from './wisp';
+// Haskell
+export { servantTemplate } from './servant';
+export { yesodHsTemplate } from './yesod-hs';
+export { scottyHsTemplate } from './scotty-hs';
+export { spockHsTemplate } from './spock-hs';
+// F#
+export { giraffeTemplate } from './giraffe';
+export { saturnFsTemplate } from './saturn-fs';
+export { suaveFsTemplate } from './suave-fs';
+// Clojure
+export { compojureTemplate } from './compojure';
+export { luminusCljTemplate } from './luminus-clj';
+export { reititCljTemplate } from './reitit-clj';
+export { pedestalCljTemplate } from './pedestal-clj';
+// Perl
+export { mojoliciousTemplate } from './mojolicious-perl';
