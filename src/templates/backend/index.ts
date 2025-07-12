@@ -15,6 +15,8 @@ import { vertxTemplate } from './vertx';
 // Kotlin
 import { ktorTemplate } from './ktor';
 import { http4kTemplate } from './http4k';
+import { springBootKotlinTemplate } from './spring-boot-kotlin';
+import { micronautKotlinTemplate } from './micronaut-kotlin';
 // Scala
 import { akkaHttpTemplate } from './akka-http';
 import { playScalaTemplate } from './play-scala';
@@ -211,6 +213,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // Kotlin
   'ktor': ktorTemplate,
   'http4k': http4kTemplate,
+  'spring-boot-kotlin': springBootKotlinTemplate,
+  'micronaut-kotlin': micronautKotlinTemplate,
   // Scala
   'akka-http': akkaHttpTemplate,
   'play-scala': playScalaTemplate,
@@ -362,6 +366,8 @@ export type { CppQualityToolsConfig } from './cpp-quality-tools';
 // Kotlin
 export { ktorTemplate } from './ktor';
 export { http4kTemplate } from './http4k';
+export { springBootKotlinTemplate } from './spring-boot-kotlin';
+export { micronautKotlinTemplate } from './micronaut-kotlin';
 // Scala
 export { akkaHttpTemplate } from './akka-http';
 export { playScalaTemplate } from './play-scala';
