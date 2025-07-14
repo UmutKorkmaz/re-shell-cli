@@ -20,6 +20,7 @@ import { micronautKotlinTemplate } from './micronaut-kotlin';
 // Scala
 import { akkaHttpTemplate } from './akka-http';
 import { playScalaTemplate } from './play-scala';
+import { http4sScalaTemplate } from './http4s-scala';
 // Deno
 import { oakDenoTemplate } from './oak-deno';
 import { freshDenoTemplate } from './fresh-deno';
@@ -218,6 +219,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // Scala
   'akka-http': akkaHttpTemplate,
   'play-scala': playScalaTemplate,
+  'http4s-scala': http4sScalaTemplate,
   // Deno
   'oak-deno': oakDenoTemplate,
   'fresh-deno': freshDenoTemplate,
@@ -371,6 +373,7 @@ export { micronautKotlinTemplate } from './micronaut-kotlin';
 // Scala
 export { akkaHttpTemplate } from './akka-http';
 export { playScalaTemplate } from './play-scala';
+export { http4sScalaTemplate } from './http4s-scala';
 // Deno
 export { oakDenoTemplate } from './oak-deno';
 export { freshDenoTemplate } from './fresh-deno';
