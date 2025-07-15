@@ -31,6 +31,8 @@ import { honoTemplate } from './hono';
 import { phoenixTemplate } from './phoenix';
 // Crystal
 import { kemalTemplate } from './kemal';
+import { luckyCrTemplate } from './lucky-cr';
+import { amberCrTemplate } from './amber-cr';
 // Zig
 import { zigHttpTemplate } from './zig-http';
 // Nim
@@ -230,6 +232,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'phoenix': phoenixTemplate,
   // Crystal
   'kemal': kemalTemplate,
+  'lucky-cr': luckyCrTemplate,
+  'amber-cr': amberCrTemplate,
   // Zig
   'zig-http': zigHttpTemplate,
   // Nim
@@ -384,6 +388,8 @@ export { honoTemplate } from './hono';
 export { phoenixTemplate } from './phoenix';
 // Crystal
 export { kemalTemplate } from './kemal';
+export { luckyCrTemplate } from './lucky-cr';
+export { amberCrTemplate } from './amber-cr';
 // Zig
 export { zigHttpTemplate } from './zig-http';
 // Nim
