@@ -29,6 +29,8 @@ import { elysiaBunTemplate } from './elysia-bun';
 import { honoTemplate } from './hono';
 // Elixir
 import { phoenixTemplate } from './phoenix';
+import { plugExTemplate } from './plug-ex';
+import { nervesExTemplate } from './nerves-ex';
 // Crystal
 import { kemalTemplate } from './kemal';
 import { luckyCrTemplate } from './lucky-cr';
@@ -230,6 +232,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'hono': honoTemplate,
   // Elixir
   'phoenix': phoenixTemplate,
+  'plug-ex': plugExTemplate,
+  'nerves-ex': nervesExTemplate,
   // Crystal
   'kemal': kemalTemplate,
   'lucky-cr': luckyCrTemplate,
@@ -386,6 +390,8 @@ export { elysiaBunTemplate } from './elysia-bun';
 export { honoTemplate } from './hono';
 // Elixir
 export { phoenixTemplate } from './phoenix';
+export { plugExTemplate } from './plug-ex';
+export { nervesExTemplate } from './nerves-ex';
 // Crystal
 export { kemalTemplate } from './kemal';
 export { luckyCrTemplate } from './lucky-cr';
