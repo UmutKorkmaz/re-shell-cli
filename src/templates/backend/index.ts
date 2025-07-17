@@ -39,6 +39,8 @@ import { amberCrTemplate } from './amber-cr';
 import { zigHttpTemplate } from './zig-http';
 // Nim
 import { jesterTemplate } from './jester';
+import { prologueNimTemplate } from './prologue-nim';
+import { happyxNimTemplate } from './happyx-nim';
 // V
 import { vwebTemplate } from './vweb';
 // Gleam
@@ -242,6 +244,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'zig-http': zigHttpTemplate,
   // Nim
   'jester': jesterTemplate,
+  'prologue-nim': prologueNimTemplate,
+  'happyx-nim': happyxNimTemplate,
   // V
   'vweb': vwebTemplate,
   // Gleam
@@ -400,6 +404,8 @@ export { amberCrTemplate } from './amber-cr';
 export { zigHttpTemplate } from './zig-http';
 // Nim
 export { jesterTemplate } from './jester';
+export { prologueNimTemplate } from './prologue-nim';
+export { happyxNimTemplate } from './happyx-nim';
 // V
 export { vwebTemplate } from './vweb';
 // Gleam
