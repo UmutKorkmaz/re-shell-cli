@@ -43,6 +43,7 @@ import { prologueNimTemplate } from './prologue-nim';
 import { happyxNimTemplate } from './happyx-nim';
 // V
 import { vwebTemplate } from './vweb';
+import { vexVTemplate } from './vex-v';
 // Gleam
 import { wispTemplate } from './wisp';
 // Haskell
@@ -248,6 +249,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'happyx-nim': happyxNimTemplate,
   // V
   'vweb': vwebTemplate,
+  'vex-v': vexVTemplate,
   // Gleam
   'wisp': wispTemplate,
   // Haskell
@@ -408,6 +410,7 @@ export { prologueNimTemplate } from './prologue-nim';
 export { happyxNimTemplate } from './happyx-nim';
 // V
 export { vwebTemplate } from './vweb';
+export { vexVTemplate } from './vex-v';
 // Gleam
 export { wispTemplate } from './wisp';
 // Haskell
