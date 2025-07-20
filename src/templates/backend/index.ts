@@ -62,6 +62,7 @@ import { reititCljTemplate } from './reitit-clj';
 import { pedestalCljTemplate } from './pedestal-clj';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
+import { dancer2Template } from './dancer2-perl';
 import { aspnetCoreWebApiTemplate } from './aspnet-core-webapi';
 import { aspnetCoreMinimalTemplate } from './aspnet-core-minimal';
 import { blazorServerTemplate } from './blazor-server';
@@ -268,6 +269,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'pedestal-clj': pedestalCljTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
+  'dancer2': dancer2Template,
 };
 
 export function getBackendTemplate(id: string): BackendTemplate | undefined {
@@ -429,3 +431,4 @@ export { reititCljTemplate } from './reitit-clj';
 export { pedestalCljTemplate } from './pedestal-clj';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
+export { dancer2Template } from './dancer2-perl';
