@@ -2749,7 +2749,7 @@ handler.use(rateLimiter({
 
 ## License
 
-MIT`
+MIT
   }
 };`,
 

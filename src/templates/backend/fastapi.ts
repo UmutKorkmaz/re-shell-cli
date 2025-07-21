@@ -1777,6 +1777,6 @@ poetry run bandit -r app/
 
 ## License
 
-MIT`
+MIT
   }
 };`

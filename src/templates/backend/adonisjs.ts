@@ -1682,6 +1682,6 @@ tests/            # Test files
 
 ## License
 
-MIT`
+MIT
   }
 };`

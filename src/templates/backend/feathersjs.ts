@@ -2116,7 +2116,7 @@ See \`config/default.json\` for all configuration options. Key settings:
 
 ## License
 
-MIT`
+MIT
     }
   ],
   

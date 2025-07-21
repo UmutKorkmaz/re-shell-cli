@@ -2430,6 +2430,6 @@ src/
 
 ## License
 
-MIT`
+MIT
   }
 };`

@@ -2232,6 +2232,6 @@ docker run -p 1337:1337 --env-file .env {{projectName}}
 
 ## License
 
-MIT`
+MIT
   }
 };`

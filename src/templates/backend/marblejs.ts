@@ -1714,6 +1714,6 @@ src/
 
 ## License
 
-MIT`
+MIT
   }
 };`

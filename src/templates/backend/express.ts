@@ -1695,6 +1695,6 @@ src/
 
 ## License
 
-MIT`
+MIT
   }
 };`

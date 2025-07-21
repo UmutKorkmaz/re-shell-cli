@@ -2321,6 +2321,6 @@ src/
 
 ## License
 
-MIT`
+MIT
   }
 };`

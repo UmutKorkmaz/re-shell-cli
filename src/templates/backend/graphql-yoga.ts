@@ -2406,6 +2406,6 @@ The application is containerized and ready for deployment:
 
 ## License
 
-MIT`
+MIT
   }
 };`

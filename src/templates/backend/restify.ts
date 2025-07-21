@@ -2623,6 +2623,6 @@ src/
 
 ## License
 
-MIT`
+MIT
   }
 };`

@@ -1390,6 +1390,6 @@ src/
 
 ## License
 
-MIT`
+MIT
   }
 };`

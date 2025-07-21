@@ -2584,6 +2584,6 @@ See \`.env.example\` for all available environment variables.
 
 ## License
 
-MIT`
+MIT
   }
 };`
