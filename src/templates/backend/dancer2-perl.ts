@@ -11,7 +11,7 @@ export const dancer2Template: BackendTemplate = {
   tags: ['perl', 'dancer2', 'lightweight', 'psgi', 'restful', 'mvc'],
   port: 5000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'psgi'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing'],
 
   files: {
     // Main application file
