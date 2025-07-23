@@ -24,6 +24,7 @@ import { http4sScalaTemplate } from './http4s-scala';
 // Deno
 import { oakDenoTemplate } from './oak-deno';
 import { freshDenoTemplate } from './fresh-deno';
+import { alephDenoTemplate } from './aleph-deno';
 // Bun
 import { elysiaBunTemplate } from './elysia-bun';
 import { honoTemplate } from './hono';
@@ -63,6 +64,7 @@ import { pedestalCljTemplate } from './pedestal-clj';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
+import { catalystTemplate } from './catalyst-perl';
 import { aspnetCoreWebApiTemplate } from './aspnet-core-webapi';
 import { aspnetCoreMinimalTemplate } from './aspnet-core-minimal';
 import { blazorServerTemplate } from './blazor-server';
@@ -231,6 +233,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // Deno
   'oak-deno': oakDenoTemplate,
   'fresh-deno': freshDenoTemplate,
+  'aleph-deno': alephDenoTemplate,
   // Bun
   'elysia-bun': elysiaBunTemplate,
   'hono': honoTemplate,
@@ -270,6 +273,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
+  'catalyst': catalystTemplate,
 };
 
 export function getBackendTemplate(id: string): BackendTemplate | undefined {
@@ -393,6 +397,7 @@ export { http4sScalaTemplate } from './http4s-scala';
 // Deno
 export { oakDenoTemplate } from './oak-deno';
 export { freshDenoTemplate } from './fresh-deno';
+export { alephDenoTemplate } from './aleph-deno';
 // Bun
 export { elysiaBunTemplate } from './elysia-bun';
 export { honoTemplate } from './hono';
@@ -432,3 +437,4 @@ export { pedestalCljTemplate } from './pedestal-clj';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
+export { catalystTemplate } from './catalyst-perl';
