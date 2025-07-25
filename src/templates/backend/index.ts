@@ -61,6 +61,8 @@ import { compojureTemplate } from './compojure';
 import { luminusCljTemplate } from './luminus-clj';
 import { reititCljTemplate } from './reitit-clj';
 import { pedestalCljTemplate } from './pedestal-clj';
+// Julia
+import { genieJlTemplate } from './genie-jl';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -270,6 +272,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'luminus-clj': luminusCljTemplate,
   'reitit-clj': reititCljTemplate,
   'pedestal-clj': pedestalCljTemplate,
+  // Julia
+  'genie-jl': genieJlTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -434,6 +438,8 @@ export { compojureTemplate } from './compojure';
 export { luminusCljTemplate } from './luminus-clj';
 export { reititCljTemplate } from './reitit-clj';
 export { pedestalCljTemplate } from './pedestal-clj';
+// Julia
+export { genieJlTemplate } from './genie-jl';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
