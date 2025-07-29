@@ -67,6 +67,8 @@ import { oxygenJlTemplate } from './oxygen-jl';
 // OCaml
 import { dreamOcamlTemplate } from './dream-ocaml';
 import { opiumOcamlTemplate } from './opium-ocaml';
+// Odin
+import { odinHttpTemplate } from './odin-http';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -282,6 +284,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // OCaml
   'dream-ocaml': dreamOcamlTemplate,
   'opium-ocaml': opiumOcamlTemplate,
+  // Odin
+  'odin-http': odinHttpTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -452,6 +456,8 @@ export { oxygenJlTemplate } from './oxygen-jl';
 // OCaml
 export { dreamOcamlTemplate } from './dream-ocaml';
 export { opiumOcamlTemplate } from './opium-ocaml';
+// Odin
+export { odinHttpTemplate } from './odin-http';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
