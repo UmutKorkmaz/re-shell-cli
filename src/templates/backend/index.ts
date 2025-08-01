@@ -71,6 +71,8 @@ import { opiumOcamlTemplate } from './opium-ocaml';
 import { odinHttpTemplate } from './odin-http';
 // Pony
 import { jennetPonyTemplate } from './jennet-pony';
+// Red
+import { redHttpTemplate } from './red-http';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -290,6 +292,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'odin-http': odinHttpTemplate,
   // Pony
   'jennet-pony': jennetPonyTemplate,
+  // Red
+  'red-http': redHttpTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -464,6 +468,8 @@ export { opiumOcamlTemplate } from './opium-ocaml';
 export { odinHttpTemplate } from './odin-http';
 // Pony
 export { jennetPonyTemplate } from './jennet-pony';
+// Red
+export { redHttpTemplate } from './red-http';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
