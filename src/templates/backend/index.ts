@@ -38,6 +38,7 @@ import { luckyCrTemplate } from './lucky-cr';
 import { amberCrTemplate } from './amber-cr';
 // Zig
 import { zigHttpTemplate } from './zig-http';
+import { zapZigTemplate } from './zap-zig';
 // Nim
 import { jesterTemplate } from './jester';
 import { prologueNimTemplate } from './prologue-nim';
@@ -259,6 +260,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'amber-cr': amberCrTemplate,
   // Zig
   'zig-http': zigHttpTemplate,
+  'zap-zig': zapZigTemplate,
   // Nim
   'jester': jesterTemplate,
   'prologue-nim': prologueNimTemplate,
@@ -435,6 +437,7 @@ export { luckyCrTemplate } from './lucky-cr';
 export { amberCrTemplate } from './amber-cr';
 // Zig
 export { zigHttpTemplate } from './zig-http';
+export { zapZigTemplate } from './zap-zig';
 // Nim
 export { jesterTemplate } from './jester';
 export { prologueNimTemplate } from './prologue-nim';
