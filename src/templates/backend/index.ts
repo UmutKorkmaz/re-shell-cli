@@ -74,6 +74,8 @@ import { odinHttpTemplate } from './odin-http';
 import { jennetPonyTemplate } from './jennet-pony';
 // Red
 import { redHttpTemplate } from './red-http';
+// ReScript
+import { rescriptExpressTemplate } from './rescript-express';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -296,6 +298,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'jennet-pony': jennetPonyTemplate,
   // Red
   'red-http': redHttpTemplate,
+  // ReScript
+  'rescript-express': rescriptExpressTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -473,6 +477,8 @@ export { odinHttpTemplate } from './odin-http';
 export { jennetPonyTemplate } from './jennet-pony';
 // Red
 export { redHttpTemplate } from './red-http';
+// ReScript
+export { rescriptExpressTemplate } from './rescript-express';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
