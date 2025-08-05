@@ -76,6 +76,7 @@ import { jennetPonyTemplate } from './jennet-pony';
 import { redHttpTemplate } from './red-http';
 // ReScript
 import { rescriptExpressTemplate } from './rescript-express';
+import { rescriptFastifyTemplate } from './rescript-fastify';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -300,6 +301,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'red-http': redHttpTemplate,
   // ReScript
   'rescript-express': rescriptExpressTemplate,
+  'rescript-fastify': rescriptFastifyTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -479,6 +481,7 @@ export { jennetPonyTemplate } from './jennet-pony';
 export { redHttpTemplate } from './red-http';
 // ReScript
 export { rescriptExpressTemplate } from './rescript-express';
+export { rescriptFastifyTemplate } from './rescript-fastify';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
