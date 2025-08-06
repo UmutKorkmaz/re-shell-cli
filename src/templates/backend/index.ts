@@ -77,6 +77,8 @@ import { redHttpTemplate } from './red-http';
 // ReScript
 import { rescriptExpressTemplate } from './rescript-express';
 import { rescriptFastifyTemplate } from './rescript-fastify';
+// Grain
+import { grainTemplate } from './grain';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -302,6 +304,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // ReScript
   'rescript-express': rescriptExpressTemplate,
   'rescript-fastify': rescriptFastifyTemplate,
+  // Grain
+  'grain': grainTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -482,6 +486,8 @@ export { redHttpTemplate } from './red-http';
 // ReScript
 export { rescriptExpressTemplate } from './rescript-express';
 export { rescriptFastifyTemplate } from './rescript-fastify';
+// Grain
+export { grainTemplate } from './grain';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
