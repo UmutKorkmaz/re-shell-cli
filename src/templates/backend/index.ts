@@ -79,6 +79,8 @@ import { rescriptExpressTemplate } from './rescript-express';
 import { rescriptFastifyTemplate } from './rescript-fastify';
 // Grain
 import { grainTemplate } from './grain';
+// Mojo
+import { mojoTemplate } from './mojo';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -306,6 +308,8 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'rescript-fastify': rescriptFastifyTemplate,
   // Grain
   'grain': grainTemplate,
+  // Mojo
+  'mojo': mojoTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -488,6 +492,8 @@ export { rescriptExpressTemplate } from './rescript-express';
 export { rescriptFastifyTemplate } from './rescript-fastify';
 // Grain
 export { grainTemplate } from './grain';
+// Mojo
+export { mojoTemplate } from './mojo';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
