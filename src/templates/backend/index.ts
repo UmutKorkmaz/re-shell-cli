@@ -81,6 +81,7 @@ import { rescriptFastifyTemplate } from './rescript-fastify';
 import { grainTemplate } from './grain';
 // Mojo
 import { mojoTemplate } from './mojo';
+import { carbonTemplate } from './carbon';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -310,6 +311,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'grain': grainTemplate,
   // Mojo
   'mojo': mojoTemplate,
+  'carbon': carbonTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -494,6 +496,8 @@ export { rescriptFastifyTemplate } from './rescript-fastify';
 export { grainTemplate } from './grain';
 // Mojo
 export { mojoTemplate } from './mojo';
+// Carbon
+export { carbonTemplate } from './carbon';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
