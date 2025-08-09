@@ -82,6 +82,7 @@ import { grainTemplate } from './grain';
 // Mojo
 import { mojoTemplate } from './mojo';
 import { carbonTemplate } from './carbon';
+import { valeTemplate } from './vale';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -312,6 +313,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // Mojo
   'mojo': mojoTemplate,
   'carbon': carbonTemplate,
+  'vale': valeTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -498,6 +500,8 @@ export { grainTemplate } from './grain';
 export { mojoTemplate } from './mojo';
 // Carbon
 export { carbonTemplate } from './carbon';
+// Vale
+export { valeTemplate } from './vale';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
