@@ -85,6 +85,7 @@ import { carbonTemplate } from './carbon';
 import { valeTemplate } from './vale';
 import { rocTemplate } from './roc';
 import { ballerinaTemplate } from './ballerina';
+import { unisonTemplate } from './unison';
 // Perl
 import { mojoliciousTemplate } from './mojolicious-perl';
 import { dancer2Template } from './dancer2-perl';
@@ -318,6 +319,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'vale': valeTemplate,
   'roc': rocTemplate,
   'ballerina': ballerinaTemplate,
+  'unison': unisonTemplate,
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
@@ -510,6 +512,8 @@ export { valeTemplate } from './vale';
 export { rocTemplate } from './roc';
 // Ballerina
 export { ballerinaTemplate } from './ballerina';
+// Unison
+export { unisonTemplate } from './unison';
 // Perl
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
