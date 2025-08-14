@@ -81,6 +81,7 @@ import { rescriptFastifyTemplate } from './rescript-fastify';
 import { grainTemplate } from './grain';
 // Mojo
 import { mojoTemplate } from './mojo';
+import { mojoFastapiTemplate } from './mojo-fastapi';
 import { carbonTemplate } from './carbon';
 import { valeTemplate } from './vale';
 import { rocTemplate } from './roc';
@@ -315,6 +316,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'grain': grainTemplate,
   // Mojo
   'mojo': mojoTemplate,
+  'mojo-fastapi': mojoFastapiTemplate,
   'carbon': carbonTemplate,
   'vale': valeTemplate,
   'roc': rocTemplate,
@@ -504,6 +506,7 @@ export { rescriptFastifyTemplate } from './rescript-fastify';
 export { grainTemplate } from './grain';
 // Mojo
 export { mojoTemplate } from './mojo';
+export { mojoFastapiTemplate } from './mojo-fastapi';
 // Carbon
 export { carbonTemplate } from './carbon';
 // Vale
