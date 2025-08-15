@@ -7,6 +7,7 @@ import { findMonorepoRoot } from '../utils/monorepo';
 import { ReactTemplate } from '../templates/frontend/react';
 import { VueTemplate } from '../templates/frontend/vue';
 import { SvelteTemplate } from '../templates/frontend/svelte';
+import { NextJsTemplate } from '../templates/frontend/next';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -384,6 +385,9 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
     case 'svelte':
     case 'svelte-ts':
       return new SvelteTemplate(framework, context);
+    case 'next':
+    case 'nextjs':
+      return new NextJsTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
