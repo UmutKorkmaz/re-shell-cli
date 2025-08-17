@@ -210,6 +210,39 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/app/page.tsx',
     extensions: ['.ts', '.tsx'],
     hasTypeScript: true
+  },
+  'remix': {
+    name: 'remix',
+    displayName: 'Remix',
+    buildTool: 'esbuild',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@remix-run/node': '^2.8.1',
+      '@remix-run/react': '^2.8.1',
+      '@remix-run/serve': '^2.8.1',
+      'react': '^18.2.0',
+      'react-dom': '^18.2.0'
+    },
+    devDependencies: {
+      '@remix-run/dev': '^2.8.1',
+      '@types/react': '^18.2.48',
+      '@types/react-dom': '^18.2.18',
+      'typescript': '^5.3.3',
+      'tailwindcss': '^3.4.1',
+      'autoprefixer': '^10.4.17',
+      'postcss': '^8.4.33',
+      'eslint': '^8.56.0'
+    },
+    scripts: {
+      'dev': 'remix dev --manual',
+      'build': 'remix build',
+      'start': 'remix-serve ./build/index.js',
+      'typecheck': 'tsc'
+    },
+    configFiles: ['remix.config.js', 'tailwind.config.js', 'tsconfig.json'],
+    entryFile: 'app/root.tsx',
+    extensions: ['.ts', '.tsx'],
+    hasTypeScript: true
   }
 };
 
