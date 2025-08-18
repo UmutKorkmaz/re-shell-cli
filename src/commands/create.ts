@@ -9,6 +9,7 @@ import { VueTemplate } from '../templates/frontend/vue';
 import { SvelteTemplate } from '../templates/frontend/svelte';
 import { NextJsTemplate } from '../templates/frontend/next';
 import { RemixTemplate } from '../templates/frontend/remix';
+import { GatsbyTemplate } from '../templates/frontend/gatsby';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -391,6 +392,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new NextJsTemplate(framework, context);
     case 'remix':
       return new RemixTemplate(framework, context);
+    case 'gatsby':
+      return new GatsbyTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks

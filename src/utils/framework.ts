@@ -243,6 +243,39 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'app/root.tsx',
     extensions: ['.ts', '.tsx'],
     hasTypeScript: true
+  },
+  'gatsby': {
+    name: 'gatsby',
+    displayName: 'Gatsby 5',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'gatsby': '^5.13.0',
+      'gatsby-plugin-image': '^3.13.0',
+      'gatsby-plugin-manifest': '^5.13.0',
+      'gatsby-plugin-offline': '^6.13.0',
+      'gatsby-plugin-sharp': '^5.13.0',
+      'gatsby-source-filesystem': '^5.13.0',
+      'gatsby-transformer-remark': '^7.13.0',
+      'react': '^18.2.0',
+      'react-dom': '^18.2.0'
+    },
+    devDependencies: {
+      '@types/node': '^20.11.0',
+      '@types/react': '^18.2.48',
+      '@types/react-dom': '^18.2.18',
+      'typescript': '^5.3.3'
+    },
+    scripts: {
+      'develop': 'gatsby develop',
+      'build': 'gatsby build',
+      'serve': 'gatsby serve',
+      'clean': 'gatsby clean'
+    },
+    configFiles: ['gatsby-config.ts', 'gatsby-node.ts', 'tsconfig.json'],
+    entryFile: 'src/pages/index.tsx',
+    extensions: ['.ts', '.tsx'],
+    hasTypeScript: true
   }
 };
 
