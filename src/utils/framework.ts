@@ -276,6 +276,41 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/pages/index.tsx',
     extensions: ['.ts', '.tsx'],
     hasTypeScript: true
+  },
+  'nuxt': {
+    name: 'nuxt',
+    displayName: 'Nuxt 3',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'nuxt': '^3.10.0',
+      '@nuxtjs/tailwindcss': '^6.10.0',
+      '@pinia/nuxt': '^0.5.1',
+      '@pinia/plugin-persistedstate': '^3.2.1',
+      '@vueuse/nuxt': '^10.7.2',
+      '@nuxtjs/i18n': '^8.3.0',
+      '@nuxtjs/seo': '^2.0.0',
+      '@nuxtjs/color-mode': '^3.3.3',
+      'vue': '^3.4.0'
+    },
+    devDependencies: {
+      '@types/node': '^20.11.0',
+      'typescript': '^5.3.3',
+      'autoprefixer': '^10.4.17',
+      'postcss': '^8.4.33',
+      'tailwindcss': '^3.4.1'
+    },
+    scripts: {
+      'dev': 'nuxt dev',
+      'build': 'nuxt build',
+      'generate': 'nuxt generate',
+      'preview': 'nuxt preview',
+      'postinstall': 'nuxt prepare'
+    },
+    configFiles: ['nuxt.config.ts', 'tsconfig.json', 'app.config.ts', 'tailwind.config.js'],
+    entryFile: 'app/app.vue',
+    extensions: ['.ts', '.vue'],
+    hasTypeScript: true
   }
 };
 
