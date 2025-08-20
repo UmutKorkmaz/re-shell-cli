@@ -11,6 +11,7 @@ import { NextJsTemplate } from '../templates/frontend/next';
 import { RemixTemplate } from '../templates/frontend/remix';
 import { GatsbyTemplate } from '../templates/frontend/gatsby';
 import { NuxtTemplate } from '../templates/frontend/nuxt';
+import { QuasarTemplate } from '../templates/frontend/quasar';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -397,6 +398,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new GatsbyTemplate(framework, context);
     case 'nuxt':
       return new NuxtTemplate(framework, context);
+    case 'quasar':
+      return new QuasarTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks

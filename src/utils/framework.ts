@@ -311,6 +311,43 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'app/app.vue',
     extensions: ['.ts', '.vue'],
     hasTypeScript: true
+  },
+  'quasar': {
+    name: 'quasar',
+    displayName: 'Quasar Framework',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@quasar/extras': '^1.16.9',
+      'axios': '^1.6.5',
+      'pinia': '^2.1.7',
+      'quasar': '^2.14.0',
+      'vue': '^3.4.15',
+      'vue-router': '^4.2.5'
+    },
+    devDependencies: {
+      '@quasar/app-vite': '^1.5.0',
+      '@types/node': '^20.11.0',
+      'autoprefixer': '^10.4.17',
+      'eslint': '^8.56.0',
+      'eslint-config-prettier': '^9.1.0',
+      'eslint-plugin-vue': '^9.20.1',
+      'prettier': '^3.2.4',
+      'typescript': '^5.3.3'
+    },
+    scripts: {
+      'dev': 'quasar dev',
+      'build': 'quasar build',
+      'build:pwa': 'quasar build -m pwa',
+      'build:electron': 'quasar build -m electron',
+      'lint': 'eslint --ext .js,.vue ./src',
+      'format': 'prettier --write "**/*.{js,vue,scss,md,json}"',
+      'test': 'echo "No test specified" && exit 0'
+    },
+    configFiles: ['quasar.config.js', 'tsconfig.json'],
+    entryFile: 'src/App.vue',
+    extensions: ['.js', '.vue'],
+    hasTypeScript: true
   }
 };
 
