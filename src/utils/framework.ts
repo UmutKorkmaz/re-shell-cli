@@ -393,6 +393,40 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.ts',
     extensions: ['.ts', '.html'],
     hasTypeScript: true
+  },
+  'vite-react': {
+    name: 'vite-react',
+    displayName: 'Vite + React',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'react': '^18.2.0',
+      'react-dom': '^18.2.0'
+    },
+    devDependencies: {
+      '@types/react': '^18.2.48',
+      '@types/react-dom': '^18.2.18',
+      '@typescript-eslint/eslint-plugin': '^6.19.0',
+      '@typescript-eslint/parser': '^6.19.0',
+      '@vitejs/plugin-react': '^4.2.1',
+      'eslint': '^8.56.0',
+      'eslint-plugin-react-hooks': '^4.6.0',
+      'eslint-plugin-react-refresh': '^0.4.5',
+      'prettier': '^3.2.4',
+      'typescript': '^5.3.3',
+      'vite': '^5.0.12'
+    },
+    scripts: {
+      'dev': 'vite',
+      'build': 'tsc && vite build',
+      'lint': 'eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0',
+      'preview': 'vite preview',
+      'format': 'prettier --write "src/**/*.{ts,tsx,css,md}"'
+    },
+    configFiles: ['vite.config.ts', 'tsconfig.json', '.eslintrc.cjs'],
+    entryFile: 'src/main.tsx',
+    extensions: ['.ts', '.tsx'],
+    hasTypeScript: true
   }
 };
 

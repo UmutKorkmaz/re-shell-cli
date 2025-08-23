@@ -13,6 +13,7 @@ import { GatsbyTemplate } from '../templates/frontend/gatsby';
 import { NuxtTemplate } from '../templates/frontend/nuxt';
 import { QuasarTemplate } from '../templates/frontend/quasar';
 import { AngularTemplate } from '../templates/frontend/angular';
+import { ViteReactTemplate } from '../templates/frontend/vite-react';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -403,6 +404,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new QuasarTemplate(framework, context);
     case 'angular':
       return new AngularTemplate(framework, context);
+    case 'vite-react':
+      return new ViteReactTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
