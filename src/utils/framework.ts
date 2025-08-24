@@ -427,6 +427,46 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.tsx',
     extensions: ['.ts', '.tsx'],
     hasTypeScript: true
+  },
+  'sveltekit': {
+    name: 'sveltekit',
+    displayName: 'SvelteKit',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {},
+    devDependencies: {
+      '@playwright/test': '^1.41.2',
+      '@sveltejs/adapter-auto': '^3.1.1',
+      '@sveltejs/adapter-node': '^5.0.1',
+      '@sveltejs/kit': '^2.5.0',
+      '@typescript-eslint/eslint-plugin': '^6.19.0',
+      '@typescript-eslint/parser': '^6.19.0',
+      'eslint': '^8.56.0',
+      'eslint-config-prettier': '^9.1.0',
+      'eslint-plugin-svelte': '^2.35.1',
+      'prettier': '^3.2.4',
+      'prettier-plugin-svelte': '^3.2.2',
+      'svelte-check': '^3.6.3',
+      'svelte': '^4.2.9',
+      'tslib': '^2.6.2',
+      'typescript': '^5.3.3',
+      'vite': '^5.1.0',
+      'vitest': '^1.2.2'
+    },
+    scripts: {
+      'dev': 'vite dev',
+      'build': 'vite build',
+      'preview': 'vite preview',
+      'check': 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json',
+      'check:watch': 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch',
+      'test': 'playwright test',
+      'lint': 'prettier --check . && eslint .',
+      'format': 'prettier --write .'
+    },
+    configFiles: ['svelte.config.js', 'vite.config.ts', 'tsconfig.json'],
+    entryFile: 'src/routes/+page.svelte',
+    extensions: ['.svelte', '.ts'],
+    hasTypeScript: true
   }
 };
 

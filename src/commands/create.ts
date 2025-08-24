@@ -14,6 +14,7 @@ import { NuxtTemplate } from '../templates/frontend/nuxt';
 import { QuasarTemplate } from '../templates/frontend/quasar';
 import { AngularTemplate } from '../templates/frontend/angular';
 import { ViteReactTemplate } from '../templates/frontend/vite-react';
+import { SvelteKitTemplate } from '../templates/frontend/sveltekit';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -406,6 +407,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new AngularTemplate(framework, context);
     case 'vite-react':
       return new ViteReactTemplate(framework, context);
+    case 'sveltekit':
+      return new SvelteKitTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
