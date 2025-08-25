@@ -467,6 +467,36 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/routes/+page.svelte',
     extensions: ['.svelte', '.ts'],
     hasTypeScript: true
+  },
+  'solid-js': {
+    name: 'solid-js',
+    displayName: 'Solid.js',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@solidjs/router': '^0.10.5',
+      'solid-js': '^1.8.11'
+    },
+    devDependencies: {
+      '@types/node': '^20.11.0',
+      '@typescript-eslint/eslint-plugin': '^6.19.0',
+      '@typescript-eslint/parser': '^6.19.0',
+      'eslint': '^8.56.0',
+      'eslint-plugin-solid': '^0.13.1',
+      'typescript': '^5.3.3',
+      'vite': '^5.1.0',
+      'vite-plugin-solid': '^2.9.1'
+    },
+    scripts: {
+      'dev': 'vite',
+      'build': 'vite build',
+      'preview': 'vite preview',
+      'lint': 'eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0'
+    },
+    configFiles: ['vite.config.ts', 'tsconfig.json'],
+    entryFile: 'src/main.tsx',
+    extensions: ['.ts', '.tsx'],
+    hasTypeScript: true
   }
 };
 
