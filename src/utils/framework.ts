@@ -497,6 +497,44 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.tsx',
     extensions: ['.ts', '.tsx'],
     hasTypeScript: true
+  },
+  'qwik': {
+    name: 'qwik',
+    displayName: 'Qwik',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {},
+    devDependencies: {
+      '@builder.io/qwik': '^1.5.1',
+      '@builder.io/qwik-city': '^1.5.1',
+      '@types/eslint': '^8.56.0',
+      '@types/node': '^20.11.0',
+      '@typescript-eslint/eslint-plugin': '^6.19.0',
+      '@typescript-eslint/parser': '^6.19.0',
+      'eslint': '^8.56.0',
+      'eslint-plugin-qwik': '^1.5.1',
+      'node-fetch': '^3.3.2',
+      'prettier': '^3.2.4',
+      'typescript': '^5.3.3',
+      'undici': '^6.6.2',
+      'vite': '^5.1.0',
+      'vitest': '^1.2.2'
+    },
+    scripts: {
+      'dev': 'qwik dev',
+      'build': 'qwik build',
+      'build.preview': 'qwik build --preview',
+      'deploy': 'qwik build deploy',
+      'fmt': 'prettier --write .',
+      'fmt.check': 'prettier --check .',
+      'lint': 'eslint "src/**/*.ts{,x}"',
+      'test': 'vitest',
+      'start': 'qwik build preview && vite preview'
+    },
+    configFiles: ['qwik.config.ts', 'vite.config.ts', 'tsconfig.json'],
+    entryFile: 'src/root.tsx',
+    extensions: ['.tsx'],
+    hasTypeScript: true
   }
 };
 
