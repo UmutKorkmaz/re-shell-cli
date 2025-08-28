@@ -17,6 +17,7 @@ import { ViteReactTemplate } from '../templates/frontend/vite-react';
 import { SvelteKitTemplate } from '../templates/frontend/sveltekit';
 import { SolidJsTemplate } from '../templates/frontend/solid-js';
 import { QwikTemplate } from '../templates/frontend/qwik';
+import { LitTemplate } from '../templates/frontend/lit';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -415,6 +416,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new SolidJsTemplate(framework, context);
     case 'qwik':
       return new QwikTemplate(framework, context);
+    case 'lit':
+      return new LitTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks

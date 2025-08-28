@@ -535,6 +535,38 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/root.tsx',
     extensions: ['.tsx'],
     hasTypeScript: true
+  },
+  'lit': {
+    name: 'lit',
+    displayName: 'Lit',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'lit': '^3.1.2'
+    },
+    devDependencies: {
+      '@types/node': '^20.11.0',
+      '@typescript-eslint/eslint-plugin': '^6.19.0',
+      '@typescript-eslint/parser': '^6.19.0',
+      'eslint': '^8.56.0',
+      'prettier': '^3.2.4',
+      'typescript': '^5.3.3',
+      'vite': '^5.1.0',
+      'vite-plugin-lit': '^3.0.0',
+      'vitest': '^1.2.2'
+    },
+    scripts: {
+      'dev': 'vite',
+      'build': 'tsc && vite build',
+      'preview': 'vite preview',
+      'lint': 'eslint . --ext ts --report-unused-disable-directives --max-warnings 0',
+      'test': 'vitest',
+      'format': 'prettier --write "src/**/*.{ts,css,md}"'
+    },
+    configFiles: ['vite.config.ts', 'tsconfig.json', '.eslintrc.cjs'],
+    entryFile: 'src/main.ts',
+    extensions: ['.ts'],
+    hasTypeScript: true
   }
 };
 
