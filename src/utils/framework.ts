@@ -567,6 +567,39 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.ts',
     extensions: ['.ts'],
     hasTypeScript: true
+  },
+  'stencil': {
+    name: 'stencil',
+    displayName: 'Stencil',
+    buildTool: 'rollup',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@stencil/core': '^4.12.0'
+    },
+    devDependencies: {
+      '@stencil/angular-output-target': '^0.8.0',
+      '@stencil/react-output-target': '^0.5.0',
+      '@stencil/svelte-output-target': '^0.6.0',
+      '@stencil/vue-output-target': '^0.8.0',
+      '@stencil/web-components-output-target': '^0.4.0',
+      '@types/jest': '^29.5.11',
+      '@types/node': '^20.11.0',
+      'jest': '^29.7.0',
+      'jest-cli': '^29.7.0',
+      'puppeteer': '^22.0.0',
+      'typescript': '^5.3.3'
+    },
+    scripts: {
+      'build': 'stencil build',
+      'start': 'stencil build --dev --watch --serve',
+      'test': 'stencil test --spec --e2e',
+      'test.watch': 'stencil test --spec --e2e --watchAll',
+      'generate': 'stencil generate'
+    },
+    configFiles: ['stencil.config.ts', 'tsconfig.json'],
+    entryFile: 'src/index.html',
+    extensions: ['.tsx', '.ts'],
+    hasTypeScript: true
   }
 };
 
