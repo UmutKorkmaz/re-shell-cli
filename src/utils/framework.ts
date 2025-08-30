@@ -600,6 +600,33 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/index.html',
     extensions: ['.tsx', '.ts'],
     hasTypeScript: true
+  },
+  'alpine': {
+    name: 'alpine',
+    displayName: 'Alpine.js',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'alpinejs': '^3.13.5',
+      'htmx.org': '^1.9.10',
+      '@alpinejs/focus': '^3.13.5',
+      '@alpinejs/intersect': '^3.13.5',
+      '@alpinejs/persist': '^3.13.5',
+      '@alpinejs/mask': '^3.13.5'
+    },
+    devDependencies: {
+      'vite': '^5.0.12'
+    },
+    scripts: {
+      'dev': 'vite',
+      'build': 'vite build',
+      'preview': 'vite preview',
+      'test': 'echo "No tests configured" && exit 0'
+    },
+    configFiles: ['vite.config.js'],
+    entryFile: 'src/index.html',
+    extensions: ['.js', '.html'],
+    hasTypeScript: false
   }
 };
 
