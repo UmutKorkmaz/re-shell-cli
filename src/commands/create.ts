@@ -20,6 +20,7 @@ import { QwikTemplate } from '../templates/frontend/qwik';
 import { LitTemplate } from '../templates/frontend/lit';
 import { StencilTemplate } from '../templates/frontend/stencil';
 import { AlpineTemplate } from '../templates/frontend/alpine';
+import { PreactTemplate } from '../templates/frontend/preact';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -424,6 +425,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new StencilTemplate(framework, context);
     case 'alpine':
       return new AlpineTemplate(framework, context);
+    case 'preact':
+      return new PreactTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks

@@ -627,6 +627,40 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/index.html',
     extensions: ['.js', '.html'],
     hasTypeScript: false
+  },
+  'preact': {
+    name: 'preact',
+    displayName: 'Preact',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'preact': '^10.19.3',
+      'preact-compat': '^3.19.0',
+      'preact-router': '^4.1.0'
+    },
+    devDependencies: {
+      '@preact/preset-vite': '^2.8.1',
+      '@types/node': '^20.11.0',
+      '@typescript-eslint/eslint-plugin': '^6.19.0',
+      '@typescript-eslint/parser': '^6.19.0',
+      'eslint': '^8.56.0',
+      'eslint-plugin-react-hooks': '^4.6.0',
+      'jsdom': '^24.0.0',
+      'typescript': '^5.3.3',
+      'vite': '^5.0.12',
+      'vitest': '^1.2.2'
+    },
+    scripts: {
+      'dev': 'vite',
+      'build': 'tsc && vite build',
+      'preview': 'vite preview',
+      'lint': 'eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0',
+      'test': 'vitest'
+    },
+    configFiles: ['vite.config.ts', 'tsconfig.json'],
+    entryFile: 'src/main.tsx',
+    extensions: ['.ts', '.tsx'],
+    hasTypeScript: true
   }
 };
 
