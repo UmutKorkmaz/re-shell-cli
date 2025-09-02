@@ -661,6 +661,32 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.tsx',
     extensions: ['.ts', '.tsx'],
     hasTypeScript: true
+  },
+  'mithril': {
+    name: 'mithril',
+    displayName: 'Mithril.js',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'mithril': '^2.2.2'
+    },
+    devDependencies: {
+      '@types/mithril': '^2.0.12',
+      '@types/node': '^20.11.0',
+      'typescript': '^5.3.3',
+      'vite': '^5.0.12',
+      'vite-plugin-mithril': '^2.2.0'
+    },
+    scripts: {
+      'dev': 'vite',
+      'build': 'tsc && vite build',
+      'preview': 'vite preview',
+      'test': 'echo "No tests configured" && exit 0'
+    },
+    configFiles: ['vite.config.ts', 'tsconfig.json'],
+    entryFile: 'src/main.ts',
+    extensions: ['.ts'],
+    hasTypeScript: true
   }
 };
 
