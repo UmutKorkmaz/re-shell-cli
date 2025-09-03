@@ -22,6 +22,7 @@ import { StencilTemplate } from '../templates/frontend/stencil';
 import { AlpineTemplate } from '../templates/frontend/alpine';
 import { PreactTemplate } from '../templates/frontend/preact';
 import { MithrilTemplate } from '../templates/frontend/mithril';
+import { HyperappTemplate } from '../templates/frontend/hyperapp';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -430,6 +431,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new PreactTemplate(framework, context);
     case 'mithril':
       return new MithrilTemplate(framework, context);
+    case 'hyperapp':
+      return new HyperappTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks

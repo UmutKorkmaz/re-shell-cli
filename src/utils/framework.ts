@@ -687,6 +687,32 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.ts',
     extensions: ['.ts'],
     hasTypeScript: true
+  },
+  'hyperapp': {
+    name: 'hyperapp',
+    displayName: 'Hyperapp',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'hyperapp': '^2.0.22',
+      '@hyperapp/router': '^2.1.0'
+    },
+    devDependencies: {
+      '@types/node': '^20.11.0',
+      'typescript': '^5.3.3',
+      'vite': '^5.0.12',
+      'vite-plugin-hyperapp': '^0.6.0'
+    },
+    scripts: {
+      'dev': 'vite',
+      'build': 'tsc && vite build',
+      'preview': 'vite preview',
+      'test': 'echo "No tests configured" && exit 0'
+    },
+    configFiles: ['vite.config.ts', 'tsconfig.json'],
+    entryFile: 'src/main.ts',
+    extensions: ['.ts'],
+    hasTypeScript: true
   }
 };
 
