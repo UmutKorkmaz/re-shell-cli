@@ -713,6 +713,43 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.ts',
     extensions: ['.ts'],
     hasTypeScript: true
+  },
+  'astro': {
+    name: 'astro',
+    displayName: 'Astro',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@astrojs/react': '^3.0.9',
+      '@astrojs/vue': '^4.0.4',
+      '@astrojs/svelte': '^5.0.3',
+      '@astrojs/tailwind': '^5.1.0',
+      'astro': '^4.4.0',
+      'react': '^18.2.0',
+      'react-dom': '^18.2.0',
+      'vue': '^3.4.15',
+      'svelte': '^4.2.9',
+      'tailwindcss': '^3.4.1'
+    },
+    devDependencies: {
+      '@types/react': '^18.2.48',
+      '@types/react-dom': '^18.2.18',
+      '@types/node': '^20.11.0',
+      'prettier': '^3.2.4',
+      'prettier-plugin-astro': '^0.13.0',
+      'typescript': '^5.3.3'
+    },
+    scripts: {
+      'dev': 'astro dev',
+      'start': 'astro dev',
+      'build': 'astro check && astro build',
+      'preview': 'astro preview',
+      'astro': 'astro'
+    },
+    configFiles: ['astro.config.mjs', 'tsconfig.json'],
+    entryFile: 'src/pages/index.astro',
+    extensions: ['.astro', '.jsx', '.vue', '.svelte'],
+    hasTypeScript: true
   }
 };
 
