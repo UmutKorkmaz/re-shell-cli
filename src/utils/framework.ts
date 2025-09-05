@@ -750,6 +750,31 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/pages/index.astro',
     extensions: ['.astro', '.jsx', '.vue', '.svelte'],
     hasTypeScript: true
+  },
+  'eleventy': {
+    name: 'eleventy',
+    displayName: '11ty (Eleventy)',
+    buildTool: 'eleventy',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {},
+    devDependencies: {
+      '@11ty/eleventy': '^3.0.0-alpha.12',
+      '@11ty/eleventy-img': '^5.0.0-beta.6',
+      '@11ty/eleventy-plugin-rss': '^2.0.0',
+      '@11ty/eleventy-plugin-syntaxhighlight': '^5.0.0',
+      'markdown-it': '^14.0.0',
+      'markdown-it-anchor': '^9.0.1'
+    },
+    scripts: {
+      'build': 'eleventy',
+      'start': 'eleventy --serve',
+      'watch': 'eleventy --watch',
+      'serve': 'eleventy --serve'
+    },
+    configFiles: ['eleventy.config.js'],
+    entryFile: 'src/index.njk',
+    extensions: ['.njk', '.md', '.html'],
+    hasTypeScript: false
   }
 };
 

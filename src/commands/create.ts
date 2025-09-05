@@ -24,6 +24,7 @@ import { PreactTemplate } from '../templates/frontend/preact';
 import { MithrilTemplate } from '../templates/frontend/mithril';
 import { HyperappTemplate } from '../templates/frontend/hyperapp';
 import { AstroTemplate } from '../templates/frontend/astro';
+import { EleventyTemplate } from '../templates/frontend/eleventy';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -436,6 +437,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new HyperappTemplate(framework, context);
     case 'astro':
       return new AstroTemplate(framework, context);
+    case 'eleventy':
+      return new EleventyTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
