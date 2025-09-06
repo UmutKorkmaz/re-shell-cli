@@ -775,6 +775,45 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/index.njk',
     extensions: ['.njk', '.md', '.html'],
     hasTypeScript: false
+  },
+  'vuepress': {
+    name: 'vuepress',
+    displayName: 'VuePress',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'vue': '^3.4.0',
+      'vuepress': '^2.0.0-rc.15',
+      '@vuepress/client': '^2.0.0-rc.15',
+      '@vuepress/bundler-vite': '^2.0.0-rc.15',
+      '@vuepress/bundler-webpack': '^2.0.0-rc.15'
+    },
+    devDependencies: {
+      '@types/node': '^20.11.0',
+      '@typescript-eslint/eslint-plugin': '^6.19.0',
+      '@typescript-eslint/parser': '^6.19.0',
+      '@vuepress/plugin-docsearch': '^2.0.0-rc.32',
+      '@vuepress/plugin-search': '^2.0.0-rc.32',
+      '@vuepress/plugin-register-components': '^2.0.0-rc.32',
+      '@vuepress/plugin-shiki': '^2.0.0-rc.32',
+      'eslint': '^8.56.0',
+      'eslint-plugin-vue': '^9.20.0',
+      'prettier': '^3.2.0',
+      'sass': '^1.70.0',
+      'sass-loader': '^14.0.0',
+      'typescript': '^5.3.3'
+    },
+    scripts: {
+      'docs:dev': 'vuepress dev docs',
+      'docs:build': 'vuepress build docs',
+      'docs:preview': 'vuepress preview docs',
+      'lint': 'eslint --ext .js,.ts,.vue .',
+      'format': 'prettier --write .'
+    },
+    configFiles: ['docs/.vuepress/config.ts'],
+    entryFile: 'docs/index.md',
+    extensions: ['.md', '.vue', '.ts'],
+    hasTypeScript: true
   }
 };
 
