@@ -814,6 +814,60 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'docs/index.md',
     extensions: ['.md', '.vue', '.ts'],
     hasTypeScript: true
+  },
+  'docusaurus': {
+    name: 'docusaurus',
+    displayName: 'Docusaurus',
+    buildTool: 'docusaurus',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@docusaurus/core': '^3.2.0',
+      '@docusaurus/preset-classic': '^3.2.0',
+      '@mdx-js/react': '^3.0.1',
+      'clsx': '^2.1.0',
+      'prism-react-renderer': '^2.3.1',
+      'react': '^18.3.0',
+      'react-dom': '^18.3.0'
+    },
+    devDependencies: {
+      '@docusaurus/module-type-aliases': '^3.2.0',
+      '@docusaurus/plugin-client-redirects': '^3.2.0',
+      '@docusaurus/plugin-google-analytics': '^3.2.0',
+      '@docusaurus/plugin-google-gtag': '^3.2.0',
+      '@docusaurus/plugin-sitemap': '^3.2.0',
+      '@docusaurus/theme-classic': '^3.2.0',
+      '@docusaurus/theme-common': '^3.2.0',
+      '@docusaurus/theme-live-codeblock': '^3.2.0',
+      '@docusaurus/theme-search-algolia': '^3.2.0',
+      '@tsconfig/docusaurus': '^2.0.2',
+      '@types/react': '^18.2.55',
+      '@types/react-dom': '^18.2.19',
+      '@typescript-eslint/eslint-plugin': '^6.21.0',
+      '@typescript-eslint/parser': '^6.21.0',
+      'eslint': '^8.56.0',
+      'eslint-config-prettier': '^9.1.0',
+      'eslint-plugin-prettier': '^5.1.3',
+      'eslint-plugin-react': '^7.33.2',
+      'eslint-plugin-react-hooks': '^4.6.0',
+      'prettier': '^3.2.5',
+      'typescript': '^5.3.3'
+    },
+    scripts: {
+      'start': 'docusaurus start',
+      'build': 'docusaurus build',
+      'swizzle': 'docusaurus swizzle',
+      'deploy': 'docusaurus deploy',
+      'clear': 'docusaurus clear',
+      'serve': 'docusaurus serve',
+      'write-translations': 'docusaurus write-translations',
+      'write-heading-ids': 'docusaurus write-heading-ids',
+      'lint': 'eslint --ext .js,.jsx,.ts,.tsx src',
+      'format': 'prettier --write "**/*.{js,jsx,ts,tsx,json,css,scss,md}"'
+    },
+    configFiles: ['docusaurus.config.ts'],
+    entryFile: 'src/pages/index.tsx',
+    extensions: ['.tsx', '.ts', '.md', '.mdx'],
+    hasTypeScript: true
   }
 };
 

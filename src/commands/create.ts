@@ -26,6 +26,7 @@ import { HyperappTemplate } from '../templates/frontend/hyperapp';
 import { AstroTemplate } from '../templates/frontend/astro';
 import { EleventyTemplate } from '../templates/frontend/eleventy';
 import { VuePressTemplate } from '../templates/frontend/vuepress';
+import { DocusaurusTemplate } from '../templates/frontend/docusaurus';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -442,6 +443,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new EleventyTemplate(framework, context);
     case 'vuepress':
       return new VuePressTemplate(framework, context);
+    case 'docusaurus':
+      return new DocusaurusTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
