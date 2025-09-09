@@ -868,6 +868,47 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/pages/index.tsx',
     extensions: ['.tsx', '.ts', '.md', '.mdx'],
     hasTypeScript: true
+  },
+  'gridsome': {
+    name: 'gridsome',
+    displayName: 'Gridsome',
+    buildTool: 'gridsome',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'gridsome': '^0.7.23',
+      'vue': '^2.7.14',
+      'vue-runtime-template-compiler': '^2.7.14',
+      'graphql-request': '^6.1.0',
+      'vue-property-decorator': '^9.1.2',
+      'vuex': '^3.6.2'
+    },
+    devDependencies: {
+      '@gridsome/plugin-sitemap': '^0.4.0',
+      '@gridsome/transformer-remark': '^0.6.0',
+      '@gridsome/vue-docgen-loader': '^0.6.0',
+      '@types/node': '^20.11.0',
+      '@typescript-eslint/eslint-plugin': '^6.19.0',
+      '@typescript-eslint/parser': '^6.19.0',
+      'eslint': '^8.56.0',
+      'eslint-plugin-prettier': '^5.1.3',
+      'eslint-plugin-vue': '^9.20.0',
+      'node-sass': '^9.0.0',
+      'prettier': '^3.2.0',
+      'sass-loader': '^14.0.0',
+      'typescript': '^5.3.3',
+      'webpack-node-externals': '^3.0.0'
+    },
+    scripts: {
+      'build': 'gridsome build',
+      'develop': 'gridsome develop',
+      'explore': 'gridsome explore',
+      'lint': 'eslint --ext .js,.ts,.vue src',
+      'format': 'prettier --write "**/*.{js,ts,vue,json,css,scss}"'
+    },
+    configFiles: ['gridsome.config.js'],
+    entryFile: 'src/pages/Index.vue',
+    extensions: ['.vue', '.js', '.ts'],
+    hasTypeScript: true
   }
 };
 
