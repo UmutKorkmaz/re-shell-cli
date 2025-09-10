@@ -909,6 +909,55 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/pages/Index.vue',
     extensions: ['.vue', '.js', '.ts'],
     hasTypeScript: true
+  },
+  'scully': {
+    name: 'scully',
+    displayName: 'Scully (Angular)',
+    buildTool: 'angular-cli',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@angular/animations': '^17.0.0',
+      '@angular/common': '^17.0.0',
+      '@angular/compiler': '^17.0.0',
+      '@angular/core': '^17.0.0',
+      '@angular/forms': '^17.0.0',
+      '@angular/platform-browser': '^17.0.0',
+      '@angular/platform-browser-dynamic': '^17.0.0',
+      '@angular/router': '^17.0.0',
+      '@scullyio/scully': '^2.0.0',
+      '@scullyio/ng-lib': '^2.0.0',
+      'rxjs': '^7.8.0',
+      'tslib': '^2.6.0',
+      'zone.js': '^0.14.0'
+    },
+    devDependencies: {
+      '@angular-devkit/build-angular': '^17.0.0',
+      '@angular/cli': '^17.0.0',
+      '@angular/compiler-cli': '^17.0.0',
+      '@types/jasmine': '^5.1.0',
+      '@types/node': '^20.11.0',
+      'jasmine-core': '^5.1.0',
+      'karma': '^6.4.0',
+      'karma-chrome-launcher': '^3.2.0',
+      'karma-coverage': '^2.2.0',
+      'karma-jasmine': '^5.1.0',
+      'karma-jasmine-html-reporter': '^2.1.0',
+      'typescript': '~5.3.0'
+    },
+    scripts: {
+      'start': 'ng serve',
+      'build': 'ng build',
+      'watch': 'ng build --watch --configuration development',
+      'test': 'ng test',
+      'lint': 'ng lint',
+      'scully': 'npx scully',
+      'scully:serve': 'npx scully serve',
+      'build:prod': 'ng build --configuration production && npx scully'
+    },
+    configFiles: ['angular.json', 'scully.config.js'],
+    entryFile: 'src/main.ts',
+    extensions: ['.ts', '.html', '.scss'],
+    hasTypeScript: true
   }
 };
 
