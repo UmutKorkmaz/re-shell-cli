@@ -29,6 +29,7 @@ import { VuePressTemplate } from '../templates/frontend/vuepress';
 import { DocusaurusTemplate } from '../templates/frontend/docusaurus';
 import { GridsomeTemplate } from '../templates/frontend/gridsome';
 import { ScullyTemplate } from '../templates/frontend/scully';
+import { JekyllTemplate } from '../templates/frontend/jekyll';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -451,6 +452,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new GridsomeTemplate(framework, context);
     case 'scully':
       return new ScullyTemplate(framework, context);
+    case 'jekyll':
+      return new JekyllTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks

@@ -958,6 +958,44 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.ts',
     extensions: ['.ts', '.html', '.scss'],
     hasTypeScript: true
+  },
+  'jekyll': {
+    name: 'jekyll',
+    displayName: 'Jekyll',
+    buildTool: 'jekyll',
+    packageManager: ['bundler'],
+    dependencies: {},
+    devDependencies: {
+      'jekyll': '~> 4.3.3',
+      'kramdown': '~> 2.4',
+      'kramdown-parser-gfm': '~> 1.1',
+      'rdiscount': '~> 2.2',
+      'liquid-c': '~> 4.0',
+      'rouge': '~> 4.2',
+      'jekyll-feed': '~> 0.12',
+      'jekyll-seo-tag': '~> 2.8',
+      'jekyll-sitemap': '~> 1.4',
+      'jekyll-paginate': '~> 1.1',
+      'jekyll-archives': '~> 2.2',
+      'jekyll-include-cache': '~> 0.1',
+      'sass-embedded': '~> 1.69',
+      'jekyll-assets': '~> 3.0',
+      'jekyll-watch': '~> 2.2',
+      'jekyll-compose': '~> 0.12',
+      'jekyll-redirect-from': '~> 0.16',
+      'github-pages': '>= 227'
+    },
+    scripts: {
+      'install': 'bundle install',
+      'start': 'bundle exec jekyll serve',
+      'build': 'bundle exec jekyll build',
+      'watch': 'bundle exec jekyll serve --watch',
+      'clean': 'bundle exec jekyll clean'
+    },
+    configFiles: ['_config.yml', 'Gemfile'],
+    entryFile: 'index.md',
+    extensions: ['.md', '.html', '.scss', '.yml'],
+    hasTypeScript: false
   }
 };
 
