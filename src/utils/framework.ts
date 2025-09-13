@@ -996,6 +996,23 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'index.md',
     extensions: ['.md', '.html', '.scss', '.yml'],
     hasTypeScript: false
+  },
+  'hugo': {
+    name: 'hugo',
+    displayName: 'Hugo',
+    buildTool: 'hugo',
+    packageManager: [],
+    dependencies: {},
+    devDependencies: {},
+    scripts: {
+      'start': 'hugo server -D',
+      'build': 'hugo --minify',
+      'clean': 'hugo --cleanDestinationDir'
+    },
+    configFiles: ['hugo.toml'],
+    entryFile: 'content/_index.md',
+    extensions: ['.md', '.html', '.toml', '.yml'],
+    hasTypeScript: false
   }
 };
 

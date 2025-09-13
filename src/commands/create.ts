@@ -30,6 +30,7 @@ import { DocusaurusTemplate } from '../templates/frontend/docusaurus';
 import { GridsomeTemplate } from '../templates/frontend/gridsome';
 import { ScullyTemplate } from '../templates/frontend/scully';
 import { JekyllTemplate } from '../templates/frontend/jekyll';
+import { HugoTemplate } from '../templates/frontend/hugo';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -454,6 +455,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new ScullyTemplate(framework, context);
     case 'jekyll':
       return new JekyllTemplate(framework, context);
+    case 'hugo':
+      return new HugoTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
