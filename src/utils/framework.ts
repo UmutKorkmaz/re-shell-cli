@@ -1013,6 +1013,42 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'content/_index.md',
     extensions: ['.md', '.html', '.toml', '.yml'],
     hasTypeScript: false
+  },
+  'hexo': {
+    name: 'hexo',
+    displayName: 'Hexo',
+    buildTool: 'hexo',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'hexo': '^7.0.0',
+      'hexo-generator-archive': '^2.0.0',
+      'hexo-generator-category': '^2.0.0',
+      'hexo-generator-index': '^3.0.0',
+      'hexo-generator-tag': '^2.0.0',
+      'hexo-renderer-ejs': '^2.0.0',
+      'hexo-renderer-marked': '^6.0.0',
+      'hexo-renderer-stylus': '^3.0.0',
+      'hexo-server': '^3.0.0',
+      'hexo-deployer-git': '^4.0.0',
+      'hexo-generator-searchdb': '^1.4.0',
+      'hexo-generator-sitemap': '^3.0.0',
+      'hexo-generator-feed': '^3.0.0',
+      'hexo-util': '^3.0.0'
+    },
+    devDependencies: {
+      'hexo-cli': '^4.3.0'
+    },
+    scripts: {
+      'build': 'hexo generate',
+      'clean': 'hexo clean',
+      'deploy': 'hexo deploy',
+      'server': 'hexo server',
+      'start': 'hexo server --debug'
+    },
+    configFiles: ['_config.yml'],
+    entryFile: 'source/index.md',
+    extensions: ['.md', '.ejs', '.yml'],
+    hasTypeScript: false
   }
 };
 
