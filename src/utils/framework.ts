@@ -1049,6 +1049,23 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'source/index.md',
     extensions: ['.md', '.ejs', '.yml'],
     hasTypeScript: false
+  },
+  'zola': {
+    name: 'zola',
+    displayName: 'Zola',
+    buildTool: 'zola',
+    packageManager: [],
+    dependencies: {},
+    devDependencies: {},
+    scripts: {
+      'serve': 'zola serve',
+      'build': 'zola build',
+      'new': 'zola new-post'
+    },
+    configFiles: ['config.toml'],
+    entryFile: 'content/_index.md',
+    extensions: ['.md', '.toml'],
+    hasTypeScript: false
   }
 };
 
