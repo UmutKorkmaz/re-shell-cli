@@ -1066,6 +1066,70 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'content/_index.md',
     extensions: ['.md', '.toml'],
     hasTypeScript: false
+  },
+  'create-react-app': {
+    name: 'create-react-app',
+    displayName: 'Create React App',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'react': '^18.2.0',
+      'react-dom': '^18.2.0',
+      'react-scripts': '5.0.1',
+      'web-vitals': '^3.0.0'
+    },
+    devDependencies: {
+      '@types/node': '^20.0.0',
+      '@types/react': '^18.2.0',
+      '@types/react-dom': '^18.2.0',
+      'customize-cra': '^1.0.0',
+      'react-app-rewired': '^2.2.1',
+      'webpack-bundle-analyzer': '^4.9.0'
+    },
+    scripts: {
+      'start': 'react-app-rewired start',
+      'build': 'react-app-rewired build',
+      'test': 'react-app-rewired test',
+      'eject': 'react-scripts eject',
+      'analyze': 'ANALYZE=true react-app-rewired build',
+      'lint': 'eslint src --ext .js,.jsx,.ts,.tsx'
+    },
+    configFiles: ['package.json', 'config-overrides.js'],
+    entryFile: 'src/index.js',
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    hasTypeScript: true
+  },
+  'cra': {
+    name: 'cra',
+    displayName: 'CRA (Create React App)',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'react': '^18.2.0',
+      'react-dom': '^18.2.0',
+      'react-scripts': '5.0.1',
+      'web-vitals': '^3.0.0'
+    },
+    devDependencies: {
+      '@types/node': '^20.0.0',
+      '@types/react': '^18.2.0',
+      '@types/react-dom': '^18.2.0',
+      'customize-cra': '^1.0.0',
+      'react-app-rewired': '^2.2.1',
+      'webpack-bundle-analyzer': '^4.9.0'
+    },
+    scripts: {
+      'start': 'react-app-rewired start',
+      'build': 'react-app-rewired build',
+      'test': 'react-app-rewired test',
+      'eject': 'react-scripts eject',
+      'analyze': 'ANALYZE=true react-app-rewired build',
+      'lint': 'eslint src --ext .js,.jsx,.ts,.tsx'
+    },
+    configFiles: ['package.json', 'config-overrides.js'],
+    entryFile: 'src/index.js',
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    hasTypeScript: true
   }
 };
 

@@ -33,6 +33,7 @@ import { JekyllTemplate } from '../templates/frontend/jekyll';
 import { HugoTemplate } from '../templates/frontend/hugo';
 import { HexoTemplate } from '../templates/frontend/hexo';
 import { ZolaTemplate } from '../templates/frontend/zola';
+import { CreateReactAppTemplate } from '../templates/frontend/create-react-app';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -463,6 +464,9 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new HexoTemplate(framework, context);
     case 'zola':
       return new ZolaTemplate(framework, context);
+    case 'create-react-app':
+    case 'cra':
+      return new CreateReactAppTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
