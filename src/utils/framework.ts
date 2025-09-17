@@ -1130,6 +1130,40 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/index.js',
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     hasTypeScript: true
+  },
+  'vue-cli': {
+    name: 'vue-cli',
+    displayName: 'Vue CLI',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'vue': '^3.3.0',
+      'vue-router': '^4.0.3',
+      'vuex': '^4.0.0',
+      'core-js': '^3.8.3',
+      'register-service-worker': '^1.7.2'
+    },
+    devDependencies: {
+      '@vue/cli-service': '~5.0.0',
+      '@vue/cli-plugin-babel': '~5.0.0',
+      '@vue/cli-plugin-eslint': '~5.0.0',
+      '@vue/cli-plugin-pwa': '~5.0.0',
+      '@vue/cli-plugin-router': '~5.0.0',
+      '@vue/cli-plugin-vuex': '~5.0.0',
+      '@vue/test-utils': '^2.0.0',
+      'sass': '^1.32.7',
+      'sass-loader': '^12.0.0'
+    },
+    scripts: {
+      'serve': 'vue-cli-service serve',
+      'build': 'vue-cli-service build',
+      'lint': 'vue-cli-service lint',
+      'test:unit': 'vue-cli-service test:unit'
+    },
+    configFiles: ['vue.config.js', '.browserslistrc'],
+    entryFile: 'src/main.js',
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
+    hasTypeScript: true
   }
 };
 
