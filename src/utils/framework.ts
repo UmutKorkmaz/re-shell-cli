@@ -1164,6 +1164,47 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.js',
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
     hasTypeScript: true
+  },
+  'angular-cli': {
+    name: 'angular-cli',
+    displayName: 'Angular CLI',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@angular/animations': '^17.0.0',
+      '@angular/common': '^17.0.0',
+      '@angular/compiler': '^17.0.0',
+      '@angular/core': '^17.0.0',
+      '@angular/forms': '^17.0.0',
+      '@angular/platform-browser': '^17.0.0',
+      '@angular/platform-browser-dynamic': '^17.0.0',
+      '@angular/router': '^17.0.0',
+      '@angular/service-worker': '^17.0.0',
+      'rxjs': '^7.8.0',
+      'tslib': '^2.6.0',
+      'zone.js': '^0.14.0'
+    },
+    devDependencies: {
+      '@angular-devkit/build-angular': '^17.0.0',
+      '@angular/cli': '^17.0.0',
+      '@angular/compiler-cli': '^17.0.0',
+      '@types/jasmine': '^5.1.0',
+      '@types/node': '^20.0.0',
+      'jasmine-core': '^5.1.0',
+      'karma': '^6.4.0',
+      'typescript': '~5.2.0'
+    },
+    scripts: {
+      'ng': 'ng',
+      'start': 'ng serve',
+      'build': 'ng build',
+      'test': 'ng test',
+      'lint': 'ng lint'
+    },
+    configFiles: ['angular.json', 'tsconfig.json'],
+    entryFile: 'src/main.ts',
+    extensions: ['.ts', '.html', '.scss', '.css'],
+    hasTypeScript: true
   }
 };
 

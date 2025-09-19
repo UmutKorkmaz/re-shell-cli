@@ -35,6 +35,7 @@ import { HexoTemplate } from '../templates/frontend/hexo';
 import { ZolaTemplate } from '../templates/frontend/zola';
 import { CreateReactAppTemplate } from '../templates/frontend/create-react-app';
 import { VueCliTemplate } from '../templates/frontend/vue-cli';
+import { AngularCliTemplate } from '../templates/frontend/angular-cli';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -470,6 +471,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new CreateReactAppTemplate(framework, context);
     case 'vue-cli':
       return new VueCliTemplate(framework, context);
+    case 'angular-cli':
+      return new AngularCliTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
