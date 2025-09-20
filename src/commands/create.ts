@@ -36,6 +36,7 @@ import { ZolaTemplate } from '../templates/frontend/zola';
 import { CreateReactAppTemplate } from '../templates/frontend/create-react-app';
 import { VueCliTemplate } from '../templates/frontend/vue-cli';
 import { AngularCliTemplate } from '../templates/frontend/angular-cli';
+import { ViteSvelteTemplate } from '../templates/frontend/vite-svelte';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -473,6 +474,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new VueCliTemplate(framework, context);
     case 'angular-cli':
       return new AngularCliTemplate(framework, context);
+    case 'vite-svelte':
+      return new ViteSvelteTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks

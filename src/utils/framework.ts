@@ -1205,6 +1205,37 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.ts',
     extensions: ['.ts', '.html', '.scss', '.css'],
     hasTypeScript: true
+  },
+  'vite-svelte': {
+    name: 'vite-svelte',
+    displayName: 'Vite + Svelte',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'svelte-navigator': '^4.0.0'
+    },
+    devDependencies: {
+      '@sveltejs/vite-plugin-svelte': '^3.0.0',
+      '@sveltejs/vite-plugin-svelte-inspector': '^2.0.0',
+      '@tsconfig/svelte': '^5.0.0',
+      'svelte': '^4.0.0',
+      'svelte-check': '^3.5.0',
+      'typescript': '^5.3.0',
+      'vite': '^5.0.0',
+      'vitest': '^1.0.0',
+      '@playwright/test': '^1.40.0'
+    },
+    scripts: {
+      'dev': 'vite',
+      'build': 'vite build',
+      'preview': 'vite preview',
+      'test': 'vitest',
+      'check': 'svelte-check --tsconfig ./tsconfig.json'
+    },
+    configFiles: ['vite.config.ts', 'svelte.config.js', 'tsconfig.json'],
+    entryFile: 'src/main.ts',
+    extensions: ['.svelte', '.ts'],
+    hasTypeScript: true
   }
 };
 
