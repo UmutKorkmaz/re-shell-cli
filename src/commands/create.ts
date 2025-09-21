@@ -37,6 +37,7 @@ import { CreateReactAppTemplate } from '../templates/frontend/create-react-app';
 import { VueCliTemplate } from '../templates/frontend/vue-cli';
 import { AngularCliTemplate } from '../templates/frontend/angular-cli';
 import { ViteSvelteTemplate } from '../templates/frontend/vite-svelte';
+import { ReactModuleFederationTemplate } from '../templates/frontend/react-module-federation';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -476,6 +477,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new AngularCliTemplate(framework, context);
     case 'vite-svelte':
       return new ViteSvelteTemplate(framework, context);
+    case 'react-module-federation':
+      return new ReactModuleFederationTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks

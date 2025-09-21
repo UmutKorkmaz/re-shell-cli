@@ -1236,6 +1236,36 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.ts',
     extensions: ['.svelte', '.ts'],
     hasTypeScript: true
+  },
+  'react-module-federation': {
+    name: 'react-module-federation',
+    displayName: 'React Module Federation',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'react': '^18.2.0',
+      'react-dom': '^18.2.0',
+      'react-router-dom': '^6.20.0'
+    },
+    devDependencies: {
+      '@module-federation/utilities': '^3.0.0',
+      '@docusaurus/react-loadable': '^5.5.2',
+      'webpack': '^5.89.0',
+      'webpack-cli': '^5.1.0',
+      'html-webpack-plugin': '^5.5.0',
+      'babel-loader': '^9.1.3',
+      'css-loader': '^6.8.0',
+      'style-loader': '^3.3.0'
+    },
+    scripts: {
+      'start': 'webpack serve --mode development',
+      'build': 'webpack --mode production',
+      'lint': 'eslint src --ext .js,.jsx,.ts,.tsx'
+    },
+    configFiles: ['webpack.config.js', '.babelrc.js'],
+    entryFile: 'src/index.js',
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    hasTypeScript: true
   }
 };
 
