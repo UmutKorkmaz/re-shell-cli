@@ -1266,6 +1266,34 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/index.js',
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     hasTypeScript: true
+  },
+  'vue-module-federation': {
+    name: 'vue-module-federation',
+    displayName: 'Vue Module Federation',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'vue': '^3.3.0',
+      'vue-router': '^4.0.0',
+      'vuex': '^4.0.0'
+    },
+    devDependencies: {
+      '@vue/cli-service': '~5.0.0',
+      '@vue/cli-plugin-webpack': '~5.0.0',
+      'webpack': '^5.89.0',
+      'vue-loader': '^17.4.0',
+      'vue-template-compiler': '^2.7.0',
+      '@module-federation/utilities': '^3.0.0'
+    },
+    scripts: {
+      'serve': 'vue-cli-service serve',
+      'build': 'vue-cli-service build',
+      'lint': 'vue-cli-service lint'
+    },
+    configFiles: ['vue.config.js', 'webpack.config.js'],
+    entryFile: 'src/main.js',
+    extensions: ['.js', '.vue', '.ts'],
+    hasTypeScript: true
   }
 };
 
