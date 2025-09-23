@@ -1294,6 +1294,58 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.js',
     extensions: ['.js', '.vue', '.ts'],
     hasTypeScript: true
+  },
+  'angular-module-federation': {
+    name: 'angular-module-federation',
+    displayName: 'Angular Module Federation',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@angular/animations': '^17.0.0',
+      '@angular/common': '^17.0.0',
+      '@angular/core': '^17.0.0',
+      '@angular/elements': '^17.0.0',
+      '@angular/forms': '^17.0.0',
+      '@angular/platform-browser': '^17.0.0',
+      '@angular/platform-browser-dynamic': '^17.0.0',
+      '@angular/router': '^17.0.0',
+      '@ngrx/effects': '^17.0.0',
+      '@ngrx/entity': '^17.0.0',
+      '@ngrx/store': '^17.0.0',
+      '@ngrx/store-devtools': '^17.0.0',
+      'rxjs': '^7.8.0',
+      'tslib': '^2.6.0',
+      'zone.js': '^0.14.0'
+    },
+    devDependencies: {
+      '@angular-architects/module-federation': '^17.0.0',
+      '@angular-devkit/build-angular': '^17.0.0',
+      '@angular/cli': '^17.0.0',
+      '@angular/compiler-cli': '^17.0.0',
+      '@types/node': '^20.10.0',
+      '@typescript-eslint/eslint-plugin': '^6.13.0',
+      '@typescript-eslint/parser': '^6.13.0',
+      'eslint': '^8.55.0',
+      'jasmine-core': '^5.1.0',
+      'karma': '^6.4.0',
+      'karma-chrome-launcher': '^3.2.0',
+      'karma-coverage': '^2.2.0',
+      'karma-jasmine': '^5.1.0',
+      'karma-jasmine-html-reporter': '^2.1.0',
+      'typescript': '^5.3.0',
+      'webpack': '^5.89.0'
+    },
+    scripts: {
+      'start': 'ng serve',
+      'build': 'ng build',
+      'watch': 'ng build --watch --configuration development',
+      'test': 'ng test',
+      'lint': 'ng lint'
+    },
+    configFiles: ['angular.json', 'webpack.config.js'],
+    entryFile: 'src/main.ts',
+    extensions: ['.ts', '.html'],
+    hasTypeScript: true
   }
 };
 
