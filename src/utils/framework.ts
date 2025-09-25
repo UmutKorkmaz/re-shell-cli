@@ -1346,6 +1346,42 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'src/main.ts',
     extensions: ['.ts', '.html'],
     hasTypeScript: true
+  },
+  'svelte-module-federation': {
+    name: 'svelte-module-federation',
+    displayName: 'Svelte Module Federation',
+    buildTool: 'webpack',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      'svelte': '^4.0.0',
+      'svelte-routing': '^2.0.0'
+    },
+    devDependencies: {
+      '@module-federation/utilities': '^3.0.0',
+      '@tsconfig/svelte': '^5.0.0',
+      '@types/svelte': '^3.24.0',
+      'cross-env': '^7.0.3',
+      'css-loader': '^6.8.0',
+      'eslint': '^8.56.0',
+      'eslint-plugin-svelte': '^2.35.0',
+      'html-webpack-plugin': '^5.5.0',
+      'mini-css-extract-plugin': '^2.7.0',
+      'svelte-loader': '^3.1.0',
+      'svelte-preprocess': '^5.1.0',
+      'webpack': '^5.89.0',
+      'webpack-cli': '^5.1.0',
+      'webpack-dev-server': '^4.15.0'
+    },
+    scripts: {
+      'start': 'webpack serve --mode development',
+      'build': 'webpack --mode production',
+      'serve': 'webpack serve --mode development',
+      'lint': 'eslint src --ext .js,.svelte'
+    },
+    configFiles: ['webpack.config.js', 'svelte.config.js'],
+    entryFile: 'src/main.js',
+    extensions: ['.js', '.svelte'],
+    hasTypeScript: true
   }
 };
 

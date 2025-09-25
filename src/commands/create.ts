@@ -40,6 +40,7 @@ import { ViteSvelteTemplate } from '../templates/frontend/vite-svelte';
 import { ReactModuleFederationTemplate } from '../templates/frontend/react-module-federation';
 import { VueModuleFederationTemplate } from '../templates/frontend/vue-module-federation';
 import { AngularModuleFederationTemplate } from '../templates/frontend/angular-module-federation';
+import { SvelteModuleFederationTemplate } from '../templates/frontend/svelte-module-federation';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -485,6 +486,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new VueModuleFederationTemplate(framework, context);
     case 'angular-module-federation':
       return new AngularModuleFederationTemplate(framework, context);
+    case 'svelte-module-federation':
+      return new SvelteModuleFederationTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
