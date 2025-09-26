@@ -41,6 +41,7 @@ import { ReactModuleFederationTemplate } from '../templates/frontend/react-modul
 import { VueModuleFederationTemplate } from '../templates/frontend/vue-module-federation';
 import { AngularModuleFederationTemplate } from '../templates/frontend/angular-module-federation';
 import { SvelteModuleFederationTemplate } from '../templates/frontend/svelte-module-federation';
+import { NxAngularTemplate } from '../templates/frontend/nx-angular';
 import { BaseTemplate, TemplateContext } from '../templates/index';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 
@@ -488,6 +489,8 @@ function createTemplate(framework: any, context: TemplateContext): BaseTemplate 
       return new AngularModuleFederationTemplate(framework, context);
     case 'svelte-module-federation':
       return new SvelteModuleFederationTemplate(framework, context);
+    case 'nx-angular':
+      return new NxAngularTemplate(framework, context);
     // Add more frameworks as templates are implemented
     default:
       // Fallback to React template for unsupported frameworks
