@@ -1447,6 +1447,59 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     entryFile: 'apps/app1/src/main.ts',
     extensions: ['.ts', '.html'],
     hasTypeScript: true
+  },
+  'analog': {
+    name: 'analog',
+    displayName: 'Analog',
+    buildTool: 'vite',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@analogjs/content': '^1.0.0',
+      '@analogjs/router': '^1.0.0',
+      '@angular/animations': '^17.0.0',
+      '@angular/common': '^17.0.0',
+      '@angular/core': '^17.0.0',
+      '@angular/forms': '^17.0.0',
+      '@angular/platform-browser': '^17.0.0',
+      '@angular/platform-browser-dynamic': '^17.0.0',
+      '@angular/platform-server': '^17.0.0',
+      '@angular/router': '^17.0.0',
+      'front-matter': '^4.0.2',
+      'marked': '^11.0.0',
+      'rxjs': '^7.8.0',
+      'tslib': '^2.6.0',
+      'zone.js': '^0.14.0'
+    },
+    devDependencies: {
+      '@analogjs/platform': '^1.0.0',
+      '@analogjs/vite-plugin-angular': '^1.0.0',
+      '@angular-devkit/build-angular': '^17.0.0',
+      '@angular/cli': '^17.0.0',
+      '@angular/compiler-cli': '^17.0.0',
+      '@nx/vite': '^17.0.0',
+      '@types/marked': '^6.0.0',
+      '@vitest/ui': '^1.0.0',
+      'autoprefixer': '^10.4.0',
+      'cssnano': '^6.0.0',
+      'jsdom': '^23.0.0',
+      'postcss': '^8.4.0',
+      'postcss-nesting': '^12.0.0',
+      'tailwindcss': '^3.4.0',
+      'typescript': '^5.3.0',
+      'vite': '^5.0.0',
+      'vitest': '^1.0.0'
+    },
+    scripts: {
+      'start': 'ng serve',
+      'build': 'ng build',
+      'watch': 'ng build --watch --configuration development',
+      'test': 'ng test',
+      'lint': 'ng lint'
+    },
+    configFiles: ['analog.config.ts', 'vite.config.ts', 'nitro.config.ts'],
+    entryFile: 'src/main.ts',
+    extensions: ['.ts', '.html'],
+    hasTypeScript: true
   }
 };
 
