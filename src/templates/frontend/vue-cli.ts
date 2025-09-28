@@ -65,6 +65,59 @@ export class VueCliTemplate extends BaseTemplate {
       content: this.generateAboutView()
     });
 
+    // Dashboard views with nested routes
+    files.push({
+      path: 'src/views/dashboard/DashboardLayout.vue',
+      content: this.generateDashboardLayout()
+    });
+
+    files.push({
+      path: 'src/views/dashboard/Home.vue',
+      content: this.generateDashboardHome()
+    });
+
+    files.push({
+      path: 'src/views/dashboard/Profile.vue',
+      content: this.generateDashboardProfile()
+    });
+
+    files.push({
+      path: 'src/views/dashboard/Settings.vue',
+      content: this.generateDashboardSettings()
+    });
+
+    files.push({
+      path: 'src/views/dashboard/settings/Account.vue',
+      content: this.generateSettingsAccount()
+    });
+
+    files.push({
+      path: 'src/views/dashboard/settings/Notifications.vue',
+      content: this.generateSettingsNotifications()
+    });
+
+    // Admin views
+    files.push({
+      path: 'src/views/admin/AdminLayout.vue',
+      content: this.generateAdminLayout()
+    });
+
+    files.push({
+      path: 'src/views/admin/Users.vue',
+      content: this.generateAdminUsers()
+    });
+
+    files.push({
+      path: 'src/views/admin/Roles.vue',
+      content: this.generateAdminRoles()
+    });
+
+    // 404 page
+    files.push({
+      path: 'src/views/NotFound.vue',
+      content: this.generateNotFound()
+    });
+
     files.push({
       path: 'src/components/HelloWorld.vue',
       content: this.generateHelloWorldComponent()
@@ -500,24 +553,203 @@ export default {
   }
 
   private generateRouter() {
+    const { normalizedName } = this.context;
     return `import { createRouter, createWebHistory } from 'vue-router'
+import { store } from '../store'
 
+// Routes with nested children, meta fields, and lazy loading
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => import('../views/Home.vue')
+    component: () => import('../views/Home.vue'),
+    meta: {
+      title: 'Home',
+      requiresAuth: false,
+      layout: 'default'
+    }
   },
   {
     path: '/about',
     name: 'about',
-    component: () => import('../views/About.vue')
+    component: () => import('../views/About.vue'),
+    meta: {
+      title: 'About',
+      requiresAuth: false,
+      layout: 'default'
+    }
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('../views/dashboard/DashboardLayout.vue'),
+    meta: {
+      title: 'Dashboard',
+      requiresAuth: true,
+      layout: 'authenticated'
+    },
+    children: [
+      {
+        path: '',
+        name: 'dashboard-home',
+        component: () => import('../views/dashboard/Home.vue'),
+        meta: {
+          title: 'Dashboard Home',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'profile',
+        name: 'dashboard-profile',
+        component: () => import('../views/dashboard/Profile.vue'),
+        meta: {
+          title: 'Profile',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'settings',
+        name: 'dashboard-settings',
+        component: () => import('../views/dashboard/Settings.vue'),
+        meta: {
+          title: 'Settings',
+          requiresAuth: true
+        },
+        children: [
+          {
+            path: 'account',
+            name: 'settings-account',
+            component: () => import('../views/dashboard/settings/Account.vue'),
+            meta: {
+              title: 'Account Settings',
+              requiresAuth: true
+            }
+          },
+          {
+            path: 'notifications',
+            name: 'settings-notifications',
+            component: () => import('../views/dashboard/settings/Notifications.vue'),
+            meta: {
+              title: 'Notification Settings',
+              requiresAuth: true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/admin/AdminLayout.vue'),
+    meta: {
+      title: 'Admin',
+      requiresAuth: true,
+      requiresAdmin: true,
+      layout: 'admin'
+    },
+    children: [
+      {
+        path: '',
+        redirect: '/admin/users'
+      },
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: () => import('../views/admin/Users.vue'),
+        meta: {
+          title: 'User Management',
+          requiresAuth: true,
+          requiresAdmin: true
+        }
+      },
+      {
+        path: 'roles',
+        name: 'admin-roles',
+        component: () => import('../views/admin/Roles.vue'),
+        meta: {
+          title: 'Role Management',
+          requiresAuth: true,
+          requiresAdmin: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('../views/NotFound.vue'),
+    meta: {
+      title: '404 - Page Not Found'
+    }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
-  routes
+  routes,
+  // Enable smoother navigation with scroll behavior
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0, behavior: 'smooth' }
+    }
+  }
+})
+
+// Global navigation guards
+router.beforeEach(async (to, from, next) => {
+  // Update page title
+  document.title = to.meta.title ? \`\${to.meta.title} - ${normalizedName}\` : normalizedName
+
+  // Check authentication
+  const isAuthenticated = store.getters['auth/isAuthenticated']
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+
+  if (requiresAuth && !isAuthenticated) {
+    // Redirect to login with return url
+    next({
+      name: 'login',
+      query: { redirect: to.fullPath }
+    })
+    return
+  }
+
+  // Check admin role
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+  const isAdmin = store.getters['auth/isAdmin']
+
+  if (requiresAdmin && !isAdmin) {
+    next({ name: 'home' })
+    return
+  }
+
+  // Show loading indicator for lazy-loaded routes
+  if (!to.matched.length) {
+    next()
+    return
+  }
+
+  next()
+})
+
+router.afterEach((to, from) => {
+  // Hide loading indicator
+  // Track page navigation for analytics
+  if (typeof window !== 'undefined' && (window as any).gtag) {
+    (window as any).gtag('event', 'page_view', {
+      page_path: to.path,
+      page_title: to.meta.title
+    })
+  }
+})
+
+// Navigation error handler
+router.onError((error) => {
+  console.error('Router error:', error)
+  // You can redirect to error page here
+  // router.push({ name: 'error' })
 })
 
 export default router
@@ -701,6 +933,860 @@ ul {
   border-radius: 0.25rem;
   cursor: pointer;
   margin-top: 1rem;
+}
+</style>
+`;
+  }
+
+  private generateDashboardLayout() {
+    return `<template>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="logo">
+        <h2>Dashboard</h2>
+      </div>
+      <nav class="nav">
+        <router-link to="/dashboard" class="nav-link" active-class="active">
+          <span class="icon">🏠</span> Home
+        </router-link>
+        <router-link to="/dashboard/profile" class="nav-link" active-class="active">
+          <span class="icon">👤</span> Profile
+        </router-link>
+        <router-link to="/dashboard/settings" class="nav-link" active-class="active">
+          <span class="icon">⚙️</span> Settings
+        </router-link>
+      </nav>
+    </aside>
+    <main class="main-content">
+      <header class="header">
+        <h1>{{ $route.meta.title || 'Dashboard' }}</h1>
+        <div class="user-menu">
+          <span>Welcome, User</span>
+          <button @click="logout">Logout</button>
+        </div>
+      </header>
+      <div class="content">
+        <router-view></router-view>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script>
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+
+export default {
+  name: 'DashboardLayout',
+  setup() {
+    const router = useRouter()
+    const store = useStore()
+
+    const logout = () => {
+      store.dispatch('auth/logout')
+      router.push({ name: 'home' })
+    }
+
+    return { logout }
+  }
+}
+</script>
+
+<style scoped>
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background: #2c3e50;
+  color: white;
+  padding: 2rem 0;
+  position: fixed;
+  height: 100vh;
+}
+
+.logo {
+  padding: 0 2rem;
+  margin-bottom: 2rem;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-link {
+  padding: 1rem 2rem;
+  color: #ecf0f1;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.3s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: #34495e;
+  border-left: 3px solid #42b983;
+}
+
+.icon {
+  font-size: 1.2rem;
+}
+
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+}
+
+.header {
+  background: white;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-menu button {
+  padding: 0.5rem 1rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.content {
+  padding: 2rem;
+}
+</style>
+`;
+  }
+
+  private generateDashboardHome() {
+    return `<template>
+  <div class="dashboard-home">
+    <h2>Welcome to your Dashboard</h2>
+    <div class="stats">
+      <div class="stat-card">
+        <h3>Total Users</h3>
+        <p class="number">1,234</p>
+      </div>
+      <div class="stat-card">
+        <h3>Active Sessions</h3>
+        <p class="number">56</p>
+      </div>
+      <div class="stat-card">
+        <h3>Revenue</h3>
+        <p class="number">$12,345</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'DashboardHome'
+}
+</script>
+
+<style scoped>
+.dashboard-home h2 {
+  margin-bottom: 2rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.stat-card h3 {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.stat-card .number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #42b983;
+}
+</style>
+`;
+  }
+
+  private generateDashboardProfile() {
+    return `<template>
+  <div class="profile">
+    <h2>User Profile</h2>
+    <form @submit.prevent="saveProfile" class="profile-form">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input v-model="profile.name" type="text" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input v-model="profile.email" type="email" />
+      </div>
+      <div class="form-group">
+        <label>Bio</label>
+        <textarea v-model="profile.bio" rows="4"></textarea>
+      </div>
+      <button type="submit" class="btn-primary">Save Changes</button>
+    </form>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue'
+
+export default {
+  name: 'DashboardProfile',
+  setup() {
+    const profile = ref({
+      name: 'John Doe',
+      email: 'john@example.com',
+      bio: 'Software developer'
+    })
+
+    const saveProfile = () => {
+      console.log('Saving profile:', profile.value)
+      // API call to save profile
+    }
+
+    return { profile, saveProfile }
+  }
+}
+</script>
+
+<style scoped>
+.profile-form {
+  max-width: 600px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  padding: 0.75rem 2rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+</style>
+`;
+  }
+
+  private generateDashboardSettings() {
+    return `<template>
+  <div class="settings">
+    <h2>Settings</h2>
+    <div class="settings-nav">
+      <router-link to="/dashboard/settings/account" class="nav-link" active-class="active">
+        Account
+      </router-link>
+      <router-link to="/dashboard/settings/notifications" class="nav-link" active-class="active">
+        Notifications
+      </router-link>
+    </div>
+    <router-view></router-view>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'DashboardSettings'
+}
+</script>
+
+<style scoped>
+.settings-nav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.nav-link {
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: #7f8c8d;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.nav-link.active {
+  color: #42b983;
+  border-bottom-color: #42b983;
+}
+</style>
+`;
+  }
+
+  private generateSettingsAccount() {
+    return `<template>
+  <div class="account-settings">
+    <h3>Account Settings</h3>
+    <p>Manage your account preferences and security settings.</p>
+    <div class="settings-section">
+      <h4>Change Password</h4>
+      <form @submit.prevent="changePassword">
+        <input v-model="password" type="password" placeholder="New password" />
+        <button type="submit">Update Password</button>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue'
+
+export default {
+  name: 'SettingsAccount',
+  setup() {
+    const password = ref('')
+
+    const changePassword = () => {
+      console.log('Password changed')
+    }
+
+    return { password, changePassword }
+  }
+}
+</script>
+
+<style scoped>
+.settings-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.settings-section form {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.settings-section input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+}
+
+.settings-section button {
+  padding: 0.5rem 1.5rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+</style>
+`;
+  }
+
+  private generateSettingsNotifications() {
+    return `<template>
+  <div class="notification-settings">
+    <h3>Notification Settings</h3>
+    <p>Choose how you want to be notified.</p>
+    <div class="settings-list">
+      <div class="setting-item">
+        <label>
+          <input type="checkbox" v-model="settings.email" />
+          Email notifications
+        </label>
+      </div>
+      <div class="setting-item">
+        <label>
+          <input type="checkbox" v-model="settings.sms" />
+          SMS notifications
+        </label>
+      </div>
+      <div class="setting-item">
+        <label>
+          <input type="checkbox" v-model="settings.push" />
+          Push notifications
+        </label>
+      </div>
+    </div>
+    <button @click="saveSettings" class="btn-save">Save Preferences</button>
+  </div>
+</template>
+
+<script>
+import { reactive } from 'vue'
+
+export default {
+  name: 'SettingsNotifications',
+  setup() {
+    const settings = reactive({
+      email: true,
+      sms: false,
+      push: true
+    })
+
+    const saveSettings = () => {
+      console.log('Settings saved:', settings)
+    }
+
+    return { settings, saveSettings }
+  }
+}
+</script>
+
+<style scoped>
+.settings-list {
+  margin: 2rem 0;
+}
+
+.setting-item {
+  padding: 1rem;
+  background: #f8f9fa;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.setting-item label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.btn-save {
+  padding: 0.75rem 2rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+</style>
+`;
+  }
+
+  private generateAdminLayout() {
+    return `<template>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <div class="logo">
+        <h2>⚡ Admin Panel</h2>
+      </div>
+      <nav class="nav">
+        <router-link to="/admin/users" class="nav-link" active-class="active">
+          Users
+        </router-link>
+        <router-link to="/admin/roles" class="nav-link" active-class="active">
+          Roles
+        </router-link>
+      </nav>
+    </aside>
+    <main class="main-content">
+      <header class="header">
+        <h1>{{ $route.meta.title || 'Admin' }}</h1>
+      </header>
+      <div class="content">
+        <router-view></router-view>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'AdminLayout'
+}
+</script>
+
+<style scoped>
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.sidebar {
+  width: 250px;
+  background: #1a1a1a;
+  color: white;
+  padding: 2rem 0;
+}
+
+.logo {
+  padding: 0 2rem;
+  margin-bottom: 2rem;
+}
+
+.logo h2 {
+  color: #e74c3c;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-link {
+  padding: 1rem 2rem;
+  color: #ecf0f1;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: #e74c3c;
+}
+
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+}
+
+.header {
+  background: white;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.content {
+  padding: 2rem;
+}
+</style>
+`;
+  }
+
+  private generateAdminUsers() {
+    return `<template>
+  <div class="admin-users">
+    <div class="header">
+      <h2>User Management</h2>
+      <button class="btn-add">Add User</button>
+    </div>
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in users" :key="user.id">
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>{{ user.status }}</td>
+          <td>
+            <button class="btn-edit">Edit</button>
+            <button class="btn-delete">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue'
+
+export default {
+  name: 'AdminUsers',
+  setup() {
+    const users = ref([
+      { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'Active' },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'Active' },
+      { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'User', status: 'Inactive' }
+    ])
+
+    return { users }
+  }
+}
+</script>
+
+<style scoped>
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.btn-add {
+  padding: 0.75rem 1.5rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.users-table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.users-table th,
+.users-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.users-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.btn-edit,
+.btn-delete {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.btn-edit {
+  background: #3498db;
+  color: white;
+}
+
+.btn-delete {
+  background: #e74c3c;
+  color: white;
+}
+</style>
+`;
+  }
+
+  private generateAdminRoles() {
+    return `<template>
+  <div class="admin-roles">
+    <div class="header">
+      <h2>Role Management</h2>
+      <button class="btn-add">Add Role</button>
+    </div>
+    <div class="roles-grid">
+      <div v-for="role in roles" :key="role.id" class="role-card">
+        <h3>{{ role.name }}</h3>
+        <p>{{ role.description }}</p>
+        <div class="permissions">
+          <h4>Permissions:</h4>
+          <ul>
+            <li v-for="permission in role.permissions" :key="permission">
+              {{ permission }}
+            </li>
+          </ul>
+        </div>
+        <div class="actions">
+          <button class="btn-edit">Edit</button>
+          <button class="btn-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue'
+
+export default {
+  name: 'AdminRoles',
+  setup() {
+    const roles = ref([
+      {
+        id: 1,
+        name: 'Administrator',
+        description: 'Full system access',
+        permissions: ['Create', 'Read', 'Update', 'Delete', 'Manage Users']
+      },
+      {
+        id: 2,
+        name: 'Editor',
+        description: 'Content management',
+        permissions: ['Create', 'Read', 'Update']
+      },
+      {
+        id: 3,
+        name: 'Viewer',
+        description: 'Read-only access',
+        permissions: ['Read']
+      }
+    ])
+
+    return { roles }
+  }
+}
+</script>
+
+<style scoped>
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.btn-add {
+  padding: 0.75rem 1.5rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.role-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.role-card h3 {
+  color: #42b983;
+  margin-bottom: 0.5rem;
+}
+
+.permissions {
+  margin: 1.5rem 0;
+}
+
+.permissions h4 {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-bottom: 0.5rem;
+}
+
+.permissions ul {
+  list-style: none;
+  padding: 0;
+}
+
+.permissions li {
+  padding: 0.25rem 0;
+  color: #34495e;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-edit,
+.btn-delete {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background: #3498db;
+  color: white;
+}
+
+.btn-delete {
+  background: #e74c3c;
+  color: white;
+}
+</style>
+`;
+  }
+
+  private generateNotFound() {
+    return `<template>
+  <div class="not-found">
+    <h1>404</h1>
+    <p>Page not found</p>
+    <router-link to="/" class="btn-home">Go Home</router-link>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'NotFound'
+}
+</script>
+
+<style scoped>
+.not-found {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.not-found h1 {
+  font-size: 6rem;
+  color: #42b983;
+  margin-bottom: 1rem;
+}
+
+.not-found p {
+  font-size: 1.5rem;
+  color: #7f8c8d;
+  margin-bottom: 2rem;
+}
+
+.btn-home {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: #42b983;
+  color: white;
+  text-decoration: none;
+  border-radius: 0.25rem;
 }
 </style>
 `;
@@ -1165,6 +2251,118 @@ Create \`.env.local\` for environment-specific variables:
 \`\`\`
 VUE_APP_API_URL=http://localhost:8000/api
 VUE_APP_ENABLE_ANALYTICS=true
+\`\`\`
+
+## Vue Router
+
+This application includes an advanced Vue Router setup with:
+
+### Nested Routes
+
+- **Dashboard**: Authenticated area with nested children
+  - /dashboard - Dashboard home
+  - /dashboard/profile - User profile
+  - /dashboard/settings - Settings with sub-routes
+    - /dashboard/settings/account - Account settings
+    - /dashboard/settings/notifications - Notification preferences
+
+- **Admin**: Admin panel with role-based access
+  - /admin/users - User management
+  - /admin/roles - Role management
+
+### Navigation Guards
+
+The router includes global navigation guards for:
+
+- **Authentication**: Protects routes that require login
+- **Authorization**: Checks admin role for admin routes
+- **Page titles**: Automatically updates document title
+- **Analytics**: Tracks page views with Google Analytics
+- **Redirect**: Redirects to login with return URL
+
+### Route Meta Fields
+
+Each route can have meta fields:
+- \`title\`: Page title
+- \`requiresAuth\`: Whether authentication is required
+- \`requiresAdmin\`: Whether admin role is required
+- \`layout\`: Layout component to use
+
+### Lazy Loading
+
+All route components are lazy-loaded for optimal performance:
+
+\`\`\`javascript
+component: () => import('../views/Home.vue')
+\`\`\`
+
+### Smooth Scrolling
+
+The router includes smooth scroll behavior for better UX:
+
+\`\`\`javascript
+scrollBehavior(to, from, savedPosition) {
+  if (savedPosition) {
+    return savedPosition
+  } else {
+    return { top: 0, behavior: 'smooth' }
+  }
+}
+\`\`\`
+
+### Example Usage
+
+\`\`\`vue
+<template>
+  <div>
+    <router-link to="/dashboard">Dashboard</router-link>
+    <router-link :to="{ name: 'dashboard-profile' }">Profile</router-link>
+    <router-view></router-view>
+  </div>
+</template>
+
+<script>
+import { useRouter, useRoute } from 'vue-router'
+
+export default {
+  setup() {
+    const router = useRouter()
+    const route = useRoute()
+
+    const navigate = () => {
+      router.push({ name: 'dashboard-profile' })
+    }
+
+    return { navigate, route }
+  }
+}
+</script>
+\`\`\`
+
+### Programmatic Navigation
+
+\`\`\`javascript
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+// Navigate by name
+router.push({ name: 'dashboard' })
+
+// Navigate by path
+router.push('/dashboard/profile')
+
+// Navigate with query params
+router.push({ path: '/dashboard', query: { tab: 'settings' } })
+
+// Navigate with params
+router.push({ name: 'admin-users', params: { id: 123 } })
+
+// Replace current route
+router.replace('/dashboard')
+
+// Go back
+router.go(-1)
 \`\`\`
 
 ## Learn More
