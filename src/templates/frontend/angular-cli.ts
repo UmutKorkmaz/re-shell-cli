@@ -112,6 +112,118 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateAboutComponentStyles()
     });
 
+    // Auth Guard
+    files.push({
+      path: 'src/app/guards/auth.guard.ts',
+      content: this.generateAuthGuard()
+    });
+
+    // Admin Guard
+    files.push({
+      path: 'src/app/guards/admin.guard.ts',
+      content: this.generateAdminGuard()
+    });
+
+    // User Resolver
+    files.push({
+      path: 'src/app/resolvers/user.resolver.ts',
+      content: this.generateUserResolver()
+    });
+
+    // Dashboard components
+    files.push({
+      path: 'src/app/dashboard/dashboard.component.ts',
+      content: this.generateDashboardComponent()
+    });
+
+    files.push({
+      path: 'src/app/dashboard/dashboard.component.html',
+      content: this.generateDashboardComponentHtml()
+    });
+
+    files.push({
+      path: 'src/app/dashboard/dashboard.component.scss',
+      content: this.generateDashboardComponentStyles()
+    });
+
+    files.push({
+      path: 'src/app/dashboard/home/home.component.ts',
+      content: this.generateDashboardHomeComponent()
+    });
+
+    files.push({
+      path: 'src/app/dashboard/home/home.component.html',
+      content: this.generateDashboardHomeComponentHtml()
+    });
+
+    files.push({
+      path: 'src/app/dashboard/profile/profile.component.ts',
+      content: this.generateDashboardProfileComponent()
+    });
+
+    files.push({
+      path: 'src/app/dashboard/profile/profile.component.html',
+      content: this.generateDashboardProfileComponentHtml()
+    });
+
+    // Settings lazy-loaded routes
+    files.push({
+      path: 'src/app/dashboard/settings/settings.routes.ts',
+      content: this.generateSettingsRoutes()
+    });
+
+    files.push({
+      path: 'src/app/dashboard/settings/settings.component.ts',
+      content: this.generateSettingsComponent()
+    });
+
+    files.push({
+      path: 'src/app/dashboard/settings/settings.component.html',
+      content: this.generateSettingsComponentHtml()
+    });
+
+    // Admin components
+    files.push({
+      path: 'src/app/admin/admin.component.ts',
+      content: this.generateAdminComponent()
+    });
+
+    files.push({
+      path: 'src/app/admin/admin.component.html',
+      content: this.generateAdminComponentHtml()
+    });
+
+    files.push({
+      path: 'src/app/admin/users/users.component.ts',
+      content: this.generateAdminUsersComponent()
+    });
+
+    files.push({
+      path: 'src/app/admin/users/users.component.html',
+      content: this.generateAdminUsersComponentHtml()
+    });
+
+    files.push({
+      path: 'src/app/admin/roles/roles.component.ts',
+      content: this.generateAdminRolesComponent()
+    });
+
+    files.push({
+      path: 'src/app/admin/roles/roles.component.html',
+      content: this.generateAdminRolesComponentHtml()
+    });
+
+    // 404 Not Found component
+    files.push({
+      path: 'src/app/not-found/not-found.component.ts',
+      content: this.generateNotFoundComponent()
+    });
+
+    files.push({
+      path: 'src/app/not-found/not-found.component.html',
+      content: this.generateNotFoundComponentHtml()
+    });
+
     // Core components (standalone)
     files.push({
       path: 'src/app/core/header/header.component.ts',
@@ -578,12 +690,17 @@ h1, h2, h3, h4, h5, h6 {
 
   private generateAppConfig() {
     return `import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withPreloading, PreloadAllModules, withViewTransitions, withDebugTracing } from '@angular/router';
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(appRoutes)
+    provideRouter(
+      appRoutes,
+      withPreloading(PreloadAllModules),
+      withViewTransitions(),
+      withDebugTracing()
+    )
   ]
 };
 `;
@@ -1255,6 +1372,629 @@ export class AboutComponent {
 `;
   }
 
+  private generateAuthGuard() {
+    return `import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+
+export const authGuard: CanActivateFn = (route, state) => {
+  const router = inject(Router);
+
+  // Check if user is authenticated
+  const isAuthenticated = localStorage.getItem('authToken') !== null;
+
+  if (!isAuthenticated) {
+    // Redirect to login page with return URL
+    router.navigate(['/login'], {
+      queryParams: { returnUrl: state.url }
+    });
+    return false;
+  }
+
+  return true;
+};
+
+// Injectable version for use in components
+export class AuthGuard {
+  canActivate() {
+    return authGuard();
+  }
+}
+`;
+  }
+
+  private generateAdminGuard() {
+    return `import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+
+export const adminGuard: CanActivateFn = (route, state) => {
+  const router = inject(Router);
+
+  // Check if user is authenticated
+  const isAuthenticated = localStorage.getItem('authToken') !== null;
+  if (!isAuthenticated) {
+    router.navigate(['/login']);
+    return false;
+  }
+
+  // Check if user has admin role
+  const userRole = localStorage.getItem('userRole');
+  if (userRole !== 'admin') {
+    router.navigate(['/dashboard']); // Redirect to dashboard for non-admins
+    return false;
+  }
+
+  return true;
+};
+
+// Injectable version for use in components
+export class AdminGuard {
+  canActivate() {
+    return adminGuard();
+  }
+}
+`;
+  }
+
+  private generateUserResolver() {
+    return `import { inject } from '@angular/core';
+import { ResolveFn } from '@angular/router';
+import { Observable } from 'rxjs';
+import { map, of } from 'rxjs';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export const userResolver: ResolveFn<User> = (route, state) => {
+  // In a real app, this would make an HTTP request to your API
+  // Example: return inject(HttpClient).get('/api/user').pipe(map(res => res.data));
+
+  // Mock data for demonstration
+  const mockUser: User = {
+    id: 1,
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'user'
+  };
+
+  // Simulate async operation
+  return of(mockUser).pipe(
+    map(user => user)
+  );
+};
+`;
+  }
+
+  private generateDashboardComponent() {
+    return `import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss']
+})
+export class DashboardComponent {}
+`;
+  }
+
+  private generateDashboardComponentHtml() {
+    return `<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>Dashboard</h2>
+    </div>
+    <nav class="nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+        <span class="icon">🏠</span> Home
+      </a>
+      <a routerLink="/dashboard/profile" routerLinkActive="active" class="nav-link">
+        <span class="icon">👤</span> Profile
+      </a>
+      <a routerLink="/dashboard/settings" routerLinkActive="active" class="nav-link">
+        <span class="icon">⚙️</span> Settings
+      </a>
+    </nav>
+  </aside>
+  <main class="main-content">
+    <header class="header">
+      <h1>{{ 'Dashboard' | title }}</h1>
+      <div class="user-menu">
+        <span>Welcome, User</span>
+        <button (click)="logout()">Logout</button>
+      </div>
+    </header>
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>
+
+<!-- Title pipe for dynamic page titles -->
+<script>
+import { Title } from '@angular/platform-browser';
+import { Injectable } from '@angular/core';
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+@Pipe({ name: 'title', standalone: true })
+export class TitlePipe implements PipeTransform {
+  constructor(private title: Title) {}
+
+  transform(value: string): string {
+    this.title.setTitle(value);
+    return value;
+  }
+}
+</script>
+`;
+  }
+
+  private generateDashboardComponentStyles() {
+    return `.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background: #2c3e50;
+  color: white;
+  padding: 2rem 0;
+  position: fixed;
+  height: 100vh;
+}
+
+.logo {
+  padding: 0 2rem;
+  margin-bottom: 2rem;
+}
+
+.logo h2 {
+  color: #1976d2;
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  color: #ecf0f1;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: #34495e;
+  border-left-color: #1976d2;
+}
+
+.icon {
+  font-size: 1.25rem;
+}
+
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+}
+
+.header {
+  background: white;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-menu button {
+  padding: 0.5rem 1.5rem;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.user-menu button:hover {
+  background: #1565c0;
+}
+
+.content {
+  padding: 2rem;
+}
+`;
+  }
+
+  private generateDashboardHomeComponent() {
+    return `import { Component, signal } from '@angular/core';
+
+@Component({
+  selector: 'app-dashboard-home',
+  standalone: true,
+  templateUrl: './home.component.html'
+})
+export class DashboardHomeComponent {
+  stats = signal([
+    { label: 'Total Users', value: '1,234', icon: '👥' },
+    { label: 'Active Sessions', value: '56', icon: '⚡' },
+    { label: 'Revenue', value: '$12,345', icon: '💰' }
+  ]);
+}
+`;
+  }
+
+  private generateDashboardHomeComponentHtml() {
+    return `<div class="dashboard-home">
+  <h2>Welcome to your Dashboard</h2>
+  <div class="stats-grid">
+    @for (stat of stats(); track stat.label) {
+      <div class="stat-card">
+        <div class="stat-icon">{{ stat.icon }}</div>
+        <div class="stat-info">
+          <h3>{{ stat.label }}</h3>
+          <p class="stat-value">{{ stat.value }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+`;
+  }
+
+  private generateDashboardProfileComponent() {
+    return `import { Component, inject, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { User, userResolver } from '../../resolvers/user.resolver';
+
+@Component({
+  selector: 'app-profile',
+  standalone: true,
+  templateUrl: './profile.component.html'
+})
+export class ProfileComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+
+  // Get resolved data from route
+  user = toSignal(this.route.data.pipe(
+    map(data => data['user'])
+  ), { initialValue: {} as User });
+
+  ngOnInit() {
+    console.log('User data resolved:', this.user());
+  }
+}
+`;
+  }
+
+  private generateDashboardProfileComponentHtml() {
+    return `<div class="profile">
+  <h2>User Profile</h2>
+  <div class="profile-card" *ngIf="user; else loading">
+    <div class="profile-header">
+      <div class="avatar">{{ user?.name?.charAt(0) || '?' }}</div>
+      <div class="user-info">
+        <h3>{{ user?.name }}</h3>
+        <p>{{ user?.email }}</p>
+        <span class="badge">{{ user?.role }}</span>
+      </div>
+    </div>
+  </div>
+  <ng-template #loading>Loading user data...</ng-template>
+</div>
+`;
+  }
+
+  private generateSettingsRoutes() {
+    return `import { Routes } from '@angular/router';
+
+export const settingsRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./settings.component').then((m) => m.SettingsComponent),
+    children: [
+      {
+        path: 'account',
+        loadComponent: () =>
+          import('./account/account.component').then((m) => m.AccountComponent),
+        title: 'Account Settings'
+      },
+      {
+        path: 'preferences',
+        loadComponent: () =>
+          import('./preferences/preferences.component').then((m) => m.PreferencesComponent),
+        title: 'Preferences'
+      }
+    ]
+  }
+];
+`;
+  }
+
+  private generateSettingsComponent() {
+    return `import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+
+@Component({
+  selector: 'app-settings',
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  templateUrl: './settings.component.html'
+})
+export class SettingsComponent {}
+`;
+  }
+
+  private generateSettingsComponentHtml() {
+    return `<div class="settings">
+  <h2>Settings</h2>
+  <div class="settings-nav">
+    <a routerLink="account" routerLinkActive="active" class="nav-link">Account</a>
+    <a routerLink="preferences" routerLinkActive="active" class="nav-link">Preferences</a>
+  </div>
+  <router-outlet></router-outlet>
+</div>
+`;
+  }
+
+  private generateAdminComponent() {
+    return `import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+
+@Component({
+  selector: 'app-admin',
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  templateUrl: './admin.component.html'
+})
+export class AdminComponent {}
+`;
+  }
+
+  private generateAdminComponentHtml() {
+    return `<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="logo">
+      <h2>⚡ Admin Panel</h2>
+    </div>
+    <nav class="nav">
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">Users</a>
+      <a routerLink="/admin/roles" routerLinkActive="active" class="nav-link">Roles</a>
+    </nav>
+  </aside>
+  <main class="main-content">
+    <header class="header">
+      <h1>{{ 'Admin' | title }}</h1>
+    </header>
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>
+`;
+  }
+
+  private generateAdminUsersComponent() {
+    return `import { Component, signal } from '@angular/core';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: 'Active' | 'Inactive';
+}
+
+@Component({
+  selector: 'app-users',
+  standalone: true,
+  template: \`
+    <div class="users-page">
+      <div class="header">
+        <h2>User Management</h2>
+        <button class="btn-add">Add User</button>
+      </div>
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr>
+              <td>{{ user.id }}</td>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.role }}</td>
+              <td>
+                <span [class]="['status-badge', user.status === 'Active' ? 'active' : 'inactive']">
+                  {{ user.status }}
+                </span>
+              </td>
+              <td>
+                <button class="btn-edit">Edit</button>
+                <button class="btn-delete">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  \`
+})
+export class UsersComponent {
+  users = signal<User[]>([
+    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'Active' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'Active' },
+    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'User', status: 'Inactive' }
+  ]);
+}
+`;
+  }
+
+  private generateAdminUsersComponentHtml() {
+    return ``; // Template is inline in the component
+  }
+
+  private generateAdminRolesComponent() {
+    return `import { Component, signal } from '@angular/core';
+
+interface Role {
+  id: number;
+  name: string;
+  description: string;
+  permissions: string[];
+}
+
+@Component({
+  selector: 'app-roles',
+  standalone: true,
+  template: \`
+    <div class="roles-page">
+      <div class="header">
+        <h2>Role Management</h2>
+        <button class="btn-add">Add Role</button>
+      </div>
+      <div class="roles-grid">
+        @for (role of roles(); track role.id) {
+          <div class="role-card">
+            <h3>{{ role.name }}</h3>
+            <p>{{ role.description }}</p>
+            <div class="permissions">
+              <h4>Permissions:</h4>
+              <ul>
+                @for (perm of role.permissions; track perm) {
+                  <li>{{ perm }}</li>
+                }
+              </ul>
+            </div>
+            <div class="actions">
+              <button class="btn-edit">Edit</button>
+              <button class="btn-delete">Delete</button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  \`
+})
+export class RolesComponent {
+  roles = signal<Role[]>([
+    {
+      id: 1,
+      name: 'Administrator',
+      description: 'Full system access',
+      permissions: ['Create', 'Read', 'Update', 'Delete', 'Manage Users']
+    },
+    {
+      id: 2,
+      name: 'Editor',
+      description: 'Content management',
+      permissions: ['Create', 'Read', 'Update']
+    },
+    {
+      id: 3,
+      name: 'Viewer',
+      description: 'Read-only access',
+      permissions: ['Read']
+    }
+  ]);
+}
+`;
+  }
+
+  private generateAdminRolesComponentHtml() {
+    return ``; // Template is inline in the component
+  }
+
+  private generateNotFoundComponent() {
+    return `import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-not-found',
+  standalone: true,
+  imports: [RouterLink],
+  templateUrl: './not-found.component.html',
+  styles: [\`
+    .not-found {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .not-found h1 {
+      font-size: 6rem;
+      color: #1976d2;
+      margin-bottom: 1rem;
+    }
+
+    .not-found p {
+      font-size: 1.5rem;
+      color: #7f8c8d;
+      margin-bottom: 2rem;
+    }
+
+    .not-found a {
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      background: #1976d2;
+      color: white;
+      text-decoration: none;
+      border-radius: 0.25rem;
+      transition: background 0.3s;
+    }
+
+    .not-found a:hover {
+      background: #1565c0;
+    }
+  \`]
+})
+export class NotFoundComponent {}
+`;
+  }
+
+  private generateNotFoundComponentHtml() {
+    return `<div class="not-found">
+  <h1>404</h1>
+  <p>Page not found</p>
+  <a routerLink="/">Go Home</a>
+</div>
+`;
+  }
+
   private generateHeaderComponent() {
     return `import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -1448,7 +2188,8 @@ export const appRoutes: Routes = [
     path: '',
     loadComponent: () =>
       import('./home/home.component').then((m) => m.HomeComponent),
-    title: '${this.context.name}'
+    title: '${this.context.name}',
+    canActivate: [() => inject(AuthGuard).canActivate()]
   },
   {
     path: 'about',
@@ -1457,11 +2198,79 @@ export const appRoutes: Routes = [
     title: 'About - ${this.context.name}'
   },
   {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
+    title: 'Dashboard',
+    canActivate: [() => inject(AuthGuard).canActivate()],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./dashboard/home/home.component').then((m) => m.DashboardHomeComponent),
+        title: 'Dashboard Home'
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./dashboard/profile/profile.component').then((m) => m.ProfileComponent),
+        title: 'Profile',
+        resolve: {
+          user: () => inject(UserResolver).resolve()
+        }
+      },
+      {
+        path: 'settings',
+        loadChildren: () =>
+          import('./dashboard/settings/settings.routes').then((m) => m.settingsRoutes)
+      }
+    ]
+  },
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./admin/admin.component').then((m) => m.AdminComponent),
+    title: 'Admin Panel',
+    canActivate: [() => inject(AuthGuard).canActivate(), () => inject(AdminGuard).canActivate()],
+    children: [
+      {
+        path: '',
+        redirectTo: 'users',
+        pathMatch: 'full'
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./admin/users/users.component').then((m) => m.UsersComponent),
+        title: 'User Management'
+      },
+      {
+        path: 'roles',
+        loadComponent: () =>
+          import('./admin/roles/roles.component').then((m) => m.RolesComponent),
+        title: 'Role Management'
+      }
+    ]
+  },
+  {
     path: '**',
-    redirectTo: '',
-    pathMatch: 'full'
+    loadComponent: () =>
+      import('./not-found/not-found.component').then((m) => m.NotFoundComponent),
+    title: '404 - Page Not Found'
   }
 ];
+
+// Enable preloading strategy for better performance
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(
+      appRoutes,
+      withPreloading(PreloadAllModules),
+      withViewTransitions(),
+      withDebugTracing()
+    )
+  ]
+};
 `;
   }
 
