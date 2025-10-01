@@ -268,6 +268,37 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateCounterModel()
     });
 
+    // NgRx State Management
+    files.push({
+      path: 'src/app/store/actions/counter.actions.ts',
+      content: this.generateCounterActions()
+    });
+
+    files.push({
+      path: 'src/app/store/reducers/counter.reducer.ts',
+      content: this.generateCounterReducer()
+    });
+
+    files.push({
+      path: 'src/app/store/reducers/index.ts',
+      content: this.generateStoreReducers()
+    });
+
+    files.push({
+      path: 'src/app/store/selectors/counter.selectors.ts',
+      content: this.generateCounterSelectors()
+    });
+
+    files.push({
+      path: 'src/app/store/effects/counter.effects.ts',
+      content: this.generateCounterEffects()
+    });
+
+    files.push({
+      path: 'src/app/store/index.ts',
+      content: this.generateStoreIndex()
+    });
+
     // Routing
     files.push({
       path: 'src/app/app.routes.ts',
@@ -369,6 +400,12 @@ export class AngularCliTemplate extends BaseTemplate {
         '@angular/platform-browser-dynamic': '^17.0.0',
         '@angular/router': '^17.0.0',
         '@angular/service-worker': '^17.0.0',
+        '@ngrx/effects': '^17.0.0',
+        '@ngrx/entity': '^17.0.0',
+        '@ngrx/operators': '^17.0.0',
+        '@ngrx/router-store': '^17.0.0',
+        '@ngrx/store': '^17.0.0',
+        '@ngrx/store-devtools': '^17.0.0',
         'rxjs': '^7.8.0',
         'tslib': '^2.6.0',
         'zone.js': '^0.14.0'
@@ -691,7 +728,14 @@ h1, h2, h3, h4, h5, h6 {
   private generateAppConfig() {
     return `import { ApplicationConfig } from '@angular/core';
 import { provideRouter, withPreloading, PreloadAllModules, withViewTransitions, withDebugTracing } from '@angular/router';
+import { provideStore, provideState, provideEffects } from '@ngrx/store';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { provideRouterStore } from '@ngrx/router-store';
 import { appRoutes } from './app.routes';
+import { reducers } from './store/reducers/index';
+import * as fromCounter from './store/reducers/counter.reducer';
+import { CounterEffects } from './store/effects/counter.effects';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -700,19 +744,36 @@ export const appConfig: ApplicationConfig = {
       withPreloading(PreloadAllModules),
       withViewTransitions(),
       withDebugTracing()
-    )
+    ),
+    provideStore(reducers, {
+      runtimeChecks: {
+        strictStateImmutability: true,
+        strictActionImmutability: true,
+        strictStateSerializability: true,
+        strictActionTypeUniqueness: true,
+      },
+    }),
+    provideState(fromCounter.counterFeatureKey, fromCounter.reducer),
+    provideEffects(CounterEffects),
+    provideRouterStore(),
+    !environment.production ? provideStoreDevtools({
+      maxAge: 25,
+      logOnly: environment.production,
+    }) : [],
   ]
 };
 `;
   }
 
   private generateAppComponent() {
-    return `import { Component, signal, computed, effect } from '@angular/core';
+    return `import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { HeaderComponent } from './core/header/header.component';
 import { FooterComponent } from './core/footer/footer.component';
-import { CounterService } from './services/counter.service';
+import * as CounterActions from './store/actions/counter.actions';
+import { selectCount } from './store/selectors/counter.selectors';
 
 @Component({
   selector: 'app-root',
@@ -723,46 +784,26 @@ import { CounterService } from './services/counter.service';
 })
 export class AppComponent {
   title = '${this.context.name}';
+  private store = inject(Store);
 
-  // Signals for reactive state
-  readonly count = signal(0);
-  readonly doubleCount = computed(() => this.count() * 2);
-
-  // Service integration with signals
-  private message = signal('');
-
-  constructor(private counterService: CounterService) {
-    // Effect to react to count changes
-    effect(() => {
-      const currentCount = this.count();
-      console.log(\`Count changed to: \${currentCount}\`);
-      this.counterService.updateCount(currentCount);
-    });
-
-    // Listen for events from other microfrontends
-    window.addEventListener('counter-update', this.handleCounterUpdate.bind(this));
-  }
+  // Using NgRx store with signals (Angular 16+)
+  readonly count$ = this.store.select(selectCount);
+  readonly doubleCount = computed(() => {
+    let count = 0;
+    this.count$.subscribe(c => count = c);
+    return count * 2;
+  });
 
   increment() {
-    this.count.update(value => value + 1);
-    this.emitCounterUpdate(this.count());
+    this.store.dispatch(CounterActions.increment());
   }
 
   decrement() {
-    this.count.update(value => value - 1);
-    this.emitCounterUpdate(this.count());
+    this.store.dispatch(CounterActions.decrement());
   }
 
-  private emitCounterUpdate(value: number) {
-    window.dispatchEvent(new CustomEvent('counter-update', {
-      detail: { type: 'COUNTER_UPDATE', value }
-    }));
-  }
-
-  private handleCounterUpdate(event: any) {
-    if (event.detail && event.detail.type === 'COUNTER_UPDATE') {
-      this.message.set(\`Received: \${event.detail.value}\`);
-    }
+  reset() {
+    this.store.dispatch(CounterActions.reset());
   }
 }
 `;
@@ -775,28 +816,26 @@ export class AppComponent {
   <div class="container">
     <div class="hero">
       <h1>{{ title }}</h1>
-      <p class="subtitle">Angular CLI with Standalone Components and Signals</p>
+      <p class="subtitle">Angular CLI with NgRx State Management</p>
     </div>
 
     <div class="counter-section">
-      <h2>Reactive Counter (Signals)</h2>
+      <h2>Reactive Counter (NgRx)</h2>
       <div class="counter-display">
-        <span class="count">{{ count() }}</span>
+        <span class="count">{{ count$ | async }}</span>
         <span class="double-count">Double: {{ doubleCount() }}</span>
       </div>
       <div class="counter-controls">
         <button (click)="decrement()">-</button>
+        <button (click)="reset()">Reset</button>
         <button (click)="increment()">+</button>
       </div>
-      @if (message()) {
-        <p class="message">{{ message() }}</p>
-      }
     </div>
 
     <div class="features">
       <div class="feature-card">
-        <h3>⚡ Angular Signals</h3>
-        <p>Reactive state management with signals and computed values</p>
+        <h3>⚡ NgRx State Management</h3>
+        <p>Predictable state with actions, reducers, and effects</p>
       </div>
       <div class="feature-card">
         <h3>🎯 Standalone Components</h3>
@@ -2582,12 +2621,12 @@ coverage
     const { name, description, packageManager } = this.context;
     return `# ${name}
 
-${description || 'Angular CLI application with standalone components and signals'}
+${description || 'Angular CLI application with NgRx state management and standalone components'}
 
 ## Features
 
 - ⚡ Angular 17 with standalone components
-- 🎯 Signals for fine-grained reactivity
+- 🎯 NgRx for state management
 - 🔧 Angular CLI for best practices
 - 📱 Progressive Web App (PWA) support
 - 🧪 Testing with Jasmine and Karma
@@ -2629,17 +2668,73 @@ Run \`ng build\` to build the project. The build artifacts will be stored in the
 
 Run \`ng test\` to execute the unit tests via [Karma](https://karma-runner.github.io/).
 
+## NgRx State Management
+
+This application uses NgRx for predictable state management.
+
+### Store Structure
+\`\`\`
+src/app/store/
+├── actions/         # Action definitions
+├── reducers/        # Reducer functions
+├── selectors/       # Memoized selectors
+├── effects/         # Side effects
+└── index.ts         # Store configuration
+\`\`\`
+
+### Actions
+\`\`\`typescript
+import { increment, decrement, reset } from './store/actions/counter.actions';
+
+// Dispatch actions
+this.store.dispatch(increment());
+this.store.dispatch(decrement());
+this.store.dispatch(reset());
+\`\`\`
+
+### Selectors
+\`\`\`typescript
+import { selectCount, selectDoubleCount } from './store/selectors/counter.selectors';
+
+// Select state
+this.count$ = this.store.select(selectCount);
+this.doubleCount$ = this.store.select(selectDoubleCount);
+\`\`\`
+
+### Effects
+Effects handle side effects like API calls:
+\`\`\`typescript
+loadCounter$ = createEffect(() =>
+  this.actions$.pipe(
+    ofType(CounterActions.loadCounter),
+    mergeMap(() =>
+      this.apiService.getCounter().pipe(
+        map(count => CounterActions.loadCounterSuccess({ count })),
+        catchError(error => of(CounterActions.loadCounterFailure({ error })))
+      )
+    )
+  )
+);
+\`\`\`
+
+### Runtime Checks
+NgRx is configured with strict runtime checks for development:
+- Strict state immutability
+- Strict action immutability
+- Strict state serializability
+- Strict action type uniqueness
+
 ## Angular Features
 
 ### Standalone Components
 This application uses standalone components - no NgModules needed!
 Components are self-contained and tree-shakable.
 
-### Signals
-Fine-grained reactivity with signals, computed values, and effects.
-
 ### New Control Flow
 Uses \`@if\`, \`@for\`, and \`@switch\` instead of structural directives.
+
+### Functional Guards
+Router guards use functional approach with \`CanActivateFn\` instead of classes.
 
 ## Docker
 
@@ -2655,9 +2750,204 @@ docker run -p 80:80 ${name}
 
 To get more help on the Angular CLI use \`ng help\` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
 
+For NgRx documentation, visit [ngrx.io](https://ngrx.io).
+
 ## License
 
 MIT
+`;
+  }
+
+  private generateCounterActions() {
+    return `import { createAction, props } from '@ngrx/store';
+
+export const increment = createAction('[Counter] Increment');
+export const decrement = createAction('[Counter] Decrement');
+export const reset = createAction('[Counter] Reset');
+export const setValue = createAction('[Counter] SetValue', props<{ value: number }>());
+export const incrementBy = createAction('[Counter] IncrementBy', props<{ value: number }>());
+export const loadCounter = createAction('[Counter] Load');
+export const loadCounterSuccess = createAction('[Counter] Load Success', props<{ count: number }>());
+export const loadCounterFailure = createAction('[Counter] Load Failure', props<{ error: string }>());
+`;
+  }
+
+  private generateCounterReducer() {
+    return `import { createReducer, on } from '@ngrx/store';
+import * as CounterActions from '../actions/counter.actions';
+
+export const counterFeatureKey = 'counter';
+
+export interface State {
+  count: number;
+  loading: boolean;
+  error: string | null;
+}
+
+export const initialState: State = {
+  count: 0,
+  loading: false,
+  error: null
+};
+
+export const reducer = createReducer(
+  initialState,
+
+  on(CounterActions.increment, (state) => ({
+    ...state,
+    count: state.count + 1
+  })),
+
+  on(CounterActions.decrement, (state) => ({
+    ...state,
+    count: state.count - 1
+  })),
+
+  on(CounterActions.reset, (state) => ({
+    ...state,
+    count: 0
+  })),
+
+  on(CounterActions.setValue, (state, { value }) => ({
+    ...state,
+    count: value
+  })),
+
+  on(CounterActions.incrementBy, (state, { value }) => ({
+    ...state,
+    count: state.count + value
+  })),
+
+  on(CounterActions.loadCounter, (state) => ({
+    ...state,
+    loading: true,
+    error: null
+  })),
+
+  on(CounterActions.loadCounterSuccess, (state, { count }) => ({
+    ...state,
+    count,
+    loading: false,
+    error: null
+  })),
+
+  on(CounterActions.loadCounterFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error
+  }))
+);
+`;
+  }
+
+  private generateStoreReducers() {
+    return `import { ActionReducerMap, createFeatureSelector, createSelector } from '@ngrx/store';
+import * as fromCounter from './counter.reducer';
+
+export interface State {
+  [fromCounter.counterFeatureKey]: fromCounter.State;
+}
+
+export const reducers: ActionReducerMap<State> = {
+  [fromCounter.counterFeatureKey]: fromCounter.reducer
+};
+`;
+  }
+
+  private generateCounterSelectors() {
+    return `import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { counterFeatureKey, State } from '../reducers/counter.reducer';
+
+export const selectCounterState = createFeatureSelector<State>(counterFeatureKey);
+
+export const selectCount = createSelector(
+  selectCounterState,
+  (state) => state.count
+);
+
+export const selectDoubleCount = createSelector(
+  selectCount,
+  (count) => count * 2
+);
+
+export const selectLoading = createSelector(
+  selectCounterState,
+  (state) => state.loading
+);
+
+export const selectError = createSelector(
+  selectCounterState,
+  (state) => state.error
+);
+
+export const selectCounterViewModel = createSelector(
+  selectCount,
+  selectLoading,
+  selectError,
+  (count, loading, error) => ({
+    count,
+    loading,
+    error,
+    canDecrement: count > 0
+  })
+);
+`;
+  }
+
+  private generateCounterEffects() {
+    return `import { Injectable } from '@angular/core';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { of } from 'rxjs';
+import { catchError, map, mergeMap, tap, delay } from 'rxjs/operators';
+import * as CounterActions from '../actions/counter.actions';
+
+@Injectable()
+export class CounterEffects {
+  loadCounter$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CounterActions.loadCounter),
+      tap(() => console.log('[CounterEffects] Loading counter...')),
+      delay(1000), // Simulate API call
+      mergeMap(() =>
+        of({ count: 42 }).pipe(
+          map(({ count }) => CounterActions.loadCounterSuccess({ count })),
+          catchError((error) => of(CounterActions.loadCounterFailure({ error: error.message })))
+        )
+      )
+    )
+  );
+
+  constructor(private actions$: Actions) {}
+}
+`;
+  }
+
+  private generateStoreIndex() {
+    return `import { NgModule } from '@angular/core';
+import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { environment } from '../../environments/environment';
+import { reducers } from './reducers/index';
+import { CounterEffects } from './effects/counter.effects';
+
+@NgModule({
+  imports: [
+    StoreModule.forRoot(reducers, {
+      runtimeChecks: {
+        strictStateImmutability: true,
+        strictActionImmutability: true,
+        strictStateSerializability: true,
+        strictActionSerializability: true,
+        strictActionWithinNgZone: true,
+        strictActionTypeUniqueness: true,
+      },
+    }),
+    EffectsModule.forRoot([CounterEffects]),
+    !environment.production ? StoreDevtoolsModule.instrument() : [],
+  ],
+})
+export class AppStoreModule {}
 `;
   }
 
