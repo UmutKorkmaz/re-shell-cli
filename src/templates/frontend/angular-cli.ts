@@ -356,6 +356,17 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateHomeComponentSpec()
     });
 
+    // Test setup and utilities
+    files.push({
+      path: 'src/test-setup.ts',
+      content: this.generateTestSetup()
+    });
+
+    files.push({
+      path: 'src/testing/test-helpers.ts',
+      content: this.generateTestHelpers()
+    });
+
     // Karma config
     files.push({
       path: 'karma.conf.js',
@@ -416,7 +427,13 @@ export class AngularCliTemplate extends BaseTemplate {
         'build': 'ng build',
         'watch': 'ng build --watch --configuration development',
         'test': 'ng test',
-        'lint': 'ng lint'
+        'test:ci': 'ng test --watch=false --browsers=ChromeHeadlessCI',
+        'test:coverage': 'ng test --watch=false --code-coverage',
+        'test:watch': 'ng test --watch',
+        'test:headless': 'ng test --watch=false --browsers=ChromeHeadless',
+        'lint': 'ng lint',
+        'lint:fix': 'ng lint --fix',
+        'e2e': 'ng e2e'
       },
       private: true,
       dependencies: {
@@ -452,6 +469,7 @@ export class AngularCliTemplate extends BaseTemplate {
         'karma': '^6.4.0',
         'karma-chrome-launcher': '^3.2.0',
         'karma-coverage': '^2.2.0',
+        'karma-coverage-istanbul-reporter': '^3.0.3',
         'karma-jasmine': '^5.1.0',
         'karma-jasmine-html-reporter': '^2.1.0',
         'typescript': '~5.2.0',
@@ -562,7 +580,16 @@ export class AngularCliTemplate extends BaseTemplate {
               'src/assets'
             ],
             styles: ['src/styles.scss'],
-            scripts: []
+            scripts: [],
+            codeCoverage: true,
+            coverageThreshold: {
+              global: {
+                statements: 70,
+                branches: 70,
+                functions: 70,
+                lines: 70
+              }
+            }
           }
         },
         lint: {
@@ -2452,27 +2479,80 @@ describe('HomeComponent', () => {
     ],
     client: {
       jasmine: {
-        // you can add configuration options for Jasmine here
-        // the possible options are listed at https://jasmine.github.io/api/edge/Configuration.html
-        // for example, you can disable the random execution with 'random: false'
-        // or set a specific seed with 'seed: 4321'
+        // Disable random execution for consistent test runs
+        random: false,
+        // Set seed for reproducible test order
+        seed: '4321',
+        // Increased timeout for async operations
+        timeoutInterval: 10000,
+        // Show specs in the console
+        displaySpecDuration: true,
+        // Print failures to the console
+        print: function() {
+          return process.stdout.write.bind(process.stdout);
+        }
       },
-      clearContext: false // leave Jasmine Spec Runner output visible in browser
+      clearContext: false, // Leave Jasmine Spec Runner output visible in browser
+      // Capture console output
+      captureConsole: true
     },
     jasmineHtmlReporter: {
-      suppressAll: true // removes the duplicated traces
+      suppressAll: false, // Show full stack traces
+      showFailedMessages: true,
+      showSpecDuration: true
     },
+    // Code coverage configuration
+    coverageIstanbulReporter: {
+      dir: require('path').join(__dirname, './coverage/${this.context.normalizedName}'),
+      reports: ['html', 'lcovonly', 'text-summary', 'json'],
+      fixWebpackSourcePaths: true,
+      thresholds: {
+        emitWarning: false, // Warn but don't fail on thresholds
+        global: {
+          statements: 70,
+          branches: 70,
+          functions: 70,
+          lines: 70
+        }
+      }
+    },
+    // Karma coverage reporter
     coverageReporter: {
       dir: require('path').join(__dirname, './coverage/${this.context.normalizedName}'),
       subdir: '.',
       reporters: [
         { type: 'html' },
-        { type: 'text-summary' }
+        { type: 'lcov' },
+        { type: 'text-summary' },
+        { type: 'json' }
       ]
     },
-    reporters: ['progress', 'kjhtml'],
+    reporters: ['progress', 'kjhtml', 'coverage-istanbul'],
     browsers: ['ChromeHeadless'],
-    restartOnFileChange: true
+    restartOnFileChange: true,
+    // Custom launchers for different environments
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: [
+          '--no-sandbox',
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-web-security',
+          '--disable-features=IsolateOrigins,site-per-process'
+        ]
+      }
+    },
+    // Single run mode for CI
+    singleRun: false,
+    // Colors in output
+    colors: true,
+    // Log level
+    logLevel: config.LOG_INFO,
+    // Watch configuration
+    autoWatch: true,
+    // Concurrency
+    concurrency: Infinity
   });
 };
 `;
@@ -2709,7 +2789,98 @@ Run \`ng build\` to build the project. The build artifacts will be stored in the
 
 ## Running Unit Tests
 
-Run \`ng test\` to execute the unit tests via [Karma](https://karma-runner.github.io/).
+This application is configured for unit testing with Jasmine and Karma.
+
+### Test Scripts
+
+\`\`\`bash
+# Run tests in watch mode (interactive)
+${packageManager} test
+
+# Run tests once with coverage report
+${packageManager} run test:coverage
+
+# Run tests in CI mode (no watch, headless)
+${packageManager} run test:ci
+
+# Run tests in headless Chrome
+${packageManager} run test:headless
+
+# Run tests with watch mode
+${packageManager} run test:watch
+\`\`\`
+
+### Code Coverage
+
+Coverage reports are generated in the \`coverage/\` directory:
+
+\`\`\`bash
+# View HTML coverage report
+open coverage/${this.context.normalizedName}/index.html
+
+# CLI coverage summary
+${packageManager} run test:coverage
+\`\`\`
+
+Coverage thresholds are configured at 70% for:
+- Statements
+- Branches
+- Functions
+- Lines
+
+### Test Configuration
+
+- **Test Runner**: Karma with Jasmine
+- **Browser**: Chrome Headless
+- **Coverage Tool**: Istanbul
+- **Test Location**: \`**/*.spec.ts\`
+
+### Test Utilities
+
+Helper functions available in \`src/testing/test-helpers.ts\`:
+
+\`\`\`typescript
+import {
+  createComponent,
+  queryByCss,
+  clickElement,
+  setInputValue,
+  waitFor,
+  MockData,
+  createMockService
+} from './testing/test-helpers';
+
+// Create component fixture
+const fixture = createComponent(MyComponent);
+
+// Query elements
+const button = queryByCss(fixture, 'button');
+
+// Simulate user interactions
+clickElement(fixture, button);
+setInputValue(inputElement, 'test value');
+
+// Wait for async operations
+await waitFor(1000);
+
+// Use mock data
+const user = MockData.user({ name: 'Custom User' });
+
+// Create mock service
+const mockService = createMockService<MyService>(['getData', 'saveData']);
+\`\`\`
+
+### Custom Matchers
+
+Additional Jasmine matchers:
+
+\`\`\`typescript
+// Check if number is in range
+expect(value).toBeInRange(min, max);
+
+// Check element text content
+expect(element).toHaveText('expected text');
+\`\`\`
 
 ## Angular Material
 
@@ -3362,6 +3533,223 @@ export class ThemeToggleComponent {
     <span>Auto</span>
   </button>
 </mat-menu>
+`;
+  }
+
+  private generateTestSetup() {
+    return `import { getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting
+} from '@angular/platform-browser-dynamic/testing';
+
+// Initialize test environment
+getTestBed().initTestEnvironment(
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting(),
+);
+
+// Additional test configuration
+declare const require: {
+  context(
+    path: string,
+    deep?: boolean,
+    filter?: RegExp
+  ): {
+    keys(): string[];
+    <T>(id: string): T;
+  };
+};
+
+// Jasmine custom matchers
+beforeEach(() => {
+  jasmine.addMatchers({
+    toBeInRange: () => {
+      return {
+        compare: (actual: number, min: number, max: number) => {
+          const pass = actual >= min && actual <= max;
+          return {
+            pass,
+            message: \`Expected \${actual} to be in range [\${min}, \${max}]\`
+          };
+        }
+      };
+    },
+    toHaveText: () => {
+      return {
+        compare: (actual: HTMLElement, text: string) => {
+          const pass = actual.textContent?.trim() === text;
+          return {
+            pass,
+            message: \`Expected "\${actual.textContent?.trim()}" to equal "\${text}"\`
+          };
+        }
+      };
+    }
+  });
+});
+
+// Global test utilities
+(global as any).waitForAsync = (fn: () => void) => {
+  return fn();
+};
+`;
+  }
+
+  private generateTestHelpers() {
+    return `import { Type } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+
+/**
+ * Enhanced test utilities for Angular components
+ */
+
+// Helper to create component with async detection
+export function createComponent<T>(
+  componentType: Type<T>,
+  declarations?: Type<any>[],
+  providers?: any[],
+  imports?: any[]
+  ): ComponentFixture<T> {
+  TestBed.configureTestingModule({
+    declarations: declarations || [],
+    providers: providers || [],
+    imports: imports || []
+  });
+
+  const fixture = TestBed.createComponent(componentType);
+  fixture.detectChanges();
+  return fixture;
+}
+
+// Helper to query by CSS selector
+export function queryByCss<T>(
+  fixture: ComponentFixture<T>,
+  selector: string
+): HTMLElement | null {
+  return fixture.nativeElement.querySelector(selector);
+}
+
+// Helper to query all by CSS selector
+export function queryAllByCss<T>(
+  fixture: ComponentFixture<T>,
+  selector: string
+): HTMLElement[] {
+  return Array.from(fixture.nativeElement.querySelectorAll(selector));
+}
+
+// Helper to query by debug element
+export function queryByDebug<T>(
+  fixture: ComponentFixture<T>,
+  selector: string
+): any {
+  return fixture.debugElement.query(By.css(selector));
+}
+
+// Helper to dispatch event
+export function dispatchEvent<T>(
+  fixture: ComponentFixture<T>,
+  element: HTMLElement,
+  eventType: string
+): void {
+  const event = new Event(eventType, { bubbles: true });
+  element.dispatchEvent(event);
+  fixture.detectChanges();
+}
+
+// Helper to set input value
+export function setInputValue(
+  element: HTMLInputElement,
+  value: string
+): void {
+  element.value = value;
+  element.dispatchEvent(new Event('input', { bubbles: true }));
+  element.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+// Helper to click element
+export function clickElement(
+  fixture: ComponentFixture<any>,
+  element: HTMLElement
+): void {
+  element.click();
+  fixture.detectChanges();
+}
+
+// Helper to wait for async
+export function waitFor(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Helper to check if element has class
+export function hasClass(element: HTMLElement, className: string): boolean {
+  return element.classList.contains(className);
+}
+
+// Helper to get component instance
+export function getComponentInstance<T>(
+  fixture: ComponentFixture<T>
+): T {
+  return fixture.componentInstance;
+}
+
+// Helper to get debug element
+export function getDebugElement<T>(
+  fixture: ComponentFixture<T>,
+  selector: string
+): any {
+  return fixture.debugElement.query(By.css(selector));
+}
+
+// Mock data helpers
+export class MockData {
+  static user(overrides = {}) {
+    return {
+      id: 1,
+      name: 'Test User',
+      email: 'test@example.com',
+      role: 'user',
+      ...overrides
+    };
+  }
+
+  static product(overrides = {}) {
+    return {
+      id: 1,
+      name: 'Test Product',
+      price: 99.99,
+      description: 'Test description',
+      ...overrides
+    };
+  }
+}
+
+// Mock service helpers
+export function createMockService<T>(methods: string[]): T {
+  const mock = {} as T;
+  methods.forEach(method => {
+    (mock as any)[method] = jasmine.createSpy(method);
+  });
+  return mock;
+}
+
+// Helper to test reactive forms
+export function updateFormField(
+  fixture: ComponentFixture<any>,
+  controlName: string,
+  value: any
+): void {
+  const input = fixture.debugElement.query(By.css(\`[formControlName="\${controlName}"]\`))
+    || fixture.debugElement.query(By.css(\`[name="\${controlName}"]\`));
+
+  if (input) {
+    input.nativeElement.value = value;
+    input.nativeElement.dispatchEvent(new Event('input'));
+    input.nativeElement.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+  }
+}
 `;
   }
 
