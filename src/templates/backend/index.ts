@@ -77,6 +77,7 @@ import { redHttpTemplate } from './red-http';
 // ReScript
 import { rescriptExpressTemplate } from './rescript-express';
 import { rescriptFastifyTemplate } from './rescript-fastify';
+import { rescriptReactServerTemplate } from './rescript-react-server';
 // Grain
 import { grainTemplate } from './grain';
 // Mojo
@@ -312,6 +313,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // ReScript
   'rescript-express': rescriptExpressTemplate,
   'rescript-fastify': rescriptFastifyTemplate,
+  'rescript-react-server': rescriptReactServerTemplate,
   // Grain
   'grain': grainTemplate,
   // Mojo
@@ -502,6 +504,7 @@ export { redHttpTemplate } from './red-http';
 // ReScript
 export { rescriptExpressTemplate } from './rescript-express';
 export { rescriptFastifyTemplate } from './rescript-fastify';
+export { rescriptReactServerTemplate } from './rescript-react-server';
 // Grain
 export { grainTemplate } from './grain';
 // Mojo
