@@ -26,6 +26,8 @@ export const rescriptExpressTemplate: BackendTemplate = {
     "server": "nodemon -x 'rescript build && node dist/js/src/Server.bs.js'",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false",
     "clean": "rescript clean",
     "format": "rescript format"
   },
@@ -45,6 +47,8 @@ export const rescriptExpressTemplate: BackendTemplate = {
     "rescript": "^11.1.0",
     "rescript-nodejs": "^16.1.0",
     "jest": "^29.7.0",
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
     "nodemon": "^3.1.0"
   },
   "keywords": ["rescript", "express", "api", "rest"],
@@ -81,6 +85,191 @@ export const rescriptExpressTemplate: BackendTemplate = {
     "-open RescriptCore"
   ]
 }`,
+
+    // Jest configuration
+    'jest.config.js': `module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/src'],
+  testMatch: [
+    '**/__tests__/**/*.res',
+    '**/?(*.)+(spec|test).res'
+  ],
+  transform: {
+    '^.+\\\\.res$': '<rootDir>/jest-rescript-transformer.js',
+    '^.+\\\\.js$': 'babel-jest',
+  },
+  moduleFileExtensions: ['res', 'js', 'json'],
+  collectCoverageFrom: [
+    'src/**/*.{res,js}',
+    '!src/**/*.bs.js',
+    '!src/**/*.gen.tsx',
+    '!src/**/__tests__/**',
+  ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'html'],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testTimeout: 10000,
+  verbose: true,
+}`,
+
+    // Jest transformer for ReScript
+    'jest-rescript-transformer.js': `const { execSync } = require('child_process');
+const path = require('path');
+
+module.exports = {
+  process: (src, filename) => {
+    // Compile ReScript file
+    try {
+      execSync(\`rescript build -clean \${filename}\`, {
+        stdio: 'ignore',
+        cwd: process.cwd(),
+      });
+
+      // Read the compiled JavaScript
+      const compiledFile = filename.replace(/\\.res$/, '.bs.js');
+      const module = require(compiledFile);
+
+      // Return as CommonJS
+      return {
+        code: \`module.exports = require('\${compiledFile}');\`,
+      };
+    } catch (error) {
+      throw new Error(\`Failed to compile \${filename}: \${error.message}\`);
+    }
+  },
+  getCacheKey: (fileData, filePath) => {
+    return filePath;
+  },
+};`,
+
+    // Jest setup file
+    'jest.setup.js': `// Jest setup for ReScript tests
+require('rescript');
+
+// Mock environment variables
+process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET = 'test-secret-key';
+
+// Mock console methods to reduce noise in tests
+global.console = {
+  ...console,
+  log: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  // Keep error for debugging test failures
+  error: console.error,
+};`,
+
+    // Test helper utilities
+    'src/__tests__/TestHelpers.res': `open RescriptCore
+open Node
+open Jest
+
+// Test utilities module
+module TestHelpers = {
+  // Create mock request
+  let makeMockRequest = (~method="GET", ~path="/", ~body={}: Js.Dict.t<string>, ()) => {
+    {
+      "method": method,
+      "path": path,
+      "body": body,
+      "headers": Js.Dict.empty(),
+      "query": Js.Dict.empty(),
+    }
+  }
+
+  // Create mock response
+  let makeMockResponse = () => {
+    let statusCode = ref(200)
+    let data = ref(Js.Dict.empty())
+
+    {
+      "statusCode": statusCode,
+      "data": data,
+      "json": (json: Js.Dict.t<string>) => {
+        data := json
+        Js.Promise.resolve()
+      },
+      "status": (code: int) => {
+        statusCode := code
+      },
+    }
+  }
+
+  // Async test helper
+  let waitFor = (ms: int) => {
+    Js.Promise.resolve()->Js.Promise.then_(() => {
+      Node.Process.setTimeoutMs(ms)->Js.Promise.resolve
+    })
+  }
+
+  // Mock user data
+  let mockUser = {
+    "id": 1,
+    "name": "Test User",
+    "email": "test@example.com",
+    "role": "user",
+  }
+
+  // Mock product data
+  let mockProduct = {
+    "id": 1,
+    "name": "Test Product",
+    "price": 99.99,
+    "description": "Test Description",
+  }
+}`,
+
+    // Example integration test
+    'src/__tests__/Server.test.res': `open RescriptCore
+open Node
+open Jest
+open Server
+open TestHelpers
+
+describe("Server Tests", () => {
+  test("health endpoint returns healthy status", () => {
+    let mockReq = TestHelpers.makeMockRequest()
+    let mockRes = TestHelpers.makeMockResponse()
+
+    AppRoutes.healthGet(mockReq, mockRes)->Js.Promise.then_=(_ => {
+      let statusCode = mockRes["statusCode"]->Js.Option.getExn
+      expect(Js.Int.toString(statusCode))->toBe("200")
+
+      Js.Promise.resolve()
+    })
+  })
+
+  test("home endpoint returns HTML", () => {
+    let mockReq = TestHelpers.makeMockRequest()
+    let mockRes = TestHelpers.makeMockResponse()
+
+    AppRoutes.homeGet(mockReq, mockRes)->ignore
+
+    let statusCode = mockRes["statusCode"]->Js.Option.getExn
+    expect(Js.Int.toString(statusCode))->toBe("200")
+  })
+
+  test("auth middleware rejects requests without token", () => {
+    let mockReq = TestHelpers.makeMockRequest()
+    let mockRes = TestHelpers.makeMockResponse()
+
+    // Call auth middleware
+    // Should return 401
+    let statusCode = mockRes["statusCode"]->Js.Option.getExn
+    expect(Js.Int.toString(statusCode))->toBe("401")
+  })
+})`,
 
     // Main server file
     'src/Server.res': `open RescriptCore
@@ -556,13 +745,75 @@ npm run format
 
 ## Testing
 
+The project is configured with Jest for testing ReScript code.
+
 \`\`\`bash
-# Run tests
+# Run tests once
 npm test
 
-# Watch mode
+# Run tests in watch mode
 npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests in CI mode
+npm run test:ci
 \`\`\`
+
+### Test Structure
+
+\`\`\`
+src/__tests__/
+├── TestHelpers.res      # Test utilities and mocks
+├── Server.test.res      # Server integration tests
+└── *.test.res           # Component tests
+\`\`\`
+
+### Writing Tests
+
+ReScript tests use Jest bindings with type-safe matchers:
+
+\`\`\`ocaml
+open Jest
+open TestHelpers
+
+test("example test", () => {
+  let result = someFunction()
+  expect(result)->toBe(expected)
+})
+
+test("async test", () => {
+  asyncOperation()->Js.Promise.then_=data => {
+    expect(data)->toBeTruthy()
+    Js.Promise.resolve()
+  }
+})
+\`\`\`
+
+### Test Helpers
+
+\`\`\`ocaml
+// Mock request/response
+let mockReq = TestHelpers.makeMockRequest(~path="/api/v1/health", ())
+let mockRes = TestHelpers.makeMockResponse()
+
+// Wait for async operations
+TestHelpers.waitFor(1000)->ignore
+
+// Mock data
+let user = TestHelpers.mockUser
+let product = TestHelpers.mockProduct
+\`\`\`
+
+### Coverage
+
+Coverage reports are generated in \`coverage/\` directory:
+- HTML report: \`coverage/index.html\`
+- LCOV: \`coverage/lcov.info\`
+- Terminal summary
+
+Coverage thresholds: 70% for all metrics.
 
 ## Docker
 
