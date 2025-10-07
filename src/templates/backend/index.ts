@@ -78,6 +78,7 @@ import { redHttpTemplate } from './red-http';
 import { rescriptExpressTemplate } from './rescript-express';
 import { rescriptFastifyTemplate } from './rescript-fastify';
 import { rescriptReactServerTemplate } from './rescript-react-server';
+import { rescriptGraphqlTemplate } from './rescript-graphql';
 // Grain
 import { grainTemplate } from './grain';
 // Mojo
@@ -314,6 +315,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'rescript-express': rescriptExpressTemplate,
   'rescript-fastify': rescriptFastifyTemplate,
   'rescript-react-server': rescriptReactServerTemplate,
+  'rescript-graphql': rescriptGraphqlTemplate,
   // Grain
   'grain': grainTemplate,
   // Mojo
@@ -505,6 +507,7 @@ export { redHttpTemplate } from './red-http';
 export { rescriptExpressTemplate } from './rescript-express';
 export { rescriptFastifyTemplate } from './rescript-fastify';
 export { rescriptReactServerTemplate } from './rescript-react-server';
+export { rescriptGraphqlTemplate } from './rescript-graphql';
 // Grain
 export { grainTemplate } from './grain';
 // Mojo
