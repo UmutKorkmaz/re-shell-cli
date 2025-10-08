@@ -950,7 +950,7 @@ def datetime_format(value, format="%Y-%m-%d %H:%M:%S"):
 @templates.env.filter
 def currency(value):
     """Format currency values"""
-    return f"${value:,.2f}"
+    return f"\${value:,.2f}"
 
 # Add global template variables
 templates.env.globals.update({
@@ -1974,6 +1974,5 @@ src/
 ## License
 
 MIT`
-`
   }
-};`
+};

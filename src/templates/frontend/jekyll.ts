@@ -471,7 +471,7 @@ layout: default
   }
 
   private generateHeadInclude() {
-    = `<head>
+    return `<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 | escape }}">
@@ -493,7 +493,7 @@ layout: default
   }
 
   private generateHeaderInclude() {
-    = `<header class="header">
+    return `<header class="header">
   <div class="container">
     <a href="{{ "/" | relative_url }}" class="logo">{{ site.title }}</a>
     <nav class="nav">
@@ -509,7 +509,7 @@ layout: default
   }
 
   private generateFooterInclude() {
-    = `<footer class="footer">
+    return `<footer class="footer">
   <div class="container">
     <p>&copy; {{ "now" | date: "%Y" }} {{ site.title }}</p>
     <p class="footer-links">
@@ -524,7 +524,7 @@ layout: default
   }
 
   private generateCounterInclude() {
-    = `<div class="counter">
+    return `<div class="counter">
   <div class="counter-display">0</div>
   <div class="counter-controls">
     <button class="counter-btn decrement" onclick="decrementCounter()">−</button>
@@ -571,14 +571,14 @@ document.addEventListener('DOMContentLoaded', updateDisplay);
   }
 
   private generateBadgeInclude() {
-    = `<span class="badge badge--{{ include.type | default: 'info' }}">
+    return `<span class="badge badge--{{ include.type | default: 'info' }}">
   {{ include.text }}
 </span>
 `;
   }
 
   private generateMainScss() {
-    = `---
+    return `---
 ---
 
 @import "variables";
@@ -589,7 +589,7 @@ document.addEventListener('DOMContentLoaded', updateDisplay);
   }
 
   private generateVariablesScss() {
-    = `// Colors
+    return `// Colors
 $primary-color: #c00;
 $primary-dark: #900;
 $primary-light: #e00;
@@ -637,7 +637,7 @@ $transition-base: all 0.3s ease;
   }
 
   private generateBaseScss() {
-    = `* {
+    return `* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -730,7 +730,7 @@ li {
   }
 
   private generateLayoutScss() {
-    = `.container {
+    return `.container {
   max-width: $max-width;
   margin: 0 auto;
   padding: 0 $spacing-lg;
@@ -811,7 +811,7 @@ li {
   }
 
   private generateComponentsScss() {
-    = `// Hero
+    return `// Hero
 .hero {
   text-align: center;
   padding: $spacing-xl 0;
@@ -1281,7 +1281,7 @@ Try out the counter component:
   }
 
   private generateNavigationData() {
-    = `main:
+    return `main:
   - title: Home
     url: /
   - title: About
@@ -1292,7 +1292,7 @@ Try out the counter component:
   }
 
   private generateFeaturesData() {
-    = `features:
+    return `features:
   - icon: ⚡
     title: Fast Performance
     description: Static site generation for lightning-fast page loads
@@ -1319,8 +1319,8 @@ Try out the counter component:
 `;
   }
 
-  private generateReadme() {
-    = `# {{ site.title }}
+  protected generateReadme() {
+    return `# {{ site.title }}
 
 A Jekyll static site with Liquid templating.
 
@@ -1435,7 +1435,7 @@ Generated with [Re-Shell CLI](https://github.com/your-org/re-shell)
   }
 
   private generateDockerfile() {
-    = `# Multi-stage build for Jekyll site
+    return `# Multi-stage build for Jekyll site
 
 # Stage 1: Build
 FROM ruby:3.2-alpine AS builder
@@ -1475,7 +1475,7 @@ CMD ["nginx", "-g", "daemon off;"]
   }
 
   private generateDockerCompose() {
-    = `version: '3.8'
+    return `version: '3.8'
 
 services:
   {{ site.title | downcase }}:
@@ -1493,4 +1493,3 @@ services:
 `;
   }
 }
-`;

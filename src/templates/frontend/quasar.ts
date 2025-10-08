@@ -126,8 +126,8 @@ export class QuasarTemplate extends BaseTemplate {
       scripts: {
         dev: 'quasar dev',
         build: 'quasar build',
-        build:pwa: 'quasar build -m pwa',
-        build:electron: 'quasar build -m electron',
+        'build:pwa': 'quasar build -m pwa',
+        'build:electron': 'quasar build -m electron',
         lint: 'eslint --ext .js,.vue ./src',
         format: 'prettier --write \"**/*.{js,vue,scss,md,json}\"',
         test: 'echo \"No test specified\" && exit 0'
@@ -1120,4 +1120,3 @@ services:
 `;
   }
 }
-`;

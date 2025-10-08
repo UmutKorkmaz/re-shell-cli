@@ -180,7 +180,7 @@ Meteor.methods({
     check(searchTerm, String);
 
     // Sanitize search term
-    const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const regex = new RegExp(searchTerm.replace(/[.*+?^\${}()|[\]\\]/g, '\\$&'), 'i');
 
     return Tasks.find({
       $and: [

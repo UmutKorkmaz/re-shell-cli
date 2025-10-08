@@ -1983,7 +1983,7 @@ docker-compose up -d --scale app=3
 
 ## License
 
-MIT
+MIT`
     }
   ]
-};`
+};

@@ -143,7 +143,7 @@ export class GridsomeTemplate extends BaseTemplate {
   }
 
   private generateGridsomeConfig() {
-    = `module.exports = {
+    return `module.exports = {
   siteName: '${this.context.name}',
   siteDescription: '${this.context.description || 'A Gridsome static site'}',
   siteUrl: 'https://example.com',
@@ -216,7 +216,7 @@ export class GridsomeTemplate extends BaseTemplate {
         strict: true,
         jsx: 'preserve',
         moduleResolution: 'node',
-      esModuleInterop: true,
+        esModuleInterop: true,
       skipLibCheck: true,
       allowSyntheticDefaultImports: true,
       forceConsistentCasingInFileNames: true,
@@ -771,7 +771,7 @@ export default {
   color: #991b1b;
   border: 1px solid #fca5a5;
 }
-</style
+</style>
 `;
   }
 
@@ -1079,7 +1079,7 @@ h1 {
   }
 
   private generateGridsomeServer() {
-    = `const server = require('gridsome/lib/server');
+    return `const server = require('gridsome/lib/server');
 
 server.createManagedPages(({ createPage }) => {
   // Create additional pages here if needed
@@ -1280,7 +1280,7 @@ Generated with [Re-Shell CLI](https://github.com/your-org/re-shell)
   }
 
   private generateDockerfile() {
-    = `# Multi-stage build for Gridsome site
+    return `# Multi-stage build for Gridsome site
 
 # Stage 1: Build
 FROM node:20-alpine AS builder
@@ -1311,7 +1311,7 @@ CMD ["nginx", "-g", "daemon off;"]
   }
 
   private generateDockerCompose() {
-    = `version: '3.8'
+    return `version: '3.8'
 
 services:
   ${this.context.normalizedName}:
@@ -1329,4 +1329,3 @@ services:
 `;
   }
 }
-`;

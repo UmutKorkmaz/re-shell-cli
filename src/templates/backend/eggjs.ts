@@ -2335,5 +2335,6 @@ npm run cov
 ## License
 
 MIT
+`
   }
-};`
+};

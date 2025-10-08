@@ -232,12 +232,13 @@ export class AngularTemplate extends BaseTemplate {
   }
 
   protected generateAngularJson() {
+    const projectName = this.context.normalizedName;
     return JSON.stringify({
       '$schema': './node_modules/@angular/cli/lib/config/schema.json',
       version: 1,
       newProjectRoot: 'projects',
       projects: {
-        [this.context.normalizedName]: {
+        [projectName]: {
           projectType: 'application',
           root: '',
           sourceRoot: 'src',
@@ -246,7 +247,7 @@ export class AngularTemplate extends BaseTemplate {
             build: {
               builder: '@angular-devkit/build-angular:application',
               options: {
-                outputPath: `dist/${this.context.normalizedName}`,
+                outputPath: `dist/${projectName}`,
                 index: 'src/index.html',
                 browser: 'src/main.ts',
                 polyfills: ['zone.js'],
@@ -257,64 +258,64 @@ export class AngularTemplate extends BaseTemplate {
                 server: 'src/main.server.ts',
                 prerender: true,
                 ssr: {
-              entry: 'server.ts'
-            }
-          },
-          configurations: {
-            production: {
-              budgets: [
-                {
-                  type: 'initial',
-                  maximumWarning: '2mb',
-                  maximumError: '5mb'
-                },
-                {
-                  type: 'anyComponentStyle',
-                  maximumWarning: '2kb',
-                  maximumError: '4kb'
+                  entry: 'server.ts'
                 }
-              ],
-              outputHashing: 'all'
+              },
+              configurations: {
+                production: {
+                  budgets: [
+                    {
+                      type: 'initial',
+                      maximumWarning: '2mb',
+                      maximumError: '5mb'
+                    },
+                    {
+                      type: 'anyComponentStyle',
+                      maximumWarning: '2kb',
+                      maximumError: '4kb'
+                    }
+                  ],
+                  outputHashing: 'all'
+                },
+                development: {
+                  optimization: false,
+                  extractLicenses: false,
+                  sourceMap: true
+                }
+              },
+              defaultConfiguration: 'production'
             },
-            development: {
-              optimization: false,
-              extractLicenses: false,
-              sourceMap: true
-            }
-          },
-          defaultConfiguration: 'production'
-        },
-        serve: {
-          builder: '@angular-devkit/build-angular:dev-server',
-          options: {
-            buildTarget: `${this.context.normalizedName}:build`
-          },
-          configurations: {
-            production: {
-              buildTarget: `${this.context.normalizedName}:build:production`
+            serve: {
+              builder: '@angular-devkit/build-angular:dev-server',
+              options: {
+                buildTarget: `${projectName}:build`
+              },
+              configurations: {
+                production: {
+                  buildTarget: `${projectName}:build:production`
+                },
+                development: {
+                  buildTarget: `${projectName}:build:development`
+                }
+              }
             },
-            development: {
-              buildTarget: `${this.context.normalizedName}:build:development`
+            'extract-i18n': {
+              builder: '@angular-devkit/build-angular:extract-i18n',
+              options: {
+                buildTarget: `${projectName}:build`
+              }
+            },
+            test: {
+              builder: '@angular-devkit/build-angular:karma',
+              options: {
+                polyfills: ['zone.js', 'zone.js/testing'],
+                tsConfig: 'tsconfig.spec.json',
+                assets: ['src/favicon.ico', 'src/assets'],
+                styles: ['src/styles.scss'],
+                scripts: []
+              }
             }
           }
-        },
-        extract-i18n: {
-          builder: '@angular-devkit/build-angular:extract-i18n',
-          options: {
-            buildTarget: `${this.context.normalizedName}:build`
-          }
-        },
-        test: {
-          builder: '@angular-devkit/build-angular:karma',
-          options: {
-            polyfills: ['zone.js', 'zone.js/testing'],
-            tsConfig: 'tsconfig.spec.json',
-            assets: ['src/favicon.ico', 'src/assets'],
-            styles: ['src/styles.scss'],
-            scripts: []
-          }
-        }
-      }
         }
       }
     }, null, 2);
@@ -1001,8 +1002,8 @@ describe('AppComponent', () => {
       jasmine: {
         // you can add configuration options for Jasmine here
         // the possible options are listed at https://jasmine.github.io/api/edge/Configuration.html
-        // for example, you can disable the random execution with `random: false`
-        // or set a specific seed with `seed: 4321`
+        // for example, you can disable the random execution with random: false
+        // or set a specific seed with seed: 4321
       },
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
@@ -1327,4 +1328,3 @@ services:
 `;
   }
 }
-`;

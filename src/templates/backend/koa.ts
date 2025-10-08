@@ -1626,5 +1626,6 @@ npm run seed
 ## License
 
 MIT
+`
   }
-};`
+};

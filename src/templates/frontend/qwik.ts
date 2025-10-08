@@ -139,7 +139,7 @@ export class QwikTemplate extends BaseTemplate {
       scripts: {
         dev: 'qwik dev',
         build: 'qwik build',
-        build.preview: 'qwik build --preview',
+        'build.preview': 'qwik build --preview',
         deploy: 'qwik build deploy',
         'fmt': 'prettier --write .',
         'fmt.check': 'prettier --check .',
@@ -911,4 +911,3 @@ services:
 `;
   }
 }
-`;

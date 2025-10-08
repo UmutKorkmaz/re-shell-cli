@@ -1493,6 +1493,6 @@ Fastify is one of the fastest web frameworks for Node.js, capable of handling:
 
 ## License
 
-MIT
+MIT`
   }
-};`
+};

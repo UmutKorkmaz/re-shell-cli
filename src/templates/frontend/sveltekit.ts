@@ -192,7 +192,7 @@ export class SvelteKitTemplate extends BaseTemplate {
         build: 'vite build',
         preview: 'vite preview',
         check: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json',
-        check:watch: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch',
+        'check:watch': 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch',
         test: 'playwright test',
         lint: 'prettier --check . && eslint .',
         format: 'prettier --write .'
@@ -205,13 +205,13 @@ export class SvelteKitTemplate extends BaseTemplate {
         '@typescript-eslint/eslint-plugin': '^6.19.0',
         '@typescript-eslint/parser': '^6.19.0',
         eslint: '^8.56.0',
-        eslint-config-prettier': '^9.1.0',
-        eslint-plugin-svelte': '^2.35.1',
+        'eslint-config-prettier': '^9.1.0',
+        'eslint-plugin-svelte': '^2.35.1',
         prettier: '^3.2.4',
-        prettier-plugin-svelte': '^3.2.2',
+        'prettier-plugin-svelte': '^3.2.2',
         'svelte-check': '^3.6.3',
         svelte: '^4.2.9',
-        tslib': '^2.6.2',
+        'tslib': '^2.6.2',
         typescript: '^5.3.3',
         vite: '^5.1.0',
         'vitest': '^1.2.2'
@@ -1651,4 +1651,3 @@ services:
 `;
   }
 }
-`;

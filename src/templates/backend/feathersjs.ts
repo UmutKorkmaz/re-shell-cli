@@ -1,4 +1,4 @@
-import { BackendTemplate } from '../../types';
+import { BackendTemplate } from '../types';
 
 export const feathersJsTemplate: BackendTemplate = {
   id: 'feathersjs',
@@ -2117,6 +2117,7 @@ See \`config/default.json\` for all configuration options. Key settings:
 ## License
 
 MIT
+`
     }
   ],
   
@@ -2151,9 +2152,8 @@ MIT
     '@typescript-eslint/parser',
     '@typescript-eslint/eslint-plugin'
   ],
-  
-  postInstall: `
-echo "Setting up Feathers.js backend..."
+
+  postInstall: `echo "Setting up Feathers.js backend..."
 echo "1. Copy .env.example to .env and configure"
 echo "2. Set up PostgreSQL and Redis"
 echo "3. Run 'npm run db:migrate' to create tables"
@@ -2162,6 +2162,5 @@ echo ""
 echo "Real-time features:"
 echo "- Connect to Socket.io for live updates"
 echo "- Join rooms for filtered events"
-echo "- GraphQL subscriptions available"
-  `
-};`
+echo "- GraphQL subscriptions available"`
+};

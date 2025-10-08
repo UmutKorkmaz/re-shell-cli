@@ -2407,5 +2407,9 @@ The application is containerized and ready for deployment:
 ## License
 
 MIT
+`
+  },
+  scripts: {
+    postInstall: `echo "GraphQL Yoga server setup complete! Run 'npm run dev' to start the server."`
   }
-};`
+};

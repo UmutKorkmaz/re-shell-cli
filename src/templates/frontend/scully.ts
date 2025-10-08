@@ -170,7 +170,7 @@ export class ScullyTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.0',
@@ -234,7 +234,7 @@ export class ScullyTemplate extends BaseTemplate {
             build: {
               builder: '@angular-devkit/build-angular:application',
               options: {
-                outputPath: 'dist/${this.context.normalizedName}',
+                outputPath: `dist/${this.context.normalizedName}`,
                 index: 'src/index.html',
                 browser: 'src/main.ts',
                 polyfills: ['zone.js'],
@@ -265,14 +265,14 @@ export class ScullyTemplate extends BaseTemplate {
             serve: {
               builder: '@angular-devkit/build-angular:dev-server',
               configurations: {
-                production: { buildTarget: '${this.context.normalizedName}:build:production' },
-                development: { buildTarget: '${this.context.normalizedName}:build:development' }
+                production: { buildTarget: `${this.context.normalizedName}:build:production` },
+                development: { buildTarget: `${this.context.normalizedName}:build:development` }
               },
               defaultConfiguration: 'development'
             },
-            extract-i18n: {
+            'extract-i18n': {
               builder: '@angular-devkit/build-angular:extract-i18n',
-              options: { buildTarget: '${this.context.normalizedName}:build' }
+              options: { buildTarget: `${this.context.normalizedName}:build` }
             },
             test: {
               builder: '@angular-devkit/build-angular:karma',
@@ -291,7 +291,7 @@ export class ScullyTemplate extends BaseTemplate {
   }
 
   private generateScullyConfig() {
-    = `require('zone.js/dist/zone-node');
+    return `require('zone.js/dist/zone-node');
 
 module.exports = {
   projectName: '${this.context.normalizedName}',
@@ -314,7 +314,7 @@ module.exports = {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compileOnSave: false,
       compilerOptions: {
@@ -584,7 +584,7 @@ describe('AppComponent', () => {
   }
 
   private generateAppRoutes() {
-    = `import { Routes } from '@angular/router';
+    return `import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', loadComponent: () => import('./home/home.component').then(m => m.HomeComponent) },
@@ -594,7 +594,7 @@ export const routes: Routes = [
   }
 
   private generateHomeComponent() {
-    = `import { Component } from '@angular/core';
+    return `import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CounterComponent } from '../counter/counter.component';
@@ -824,7 +824,7 @@ export class HomeComponent {
   }
 
   private generateBlogComponent() {
-    = `import { Component } from '@angular/core';
+    return `import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -959,7 +959,7 @@ export class BlogComponent {
   }
 
   private generateCounterComponent() {
-    = `import { Component } from '@angular/core';
+    return `import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-counter',
@@ -1098,7 +1098,7 @@ export class CounterComponent {
   }
 
   private generateBadgeComponent() {
-    = `import { Component, Input } from '@angular/core';
+    return `import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-badge',
@@ -1206,7 +1206,7 @@ Try out the counter component below:
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 An Angular static site built with [Scully](https://scully.io/).
@@ -1328,7 +1328,7 @@ Generated with [Re-Shell CLI](https://github.com/your-org/re-shell)
   }
 
   private generateDockerfile() {
-    = `# Multi-stage build for Angular + Scully site
+    return `# Multi-stage build for Angular + Scully site
 
 # Stage 1: Build
 FROM node:20-alpine AS builder
@@ -1362,7 +1362,7 @@ CMD ["nginx", "-g", "daemon off;"]
   }
 
   private generateDockerCompose() {
-    = `version: '3.8'
+    return `version: '3.8'
 
 services:
   ${this.context.normalizedName}:
@@ -1380,4 +1380,3 @@ services:
 `;
   }
 }
-`;

@@ -1002,7 +1002,7 @@ export class TodoController {
     const count = await this.todoService.bulkDelete(ids, ctx.user.id);
 
     return new HttpResponseOK({
-      message: `${count} todos deleted successfully`
+      message: \`\${count} todos deleted successfully\`
     });
   }
 
@@ -1029,7 +1029,7 @@ export class TodoController {
     const count = await this.todoService.bulkUpdate(ids, ctx.user.id, updates);
 
     return new HttpResponseOK({
-      message: `${count} todos updated successfully`
+      message: \`\${count} todos updated successfully\`
     });
   }
 }`,
@@ -1965,7 +1965,8 @@ export async function main() {
     console.error('Failed to revert migration:', error);
     process.exit(1);
   }
-}`,
+}`
+,
 
     // GraphQL schema generator script
     'src/scripts/generate-graphql-schema.ts': `import { printSchema } from 'graphql';
@@ -1977,13 +1978,14 @@ export async function main() {
   const schemaPath = join(__dirname, '../app/graphql/schema.graphql');
   const schemaString = readFileSync(schemaPath, 'utf-8');
   const schema = buildSchema(schemaString);
-  
+
   // You can add additional processing here
   console.log('GraphQL schema is valid');
-  
+
   // Optionally generate TypeScript types
   // This would require additional tooling like graphql-code-generator
-}`,
+}`
+,
 
     // Custom shell script
     'src/scripts/seed-database.ts': `// Seed script for development data
@@ -1994,10 +1996,10 @@ import { hashPassword } from '@foal/password';
 
 export async function main() {
   await dataSource.initialize();
-  
+
   const userRepository = dataSource.getRepository(User);
   const todoRepository = dataSource.getRepository(Todo);
-  
+
   // Create admin user
   const adminPassword = await hashPassword('admin123');
   const admin = userRepository.create({
@@ -2008,7 +2010,7 @@ export async function main() {
     isEmailVerified: true
   });
   await userRepository.save(admin);
-  
+
   // Create test user
   const userPassword = await hashPassword('user123');
   const user = userRepository.create({
@@ -2019,7 +2021,7 @@ export async function main() {
     isEmailVerified: true
   });
   await userRepository.save(user);
-  
+
   // Create sample todos
   const todos = [
     {
@@ -2044,15 +2046,16 @@ export async function main() {
       userId: user.id
     }
   ];
-  
+
   for (const todoData of todos) {
     const todo = todoRepository.create(todoData);
     await todoRepository.save(todo);
   }
-  
+
   console.log('Database seeded successfully');
   await dataSource.destroy();
-}`,
+}`
+,
 
     // Configuration files
     'config/default.yml': `# Default configuration
@@ -2148,7 +2151,8 @@ email:
 redis:
   host: \${REDIS_HOST}
   port: \${REDIS_PORT}
-  password: \${REDIS_PASSWORD}`,
+  password: \${REDIS_PASSWORD}`
+,
 
     'config/test.yml': `# Test configuration
 database:
@@ -2159,7 +2163,8 @@ database:
 
 settings:
   jwt:
-    secret: test-secret`,
+    secret: test-secret`
+,
 
     // Environment variables
     '.env.example': `# Application
@@ -2191,7 +2196,8 @@ EMAIL_PORT=587
 EMAIL_SECURE=false
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
-EMAIL_FROM=noreply@example.com`,
+EMAIL_FROM=noreply@example.com`
+,
 
     // Docker configuration
     'Dockerfile': `# Build stage
@@ -2253,7 +2259,8 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \\
 
 # Start application
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "./build/index.js"]`,
+CMD ["node", "./build/index.js"]`
+,
 
     // Docker Compose
     'docker-compose.yml': `version: '3.8'
@@ -2332,7 +2339,8 @@ volumes:
 
 networks:
   app-network:
-    driver: bridge`,
+    driver: bridge`
+,
 
     // Test files
     'src/app/controllers/auth.controller.spec.ts': `import { strictEqual } from 'assert';
@@ -2413,7 +2421,8 @@ describe('AuthController', () => {
         .expect(401);
     });
   });
-});`,
+});`
+,
 
     // README
     'README.md': `# {{projectName}}
@@ -2584,6 +2593,6 @@ See \`.env.example\` for all available environment variables.
 
 ## License
 
-MIT
+MIT`
   }
-};`
+};

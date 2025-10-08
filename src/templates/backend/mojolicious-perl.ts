@@ -110,7 +110,7 @@ has products => sub { [] };
 
 sub init ($class) {
   no strict 'refs';
-  my $var = '${class}::instance';
+  my $var = '$' . '{class}::instance';
   $$var ||= $class->new;
   $$var->_init_data;
   return $$var;

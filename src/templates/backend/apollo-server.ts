@@ -1708,4 +1708,4 @@ Connect to Apollo Studio for monitoring:
   scripts: {
     postInstall: `echo "Apollo Server setup complete! Run 'npm run dev' to start the server."`
   }
-};`
+};

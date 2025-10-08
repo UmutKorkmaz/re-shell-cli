@@ -1366,5 +1366,6 @@ celery -A app.celery flower
 ## License
 
 MIT
+`,
   }
-};`
+};

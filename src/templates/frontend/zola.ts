@@ -249,5 +249,3 @@ CMD ["nginx", "-g", "daemon off;"]
 `;
   }
 }
-`;
-</tool_call>

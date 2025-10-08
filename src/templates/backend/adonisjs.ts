@@ -1683,5 +1683,6 @@ tests/            # Test files
 ## License
 
 MIT
+`
   }
-};`
+};
