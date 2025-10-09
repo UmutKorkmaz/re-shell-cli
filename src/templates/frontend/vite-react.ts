@@ -65,6 +65,32 @@ export class ViteReactTemplate extends BaseTemplate {
       content: this.generateIndexCss()
     });
 
+    // Page CSS files
+    files.push({
+      path: 'src/pages/Home.css',
+      content: this.generateHomePageCss()
+    });
+
+    files.push({
+      path: 'src/pages/About.css',
+      content: this.generateAboutPageCss()
+    });
+
+    files.push({
+      path: 'src/pages/Dashboard.css',
+      content: this.generateDashboardPageCss()
+    });
+
+    files.push({
+      path: 'src/pages/Counter.css',
+      content: this.generateCounterPageCss()
+    });
+
+    files.push({
+      path: 'src/pages/NotFound.css',
+      content: this.generateNotFoundPageCss()
+    });
+
     // Components
     files.push({
       path: 'src/components/Header.tsx',
@@ -79,6 +105,32 @@ export class ViteReactTemplate extends BaseTemplate {
     files.push({
       path: 'src/components/FeatureCard.tsx',
       content: this.generateFeatureCard()
+    });
+
+    // Pages
+    files.push({
+      path: 'src/pages/Home.tsx',
+      content: this.generateHomePage()
+    });
+
+    files.push({
+      path: 'src/pages/About.tsx',
+      content: this.generateAboutPage()
+    });
+
+    files.push({
+      path: 'src/pages/Dashboard.tsx',
+      content: this.generateDashboardPage()
+    });
+
+    files.push({
+      path: 'src/pages/Counter.tsx',
+      content: this.generateCounterPage()
+    });
+
+    files.push({
+      path: 'src/pages/NotFound.tsx',
+      content: this.generateNotFoundPage()
     });
 
     // Hooks
@@ -159,7 +211,8 @@ export class ViteReactTemplate extends BaseTemplate {
       },
       dependencies: {
         react: '^18.2.0',
-        'react-dom': '^18.2.0'
+        'react-dom': '^18.2.0',
+        'react-router-dom': '^6.22.0'
       },
       devDependencies: {
         '@types/react': '^18.2.48',
@@ -210,8 +263,19 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
+        manualChunks: (id) => {
+          // React vendor chunk
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'react-vendor';
+          }
+          // React Router chunk
+          if (id.includes('node_modules/react-router')) {
+            return 'router-vendor';
+          }
+          // Other node_modules go to vendor chunk
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         },
       },
     },
@@ -334,79 +398,78 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   }
 
   protected generateApp() {
-    return `import { useState } from 'react';
+    return `import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Header } from '@components/Header';
 import { Footer } from '@components/Footer';
-import { FeatureCard } from '@components/FeatureCard';
-import { useCounter } from '@hooks/useCounter';
 import './App.css';
 
-function App() {
-  const { count, increment, decrement, reset } = useCounter();
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+// Lazy load route components for code splitting
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Counter = lazy(() => import('./pages/Counter'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
-
+// Loading component for Suspense fallback
+function PageLoader() {
   return (
-    <div className={\`app \${theme}\`}>
-      <Header theme={theme} onToggleTheme={toggleTheme} />
-
-      <main className="main-content">
-        <section className="hero">
-          <h1>Welcome to ${this.context.name}</h1>
-          <p>A modern React application with Vite, TypeScript, and HMR</p>
-          <div className="counter-demo">
-            <h2>Counter: {count}</h2>
-            <div className="counter-buttons">
-              <button onClick={decrement}>-</button>
-              <button onClick={reset}>Reset</button>
-              <button onClick={increment}>+</button>
-            </div>
-          </div>
-        </section>
-
-        <section className="features">
-          <h2>Features</h2>
-          <div className="feature-grid">
-            <FeatureCard
-              icon="⚡"
-              title="Lightning Fast HMR"
-              description="Hot Module Replacement with Vite for instant feedback"
-            />
-            <FeatureCard
-              icon="🔧"
-              title="TypeScript"
-              description="Type-safe development with full IntelliSense support"
-            />
-            <FeatureCard
-              icon="🎨"
-              title="Modern React"
-              description="React 18 with hooks, concurrent features, and Suspense"
-            />
-            <FeatureCard
-              icon="📦"
-              title="Optimized Builds"
-              description="Production-optimized bundles with code splitting"
-            />
-          </div>
-        </section>
-
-        <section className="tech-stack">
-          <h2>Tech Stack</h2>
-          <ul>
-            <li><strong>React 18</strong> - Latest React with concurrent features</li>
-            <li><strong>TypeScript</strong> - Type-safe development</li>
-            <li><strong>Vite 5</strong> - Lightning-fast build tool</li>
-            <li><strong>ESLint</strong> - Code linting and quality</li>
-            <li><strong>Prettier</strong> - Code formatting</li>
-          </ul>
-        </section>
-      </main>
-
-      <Footer />
+    <div className="page-loader">
+      <div className="spinner"></div>
+      <p>Loading...</p>
     </div>
+  );
+}
+
+// Error boundary for route errors
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-boundary">
+          <h1>Something went wrong</h1>
+          <Link to="/">Go Home</Link>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <BrowserRouter>
+        <div className="app">
+          <Header />
+          <main className="main-content">
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/counter" element={<Counter />} />
+                <Route path="/404" element={<NotFound />} />
+                <Route path="*" element={<Navigate to="/404" replace />} />
+              </Routes>
+            </Suspense>
+          </main>
+          <Footer />
+        </div>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
@@ -474,16 +537,115 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+/* Button variants */
+.btn {
+  display: inline-block;
+  padding: 0.75em 1.5em;
+  border-radius: 8px;
+  border: none;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background-color: #e0e0e0;
+}
+
+.btn-tertiary {
+  background-color: transparent;
+  border: 1px solid #667eea;
+  color: #667eea;
+}
+
+.btn-tertiary:hover {
+  background-color: #667eea;
+  color: white;
+}
+
+/* Page loader */
+.page-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.page-loader p {
+  margin-top: 1rem;
+  color: #666;
+}
+
+/* Error boundary */
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-boundary h1 {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+}
+
+.error-boundary a {
+  margin-top: 1rem;
+  color: #667eea;
+  text-decoration: none;
+}
+
+.error-boundary a:hover {
+  text-decoration: underline;
+}
 `;
   }
 
   protected generateHeader() {
     return `import { FunctionComponent } from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 
 interface HeaderProps {
-  theme: 'light' | 'dark';
-  onToggleTheme: () => void;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 export const Header: FunctionComponent<HeaderProps> = ({ theme, onToggleTheme }) => {
@@ -491,14 +653,22 @@ export const Header: FunctionComponent<HeaderProps> = ({ theme, onToggleTheme })
     <header className="header">
       <div className="header-container">
         <div className="logo">
-          <span className="logo-icon">⚛️</span>
-          <span className="logo-text">${this.context.name}</span>
+          <Link to="/">
+            <span className="logo-icon">⚛️</span>
+            <span className="logo-text">${this.context.name}</span>
+          </Link>
         </div>
 
         <nav className="nav">
-          <button onClick={onToggleTheme} className="theme-toggle">
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
+          <Link to="/" className="nav-link">Home</Link>
+          <Link to="/about" className="nav-link">About</Link>
+          <Link to="/dashboard" className="nav-link">Dashboard</Link>
+          <Link to="/counter" className="nav-link">Counter</Link>
+          {onToggleTheme && (
+            <button onClick={onToggleTheme} className="theme-toggle">
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+          )}
         </nav>
       </div>
     </header>
@@ -1035,6 +1205,573 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
+`;
+  }
+
+  protected generateHomePage() {
+    return `import { Link } from 'react-router-dom';
+import { FeatureCard } from '@components/FeatureCard';
+import './Home.css';
+
+export default function Home() {
+  return (
+    <div className="home-page">
+      <section className="hero">
+        <h1>Welcome to ${this.context.name}</h1>
+        <p>A modern React application with Vite, TypeScript, and React Router</p>
+        <div className="cta-buttons">
+          <Link to="/dashboard" className="btn btn-primary">
+            Go to Dashboard
+          </Link>
+          <Link to="/about" className="btn btn-secondary">
+            Learn More
+          </Link>
+        </div>
+      </section>
+
+      <section className="features">
+        <h2>Features</h2>
+        <div className="feature-grid">
+          <FeatureCard
+            icon="⚡"
+            title="Lightning Fast HMR"
+            description="Hot Module Replacement with Vite for instant feedback"
+          />
+          <FeatureCard
+            icon="🔧"
+            title="TypeScript"
+            description="Type-safe development with full IntelliSense support"
+          />
+          <FeatureCard
+            icon="🚀"
+            title="React Router"
+            description="Client-side routing with lazy loading and code splitting"
+          />
+          <FeatureCard
+            icon="📦"
+            title="Optimized Builds"
+            description="Production-optimized bundles with automatic code splitting"
+          />
+        </div>
+      </section>
+
+      <section className="tech-stack">
+        <h2>Tech Stack</h2>
+        <ul>
+          <li><strong>React 18</strong> - Latest React with concurrent features</li>
+          <li><strong>TypeScript</strong> - Type-safe development</li>
+          <li><strong>React Router 6</strong> - Client-side routing with lazy loading</li>
+          <li><strong>Vite 5</strong> - Lightning-fast build tool</li>
+          <li><strong>ESLint</strong> - Code linting and quality</li>
+          <li><strong>Prettier</strong> - Code formatting</li>
+        </ul>
+      </section>
+    </div>
+  );
+}
+`;
+  }
+
+  protected generateAboutPage() {
+    return `import { Link } from 'react-router-dom';
+import './About.css';
+
+export default function About() {
+  return (
+    <div className="about-page">
+      <section className="about-hero">
+        <h1>About This Project</h1>
+        <p>A modern React application built with best practices and cutting-edge tools</p>
+      </section>
+
+      <section className="about-content">
+        <h2>Project Overview</h2>
+        <p>
+          This is a React application built with Vite for fast development and optimized production builds.
+          It includes React Router for navigation with lazy-loaded route components for optimal performance.
+        </p>
+
+        <h2>Key Features</h2>
+        <ul>
+          <li><strong>Client-side Routing:</strong> React Router with lazy loading for code splitting</li>
+          <li><strong>TypeScript:</strong> Full type safety and excellent IDE support</li>
+          <li><strong>Fast HMR:</strong> Vite provides instant hot module replacement</li>
+          <li><strong>Code Splitting:</strong> Automatic route-based code splitting</li>
+          <li><strong>Error Boundaries:</strong> Graceful error handling</li>
+          <li><strong>Loading States:</strong> Suspense with loading fallbacks</li>
+        </ul>
+
+        <h2>Getting Started</h2>
+        <p>
+          The project includes several example routes demonstrating different features:
+        </p>
+        <ul>
+          <li><Link to="/">Home</Link> - Landing page with feature overview</li>
+          <li><Link to="/dashboard">Dashboard</Link> - Protected route example</li>
+          <li><Link to="/counter">Counter</Link> - State management demo</li>
+        </ul>
+
+        <div className="back-link">
+          <Link to="/">← Back to Home</Link>
+        </div>
+      </section>
+    </div>
+  );
+}
+`;
+  }
+
+  protected generateDashboardPage() {
+    return `import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import './Dashboard.css';
+
+interface DashboardData {
+  users: number;
+  revenue: number;
+  orders: number;
+  conversion: number;
+}
+
+export default function Dashboard() {
+  const [data, setData] = useState<DashboardData>({
+    users: 0,
+    revenue: 0,
+    orders: 0,
+    conversion: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate API call
+    const fetchData = async () => {
+      setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setData({
+        users: 1234,
+        revenue: 45678,
+        orders: 789,
+        conversion: 3.2
+      });
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="dashboard-page">
+        <div className="page-loader">
+          <div className="spinner"></div>
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-page">
+      <div className="dashboard-header">
+        <h1>Dashboard</h1>
+        <Link to="/" className="back-link">← Back</Link>
+      </div>
+
+      <div className="dashboard-stats">
+        <div className="stat-card">
+          <h3>Total Users</h3>
+          <p className="stat-value">{data.users.toLocaleString()}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Revenue</h3>
+          <p className="stat-value">\${data.revenue.toLocaleString()}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Orders</h3>
+          <p className="stat-value">{data.orders.toLocaleString()}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Conversion Rate</h3>
+          <p className="stat-value">{data.conversion}%</p>
+        </div>
+      </div>
+
+      <div className="dashboard-content">
+        <h2>Recent Activity</h2>
+        <p className="placeholder-text">
+          Dashboard functionality with real-time data updates coming soon.
+        </p>
+      </div>
+    </div>
+  );
+}
+`;
+  }
+
+  protected generateCounterPage() {
+    return `import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useCounter } from '@hooks/useCounter';
+import './Counter.css';
+
+export default function Counter() {
+  const { count, increment, decrement, reset } = useCounter();
+
+  return (
+    <div className="counter-page">
+      <div className="counter-header">
+        <h1>Counter Demo</h1>
+        <Link to="/" className="back-link">← Back</Link>
+      </div>
+
+      <div className="counter-content">
+        <div className="counter-display">
+          <h2>Count: {count}</h2>
+        </div>
+
+        <div className="counter-controls">
+          <button onClick={decrement} className="btn btn-secondary">
+            Decrease
+          </button>
+          <button onClick={reset} className="btn btn-tertiary">
+            Reset
+          </button>
+          <button onClick={increment} className="btn btn-primary">
+            Increase
+          </button>
+        </div>
+
+        <div className="counter-info">
+          <h3>About This Demo</h3>
+          <p>
+            This demonstrates a custom React hook (\`useCounter\`) that manages counter state
+            with increment, decrement, and reset functionality. The state is preserved
+            during navigation thanks to React Router's component lifecycle.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+`;
+  }
+
+  protected generateNotFoundPage() {
+    return `import { Link } from 'react-router-dom';
+import './NotFound.css';
+
+export default function NotFound() {
+  return (
+    <div className="not-found-page">
+      <div className="not-found-content">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        <Link to="/" className="btn btn-primary">
+          Go Home
+        </Link>
+      </div>
+    </div>
+  );
+}
+`;
+  }
+
+  protected generateHomePageCss() {
+    return `.home-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.home-page .hero {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 3rem;
+}
+
+.home-page .hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.home-page .hero p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.home-page .cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.home-page .features {
+  margin-bottom: 3rem;
+}
+
+.home-page .features h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.home-page .feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.home-page .tech-stack {
+  background: #f5f5f5;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.home-page .tech-stack h2 {
+  margin-bottom: 1rem;
+}
+
+.home-page .tech-stack ul {
+  list-style: none;
+  padding: 0;
+}
+
+.home-page .tech-stack li {
+  padding: 0.5rem 0;
+}
+
+.home-page .tech-stack strong {
+  color: #667eea;
+}
+`;
+  }
+
+  protected generateAboutPageCss() {
+    return `.about-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.about-page .about-hero {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.about-page .about-hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.about-page .about-hero p {
+  font-size: 1.25rem;
+  color: #666;
+}
+
+.about-page .about-content h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.about-page .about-content p {
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.about-page .about-content ul {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.about-page .about-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.about-page .back-link {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+}
+
+.about-page a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.about-page a:hover {
+  text-decoration: underline;
+}
+`;
+  }
+
+  protected generateDashboardPageCss() {
+    return `.dashboard-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dashboard-page .dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dashboard-page .back-link {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.dashboard-page .dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-page .stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.dashboard-page .stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.dashboard-page .stat-card h3 {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dashboard-page .stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.dashboard-page .dashboard-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-page .placeholder-text {
+  color: #666;
+  font-style: italic;
+}
+`;
+  }
+
+  protected generateCounterPageCss() {
+    return `.counter-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.counter-page .counter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.counter-page .back-link {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.counter-page .counter-content {
+  text-align: center;
+}
+
+.counter-page .counter-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.counter-page .counter-display h2 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+.counter-page .counter-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.counter-page .counter-info {
+  background: #f5f5f5;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.counter-page .counter-info h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.counter-page .counter-info p {
+  line-height: 1.6;
+  color: #666;
+}
+`;
+  }
+
+  protected generateNotFoundPageCss() {
+    return `.not-found-page {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.not-found-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.not-found-content h1 {
+  font-size: 6rem;
+  margin: 0;
+  color: #667eea;
+}
+
+.not-found-content h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.not-found-content p {
+  color: #666;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
 `;
   }
 }
