@@ -144,6 +144,16 @@ export class ViteReactTemplate extends BaseTemplate {
       content: this.generateUseFetch()
     });
 
+    files.push({
+      path: 'src/hooks/useUsers.ts',
+      content: this.generateUseUsers()
+    });
+
+    files.push({
+      path: 'src/hooks/useProducts.ts',
+      content: this.generateUseProducts()
+    });
+
     // Utils
     files.push({
       path: 'src/utils/api.ts',
@@ -212,7 +222,8 @@ export class ViteReactTemplate extends BaseTemplate {
       dependencies: {
         react: '^18.2.0',
         'react-dom': '^18.2.0',
-        'react-router-dom': '^6.22.0'
+        'react-router-dom': '^6.22.0',
+        '@tanstack/react-query': '^5.17.0'
       },
       devDependencies: {
         '@types/react': '^18.2.48',
@@ -386,12 +397,27 @@ export default defineConfig({
   protected generateMain() {
     return `import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
   </React.StrictMode>
 );
 `;
@@ -949,11 +975,13 @@ Built with React 18, Vite 5, TypeScript, and modern tooling for lightning-fast d
 - **React 18** - Latest React with concurrent features
 - **TypeScript** - Full type safety
 - **Vite 5** - Lightning-fast HMR and optimized builds
+- **React Router 6** - Client-side routing with lazy loading
+- **TanStack Query** - Powerful server state management with caching and synchronization
 - **ESLint** - Code linting with TypeScript support
 - **Prettier** - Code formatting
 - **Path Aliases** - Clean imports with @, @components, @hooks, @utils
-- **Hooks** - Custom React hooks (useCounter, useFetch)
-- **Code Splitting** - Optimized bundle size
+- **Hooks** - Custom React hooks (useCounter, useFetch, useUsers, useProducts)
+- **Code Splitting** - Optimized bundle size with route-based splitting
 - **Hot Module Replacement** - Instant feedback during development
 
 ## Getting Started
@@ -1089,6 +1117,95 @@ function Posts() {
     </ul>
   );
 }
+\`\`\`
+
+## TanStack Query (React Query)
+
+TanStack Query provides powerful server state management with automatic caching, background updates, and request deduplication.
+
+### useUsers Hook
+
+\`\`\`typescript
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '@hooks/useUsers';
+
+function UserList() {
+  const { data: users, isLoading, error } = useUsers();
+  const createUser = useCreateUser();
+  const deleteUser = useDeleteUser();
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return (
+    <div>
+      {users?.map(user => (
+        <div key={user.id}>
+          <span>{user.name}</span>
+          <button onClick={() => deleteUser.mutate(user.id)}>Delete</button>
+        </div>
+      ))}
+      <button onClick={() => createUser.mutate({
+        name: 'New User',
+        email: 'user@example.com',
+        password: 'password123',
+        role: 'user'
+      })}>
+        Add User
+      </button>
+    </div>
+  );
+}
+\`\`\`
+
+### useProducts Hook
+
+\`\`\`typescript
+import { useProducts, useCreateProduct } from '@hooks/useProducts';
+
+function ProductList() {
+  const { data: products, isLoading } = useProducts();
+  const createProduct = useCreateProduct();
+
+  if (isLoading) return <p>Loading...</p>;
+
+  return (
+    <div>
+      {products?.map(product => (
+        <div key={product.id}>
+          <h3>{product.name}</h3>
+          <p>\${product.price}</p>
+        </div>
+      ))}
+      <button onClick={() => createProduct.mutate({
+        name: 'New Product',
+        description: 'Product description',
+        price: 99.99
+      })}>
+        Add Product
+      </button>
+    </div>
+  );
+}
+\`\`\`
+
+### Query Configuration
+
+The QueryClient is configured in \`main.tsx\` with sensible defaults:
+
+- **staleTime**: 5 minutes - Data remains fresh for 5 minutes
+- **gcTime**: 10 minutes - Inactive queries are cached for 10 minutes
+- **retry**: 1 - Failed requests retry once
+- **refetchOnWindowFocus**: false - No automatic refetch on window focus
+
+You can customize these defaults per query:
+
+\`\`\`typescript
+const { data } = useQuery({
+  queryKey: ['custom', 'key'],
+  queryFn: () => fetch('/api').then(r => r.json()),
+  staleTime: 1000 * 60, // 1 minute
+  refetchInterval: 2000, // Refetch every 2 seconds
+});
 \`\`\`
 
 ## Environment Variables
@@ -1771,6 +1888,245 @@ export default function NotFound() {
   color: #666;
   margin-bottom: 2rem;
   font-size: 1.1rem;
+}
+`;
+  }
+
+  protected generateUseUsers() {
+    return `import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface CreateUserData {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
+interface UpdateUserData {
+  id: string;
+  name?: string;
+  email?: string;
+  role?: string;
+}
+
+// Fetch all users
+export function useUsers() {
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: async (): Promise<User[]> => {
+      const response = await fetch('/api/v1/users');
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+      const data = await response.json();
+      return data.data;
+    },
+  });
+}
+
+// Fetch single user
+export function useUser(id: string) {
+  return useQuery({
+    queryKey: ['users', id],
+    queryFn: async (): Promise<User> => {
+      const response = await fetch(\`/api/v1/users/\${id}\`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user');
+      }
+      return response.json();
+    },
+    enabled: !!id,
+  });
+}
+
+// Create user mutation
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userData: CreateUserData): Promise<User> => {
+      const response = await fetch('/api/v1/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create user');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+}
+
+// Update user mutation
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...userData }: UpdateUserData): Promise<User> => {
+      const response = await fetch(\`/api/v1/users/\${id}\`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update user');
+      }
+      return response.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['users', variables.id] });
+    },
+  });
+}
+
+// Delete user mutation
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      const response = await fetch(\`/api/v1/users/\${id}\`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete user');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+}
+`;
+  }
+
+  protected generateUseProducts() {
+    return `import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+}
+
+interface CreateProductData {
+  name: string;
+  description: string;
+  price: number;
+}
+
+interface UpdateProductData {
+  id: string;
+  name?: string;
+  description?: string;
+  price?: number;
+}
+
+// Fetch all products
+export function useProducts() {
+  return useQuery({
+    queryKey: ['products'],
+    queryFn: async (): Promise<Product[]> => {
+      const response = await fetch('/api/v1/products');
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const data = await response.json();
+      return data.data;
+    },
+  });
+}
+
+// Fetch single product
+export function useProduct(id: string) {
+  return useQuery({
+    queryKey: ['products', id],
+    queryFn: async (): Promise<Product> => {
+      const response = await fetch(\`/api/v1/products/\${id}\`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch product');
+      }
+      return response.json();
+    },
+    enabled: !!id,
+  });
+}
+
+// Create product mutation
+export function useCreateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (productData: CreateProductData): Promise<Product> => {
+      const response = await fetch('/api/v1/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create product');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+}
+
+// Update product mutation
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...productData }: UpdateProductData): Promise<Product> => {
+      const response = await fetch(\`/api/v1/products/\${id}\`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update product');
+      }
+      return response.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['products', variables.id] });
+    },
+  });
+}
+
+// Delete product mutation
+export function useDeleteProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      const response = await fetch(\`/api/v1/products/\${id}\`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
 }
 `;
   }
