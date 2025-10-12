@@ -154,6 +154,22 @@ export class ViteReactTemplate extends BaseTemplate {
       content: this.generateUseProducts()
     });
 
+    // Zustand stores
+    files.push({
+      path: 'src/store/useAppStore.ts',
+      content: this.generateAppStore()
+    });
+
+    files.push({
+      path: 'src/store/useAuthStore.ts',
+      content: this.generateAuthStore()
+    });
+
+    files.push({
+      path: 'src/store/useUIStore.ts',
+      content: this.generateUIStore()
+    });
+
     // Utils
     files.push({
       path: 'src/utils/api.ts',
@@ -223,7 +239,8 @@ export class ViteReactTemplate extends BaseTemplate {
         react: '^18.2.0',
         'react-dom': '^18.2.0',
         'react-router-dom': '^6.22.0',
-        '@tanstack/react-query': '^5.17.0'
+        '@tanstack/react-query': '^5.17.0',
+        'zustand': '^4.5.0'
       },
       devDependencies: {
         '@types/react': '^18.2.48',
@@ -977,10 +994,12 @@ Built with React 18, Vite 5, TypeScript, and modern tooling for lightning-fast d
 - **Vite 5** - Lightning-fast HMR and optimized builds
 - **React Router 6** - Client-side routing with lazy loading
 - **TanStack Query** - Powerful server state management with caching and synchronization
+- **Zustand** - Lightweight client state management with persistence
 - **ESLint** - Code linting with TypeScript support
 - **Prettier** - Code formatting
-- **Path Aliases** - Clean imports with @, @components, @hooks, @utils
+- **Path Aliases** - Clean imports with @, @components, @hooks, @utils, @store
 - **Hooks** - Custom React hooks (useCounter, useFetch, useUsers, useProducts)
+- **Stores** - Zustand stores (useAppStore, useAuthStore, useUIStore)
 - **Code Splitting** - Optimized bundle size with route-based splitting
 - **Hot Module Replacement** - Instant feedback during development
 
@@ -1046,7 +1065,19 @@ src/
 │   └── FeatureCard.tsx
 ├── hooks/             # Custom React hooks
 │   ├── useCounter.ts
-│   └── useFetch.ts
+│   ├── useFetch.ts
+│   ├── useUsers.ts
+│   └── useProducts.ts
+├── store/             # Zustand state stores
+│   ├── useAppStore.ts
+│   ├── useAuthStore.ts
+│   └── useUIStore.ts
+├── pages/             # Route components
+│   ├── Home.tsx
+│   ├── About.tsx
+│   ├── Dashboard.tsx
+│   ├── Counter.tsx
+│   └── NotFound.tsx
 ├── utils/             # Utility functions
 │   ├── api.ts
 │   └── format.ts
@@ -1206,6 +1237,123 @@ const { data } = useQuery({
   staleTime: 1000 * 60, // 1 minute
   refetchInterval: 2000, // Refetch every 2 seconds
 });
+\`\`\`
+
+## Zustand State Management
+
+Zustand provides a simple and type-safe way to manage client-side state with minimal boilerplate.
+
+### useAppStore
+
+Global application state with persistence:
+
+\`\`\`typescript
+import { useAppStore } from '@store/useAppStore';
+
+function UserProfile() {
+  const { user, setUser, clearUser } = useAppStore();
+  const { notifications, addNotification } = useAppStore();
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    addNotification({
+      message: 'Welcome back!',
+      type: 'success',
+    });
+  };
+
+  return (
+    <div>
+      {user ? (
+        <p>Welcome, {user.name}</p>
+      ) : (
+        <button onClick={() => handleLogin({ id: '1', name: 'John', email: 'john@example.com', role: 'user' })}>
+          Login
+        </button>
+      )}
+    </div>
+  );
+}
+\`\`\`
+
+### useAuthStore
+
+Authentication state with automatic token management:
+
+\`\`\`typescript
+import { useAuthStore } from '@store/useAuthStore';
+
+function LoginForm() {
+  const { login, logout, isAuthenticated, user } = useAuthStore();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    await login(email, password);
+  };
+
+  if (isAuthenticated) {
+    return (
+      <div>
+        <p>Welcome, {user?.name}</p>
+        <button onClick={logout}>Logout</button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="email" type="email" />
+      <input name="password" type="password" />
+      <button type="submit">Login</button>
+    </form>
+  );
+}
+\`\`\`
+
+### useUIStore
+
+UI state for theme, language, loading, and modals:
+
+\`\`\`typescript
+import { useUIStore } from '@store/useUIStore';
+
+function Settings() {
+  const { theme, setTheme, language, setLanguage, openModal } = useUIStore();
+
+  return (
+    <div>
+      <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="system">System</option>
+      </select>
+      <button onClick={() => openModal('Help', 'This is help content')}>
+        Show Help
+      </button>
+    </div>
+  );
+}
+\`\`\`
+
+### Store Persistence
+
+The \`useAppStore\` and \`useAuthStore\` use Zustand's persist middleware to automatically save state to localStorage:
+
+\`\`\`typescript
+persist(
+  (set, get) => ({
+    // store state
+  }),
+  {
+    name: 'app-storage', // localStorage key
+    partialize: (state) => ({  // Optional: pick specific state to persist
+      user: state.user,
+      sidebarOpen: state.sidebarOpen,
+    }),
+  }
+)
 \`\`\`
 
 ## Environment Variables
@@ -2128,6 +2276,183 @@ export function useDeleteProduct() {
     },
   });
 }
+`;
+  }
+
+  protected generateAppStore() {
+    return `import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface AppState {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
+  notifications: Array<{
+    id: string;
+    message: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    read: boolean;
+  }>;
+  sidebarOpen: boolean;
+  setUser: (user: AppState['user']) => void;
+  clearUser: () => void;
+  addNotification: (notification: Omit<AppState['notifications'][0], 'id' | 'read'>) => void;
+  markNotificationRead: (id: string) => void;
+  clearNotifications: () => void;
+  toggleSidebar: () => void;
+  setSidebarOpen: (open: boolean) => void;
+}
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      notifications: [],
+      sidebarOpen: true,
+      setUser: (user) => set({ user }),
+      clearUser: () => set({ user: null }),
+      addNotification: (notification) => set((state) => ({
+        notifications: [
+          ...state.notifications,
+          {
+            ...notification,
+            id: crypto.randomUUID(),
+            read: false,
+          },
+        ],
+      })),
+      markNotificationRead: (id) => set((state) => ({
+        notifications: state.notifications.map((n) =>
+          n.id === id ? { ...n, read: true } : n
+        ),
+      })),
+      clearNotifications: () => set({ notifications: [] }),
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      setSidebarOpen: (open) => set({ sidebarOpen: open }),
+    }),
+    {
+      name: 'app-storage',
+      partialize: (state) => ({
+        user: state.user,
+        sidebarOpen: state.sidebarOpen,
+      }),
+    }
+  )
+);
+`;
+  }
+
+  protected generateAuthStore() {
+    return `import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface AuthState {
+  isAuthenticated: boolean;
+  token: string | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  refreshToken: () => Promise<void>;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      isAuthenticated: false,
+      token: null,
+      user: null,
+      login: async (email, password) => {
+        try {
+          const response = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+          if (!response.ok) {
+            throw new Error('Login failed');
+          }
+          const data = await response.json();
+          set({
+            isAuthenticated: true,
+            token: data.token,
+            user: data.user,
+          });
+        } catch (error) {
+          console.error('Login error:', error);
+          throw error;
+        }
+      },
+      logout: () => {
+        set({
+          isAuthenticated: false,
+          token: null,
+          user: null,
+        });
+      },
+      refreshToken: async () => {
+        const { token } = get();
+        if (!token) return;
+        try {
+          const response = await fetch('/api/v1/auth/refresh', {
+            headers: { Authorization: \`Bearer \${token}\` },
+          });
+          if (!response.ok) {
+            throw new Error('Token refresh failed');
+          }
+          const data = await response.json();
+          set({ token: data.token });
+        } catch (error) {
+          console.error('Token refresh error:', error);
+          get().logout();
+        }
+      },
+    }),
+    {
+      name: 'auth-storage',
+    }
+  )
+);
+`;
+  }
+
+  protected generateUIStore() {
+    return `import { create } from 'zustand';
+
+interface UIState {
+  theme: 'light' | 'dark' | 'system';
+  language: 'en' | 'es' | 'fr' | 'de';
+  loading: boolean;
+  modal: {
+    open: boolean;
+    title: string;
+    content: string;
+  } | null;
+  setTheme: (theme: UIState['theme']) => void;
+  setLanguage: (language: UIState['language']) => void;
+  setLoading: (loading: boolean) => void;
+  openModal: (title: string, content: string) => void;
+  closeModal: () => void;
+}
+
+export const useUIStore = create<UIState>((set) => ({
+  theme: 'system',
+  language: 'en',
+  loading: false,
+  modal: null,
+  setTheme: (theme) => set({ theme }),
+  setLanguage: (language) => set({ language }),
+  setLoading: (loading) => set({ loading }),
+  openModal: (title, content) => set({ modal: { open: true, title, content } }),
+  closeModal: () => set({ modal: null }),
+}));
 `;
   }
 }
