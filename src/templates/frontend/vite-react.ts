@@ -170,6 +170,27 @@ export class ViteReactTemplate extends BaseTemplate {
       content: this.generateUIStore()
     });
 
+    // Test setup
+    files.push({
+      path: 'src/test-setup.ts',
+      content: this.generateTestSetup()
+    });
+
+    files.push({
+      path: 'src/components/__tests__/Header.test.tsx',
+      content: this.generateHeaderTest()
+    });
+
+    files.push({
+      path: 'src/hooks/__tests__/useCounter.test.ts',
+      content: this.generateCounterTest()
+    });
+
+    files.push({
+      path: 'src/pages/__tests__/Home.test.tsx',
+      content: this.generateHomeTest()
+    });
+
     // Utils
     files.push({
       path: 'src/utils/api.ts',
@@ -233,7 +254,11 @@ export class ViteReactTemplate extends BaseTemplate {
         build: 'tsc && vite build',
         lint: 'eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0',
         preview: 'vite preview',
-        format: 'prettier --write "src/**/*.{ts,tsx,css,md}"'
+        format: 'prettier --write "src/**/*.{ts,tsx,css,md}"',
+        test: 'vitest',
+        'test:ui': 'vitest --ui',
+        'test:run': 'vitest run',
+        'test:coverage': 'vitest run --coverage'
       },
       dependencies: {
         react: '^18.2.0',
@@ -248,12 +273,19 @@ export class ViteReactTemplate extends BaseTemplate {
         '@typescript-eslint/eslint-plugin': '^6.19.0',
         '@typescript-eslint/parser': '^6.19.0',
         '@vitejs/plugin-react': '^4.2.1',
-        eslint: '^8.56.0',
+        '@testing-library/react': '^14.1.0',
+        '@testing-library/jest-dom': '^6.1.5',
+        '@testing-library/user-event': '^14.5.1',
+        'msw': '^2.0.0',
+        'jsdom': '^23.0.1',
+        'vitest': '^1.2.0',
+        '@vitest/ui': '^1.2.0',
+        'eslint': '^8.56.0',
         'eslint-plugin-react-hooks': '^4.6.0',
         'eslint-plugin-react-refresh': '^0.4.5',
-        prettier: '^3.2.4',
-        typescript: '^5.3.3',
-        vite: '^5.0.12'
+        'prettier': '^3.2.4',
+        'typescript': '^5.3.3',
+        'vite': '^5.0.12'
       }
     };
   }
@@ -280,6 +312,7 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@utils': path.resolve(__dirname, './src/utils'),
       '@types': path.resolve(__dirname, './src/types'),
+      '@store': path.resolve(__dirname, './src/store'),
     },
   },
   server: {
@@ -310,6 +343,23 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom'],
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test-setup.ts',
+    css: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/test-setup.ts',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/mockData',
+      ],
+    },
   },
 });
 `;
@@ -2456,3 +2506,20 @@ export const useUIStore = create<UIState>((set) => ({
 `;
   }
 }
+
+  protected generateTestSetup() {
+    return `import { expect, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import * as matchers from '@testing-library/jest-dom/matchers';
+
+// Extend Vitest's expect with jest-dom matchers
+expect.extend(matchers);
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+});
+`;
+  }
+};
+
