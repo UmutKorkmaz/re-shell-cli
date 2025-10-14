@@ -170,27 +170,6 @@ export class ViteReactTemplate extends BaseTemplate {
       content: this.generateUIStore()
     });
 
-    // Test setup
-    files.push({
-      path: 'src/test-setup.ts',
-      content: this.generateTestSetup()
-    });
-
-    files.push({
-      path: 'src/components/__tests__/Header.test.tsx',
-      content: this.generateHeaderTest()
-    });
-
-    files.push({
-      path: 'src/hooks/__tests__/useCounter.test.ts',
-      content: this.generateCounterTest()
-    });
-
-    files.push({
-      path: 'src/pages/__tests__/Home.test.tsx',
-      content: this.generateHomeTest()
-    });
-
     // Utils
     files.push({
       path: 'src/utils/api.ts',
@@ -254,11 +233,7 @@ export class ViteReactTemplate extends BaseTemplate {
         build: 'tsc && vite build',
         lint: 'eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0',
         preview: 'vite preview',
-        format: 'prettier --write "src/**/*.{ts,tsx,css,md}"',
-        test: 'vitest',
-        'test:ui': 'vitest --ui',
-        'test:run': 'vitest run',
-        'test:coverage': 'vitest run --coverage'
+        format: 'prettier --write "src/**/*.{ts,tsx,css,md}"'
       },
       dependencies: {
         react: '^18.2.0',
@@ -273,19 +248,12 @@ export class ViteReactTemplate extends BaseTemplate {
         '@typescript-eslint/eslint-plugin': '^6.19.0',
         '@typescript-eslint/parser': '^6.19.0',
         '@vitejs/plugin-react': '^4.2.1',
-        '@testing-library/react': '^14.1.0',
-        '@testing-library/jest-dom': '^6.1.5',
-        '@testing-library/user-event': '^14.5.1',
-        'msw': '^2.0.0',
-        'jsdom': '^23.0.1',
-        'vitest': '^1.2.0',
-        '@vitest/ui': '^1.2.0',
-        'eslint': '^8.56.0',
+        eslint: '^8.56.0',
         'eslint-plugin-react-hooks': '^4.6.0',
         'eslint-plugin-react-refresh': '^0.4.5',
-        'prettier': '^3.2.4',
-        'typescript': '^5.3.3',
-        'vite': '^5.0.12'
+        prettier: '^3.2.4',
+        typescript: '^5.3.3',
+        vite: '^5.0.12'
       }
     };
   }
@@ -312,7 +280,6 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@utils': path.resolve(__dirname, './src/utils'),
       '@types': path.resolve(__dirname, './src/types'),
-      '@store': path.resolve(__dirname, './src/store'),
     },
   },
   server: {
@@ -343,23 +310,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom'],
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/test-setup.ts',
-    css: true,
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/test-setup.ts',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/mockData',
-      ],
-    },
   },
 });
 `;
@@ -2505,7 +2455,6 @@ export const useUIStore = create<UIState>((set) => ({
 }));
 `;
   }
-}
 
   protected generateTestSetup() {
     return `import { expect, afterEach } from 'vitest';
@@ -2521,5 +2470,163 @@ afterEach(() => {
 });
 `;
   }
-};
 
+  protected generateHeaderTest() {
+    const name = this.context.name;
+    return `import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { Header } from '../Header';
+
+describe('Header', () => {
+  it('renders logo text', () => {
+    render(<Header theme="light" />);
+    expect(screen.getByText('${name}')).toBeInTheDocument();
+  });
+
+  it('renders navigation links', () => {
+    render(<Header theme="light" />);
+    expect(screen.getByText('Home')).toBeInTheDocument();
+    expect(screen.getByText('About')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Counter')).toBeInTheDocument();
+  });
+
+  it('calls onToggleTheme when theme toggle button is clicked', () => {
+    const mockToggle = vi.fn();
+    render(<Header theme="light" onToggleTheme={mockToggle} />);
+
+    const themeButton = screen.getByRole('button', { name: /🌙/ });
+    themeButton.click();
+
+    expect(mockToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not render theme toggle when onToggleTheme is not provided', () => {
+    render(<Header />);
+
+    const themeButton = screen.queryRole('button', { name: /🌙/ });
+    expect(themeButton).not.toBeInTheDocument();
+  });
+});
+`;
+  }
+
+  protected generateCounterTest() {
+    return `import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { useCounter } from '../useCounter';
+
+describe('useCounter', () => {
+  it('should initialize with default value', () => {
+    const { result } = renderHook(() => useCounter());
+    expect(result.current.count).toBe(0);
+  });
+
+  it('should initialize with custom initial value', () => {
+    const { result } = renderHook(() => useCounter(5));
+    expect(result.current.count).toBe(5);
+  });
+
+  it('should increment count', () => {
+    const { result } = renderHook(() => useCounter());
+
+    act(() => {
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(1);
+  });
+
+  it('should decrement count', () => {
+    const { result } = renderHook(() => useCounter(5));
+
+    act(() => {
+      result.current.decrement();
+    });
+
+    expect(result.current.count).toBe(4);
+  });
+
+  it('should reset count to initial value', () => {
+    const { result } = renderHook(() => useCounter(10));
+
+    act(() => {
+      result.current.increment();
+      result.current.increment();
+      result.current.reset();
+    });
+
+    expect(result.current.count).toBe(10);
+  });
+
+  it('should handle multiple increments', () => {
+    const { result } = renderHook(() => useCounter());
+
+    act(() => {
+      result.current.increment();
+      result.current.increment();
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(3);
+  });
+});
+`;
+  }
+
+  protected generateHomeTest() {
+    const name = this.context.name;
+    return `import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import Home from '../Home';
+
+// Mock FeatureCard component
+vi.mock('@components/FeatureCard', () => ({
+  FeatureCard: ({ icon, title, description }: { icon: string; title: string; description: string }) => (
+    <div data-testid="feature-card">
+      <span>{icon}</span>
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
+  ),
+}));
+
+describe('Home Page', () => {
+  const renderWithRouter = () => {
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>
+    );
+  };
+
+  it('renders hero section', () => {
+    renderWithRouter();
+    expect(screen.getByText('Welcome to ${name}')).toBeInTheDocument();
+    expect(screen.getByText(/A modern React application/)).toBeInTheDocument();
+  });
+
+  it('renders CTA buttons', () => {
+    renderWithRouter();
+    expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Learn More')).toBeInTheDocument();
+  });
+
+  it('renders feature cards', () => {
+    renderWithRouter();
+    const featureCards = screen.getAllByTestId('feature-card');
+    expect(featureCards).toHaveLength(4);
+  });
+
+  it('renders tech stack section', () => {
+    renderWithRouter();
+    expect(screen.getByText('Tech Stack')).toBeInTheDocument();
+    expect(screen.getByText('React 18')).toBeInTheDocument();
+    expect(screen.getByText('TypeScript')).toBeInTheDocument();
+    expect(screen.getByText('React Router 6')).toBeInTheDocument();
+  });
+});
+`;
+  }
+}
