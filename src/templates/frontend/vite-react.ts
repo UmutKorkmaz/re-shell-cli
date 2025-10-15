@@ -219,6 +219,55 @@ export class ViteReactTemplate extends BaseTemplate {
       content: this.generateDockerCompose()
     });
 
+    // Test setup
+    files.push({
+      path: 'src/test-setup.ts',
+      content: this.generateTestSetup()
+    });
+
+    // Test files
+    files.push({
+      path: 'src/components/__tests__/Header.test.tsx',
+      content: this.generateHeaderTest()
+    });
+
+    files.push({
+      path: 'src/hooks/__tests__/useCounter.test.ts',
+      content: this.generateCounterTest()
+    });
+
+    files.push({
+      path: 'src/pages/__tests__/Home.test.tsx',
+      content: this.generateHomeTest()
+    });
+
+    // Storybook config
+    files.push({
+      path: '.storybook/main.ts',
+      content: this.generateStorybookMain()
+    });
+
+    files.push({
+      path: '.storybook/preview.ts',
+      content: this.generateStorybookPreview()
+    });
+
+    // Story files
+    files.push({
+      path: 'src/stories/Header.stories.tsx',
+      content: this.generateHeaderStories()
+    });
+
+    files.push({
+      path: 'src/stories/FeatureCard.stories.tsx',
+      content: this.generateFeatureCardStories()
+    });
+
+    files.push({
+      path: 'src/stories/Button.stories.tsx',
+      content: this.generateButtonStories()
+    });
+
     return files;
   }
 
@@ -233,7 +282,12 @@ export class ViteReactTemplate extends BaseTemplate {
         build: 'tsc && vite build',
         lint: 'eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0',
         preview: 'vite preview',
-        format: 'prettier --write "src/**/*.{ts,tsx,css,md}"'
+        format: 'prettier --write "src/**/*.{ts,tsx,css,md}"',
+        test: 'vitest',
+        'test:ui': 'vitest --ui',
+        'test:run': 'vitest run',
+        storybook: 'storybook dev -p 6006',
+        'build-storybook': 'storybook build'
       },
       dependencies: {
         react: '^18.2.0',
@@ -253,7 +307,22 @@ export class ViteReactTemplate extends BaseTemplate {
         'eslint-plugin-react-refresh': '^0.4.5',
         prettier: '^3.2.4',
         typescript: '^5.3.3',
-        vite: '^5.0.12'
+        vite: '^5.0.12',
+        '@testing-library/react': '^14.1.0',
+        '@testing-library/jest-dom': '^6.1.5',
+        '@testing-library/user-event': '^14.5.1',
+        vitest: '^1.2.0',
+        '@vitest/ui': '^1.2.0',
+        jsdom: '^23.0.1',
+        msw: '^2.0.0',
+        '@storybook/react': '^7.10.0',
+        '@storybook/react-vite': '^7.10.0',
+        '@storybook/addon-essentials': '^7.10.0',
+        '@storybook/addon-interactions': '^7.10.0',
+        '@storybook/addon-links': '^7.10.0',
+        '@storybook/addon-themes': '^7.10.0',
+        '@storybook/testing-library': '^0.2.0',
+        storybook: '^7.10.0'
       }
     };
   }
@@ -280,6 +349,7 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@utils': path.resolve(__dirname, './src/utils'),
       '@types': path.resolve(__dirname, './src/types'),
+      '@store': path.resolve(__dirname, './src/store'),
     },
   },
   server: {
@@ -310,6 +380,12 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom'],
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test-setup.ts',
+    css: true,
   },
 });
 `;
@@ -347,6 +423,7 @@ export default defineConfig({
             '@hooks/*': ['./src/hooks/*'],
             '@utils/*': ['./src/utils/*'],
             '@types/*': ['./src/types/*'],
+            '@store/*': ['./src/store/*'],
           },
         },
         include: ['src'],
@@ -2627,6 +2704,198 @@ describe('Home Page', () => {
     expect(screen.getByText('React Router 6')).toBeInTheDocument();
   });
 });
+`;
+  }
+
+  protected generateStorybookMain() {
+    return `import type { StorybookConfig } from '@storybook/react-vite';
+
+const config: StorybookConfig = {
+  stories: ['../src/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    '@storybook/addon-themes',
+  ],
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
+  },
+  docs: {
+    autodocs: 'tag',
+  },
+};
+
+export default config;
+`;
+  }
+
+  protected generateStorybookPreview() {
+    return `import type { Preview } from '@storybook/react';
+import '../src/index.css';
+
+const preview: Preview = {
+  parameters: {
+    actions: { argTypesRegex: '^on[A-Z].*' },
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/i,
+      },
+    },
+  },
+};
+
+export default preview;
+`;
+  }
+
+  protected generateHeaderStories() {
+    return `import type { Meta, StoryObj } from '@storybook/react';
+import { Header } from '../Header';
+
+const meta: Meta<typeof Header> = {
+  title: 'Components/Header',
+  component: Header,
+  parameters: {
+    layout: 'fullscreen',
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    theme: {
+      control: 'select',
+      options: ['light', 'dark'],
+    },
+    onToggleTheme: { action: 'clicked' },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Header>;
+
+export const Light: Story = {
+  args: {
+    theme: 'light',
+  },
+};
+
+export const Dark: Story = {
+  args: {
+    theme: 'dark',
+  },
+};
+
+export const WithToggle: Story = {
+  args: {
+    theme: 'light',
+    onToggleTheme: () => console.log('Theme toggled'),
+  },
+};
+`;
+  }
+
+  protected generateFeatureCardStories() {
+    return `import type { Meta, StoryObj } from '@storybook/react';
+import { FeatureCard } from '../FeatureCard';
+
+const meta: Meta<typeof FeatureCard> = {
+  title: 'Components/FeatureCard',
+  component: FeatureCard,
+  tags: ['autodocs'],
+  argTypes: {
+    icon: { control: 'text' },
+    title: { control: 'text' },
+    description: { control: 'text' },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof FeatureCard>;
+
+export const Default: Story = {
+  args: {
+    icon: '⚡',
+    title: 'Lightning Fast HMR',
+    description: 'Hot Module Replacement with Vite for instant feedback',
+  },
+};
+
+export const MultipleCards: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+      <FeatureCard
+        icon="⚡"
+        title="Lightning Fast HMR"
+        description="Hot Module Replacement with Vite for instant feedback"
+      />
+      <FeatureCard
+        icon="🔧"
+        title="TypeScript"
+        description="Type-safe development with full IntelliSense support"
+      />
+      <FeatureCard
+        icon="🚀"
+        title="React Router"
+        description="Client-side routing with lazy loading and code splitting"
+      />
+    </div>
+  ),
+};
+`;
+  }
+
+  protected generateButtonStories() {
+    return `import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from '../components/Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Components/Button',
+  component: Button,
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'tertiary'],
+    },
+    onClick: { action: 'clicked' },
+    children: { control: 'text' },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Primary Button',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    children: 'Secondary Button',
+  },
+};
+
+export const Tertiary: Story = {
+  args: {
+    variant: 'tertiary',
+    children: 'Tertiary Button',
+  },
+};
+
+export const AllVariants: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+      <Button variant="primary">Primary</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="tertiary">Tertiary</Button>
+    </div>
+  ),
+};
 `;
   }
 }
