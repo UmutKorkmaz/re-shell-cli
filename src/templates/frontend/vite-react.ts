@@ -91,6 +91,11 @@ export class ViteReactTemplate extends BaseTemplate {
       content: this.generateNotFoundPageCss()
     });
 
+    files.push({
+      path: 'src/pages/Contact.css',
+      content: this.generateContactPageCss()
+    });
+
     // Components
     files.push({
       path: 'src/components/Header.tsx',
@@ -105,6 +110,11 @@ export class ViteReactTemplate extends BaseTemplate {
     files.push({
       path: 'src/components/FeatureCard.tsx',
       content: this.generateFeatureCard()
+    });
+
+    files.push({
+      path: 'src/components/ContactForm.tsx',
+      content: this.generateContactForm()
     });
 
     // Pages
@@ -126,6 +136,11 @@ export class ViteReactTemplate extends BaseTemplate {
     files.push({
       path: 'src/pages/Counter.tsx',
       content: this.generateCounterPage()
+    });
+
+    files.push({
+      path: 'src/pages/Contact.tsx',
+      content: this.generateContactPage()
     });
 
     files.push({
@@ -280,6 +295,7 @@ export class ViteReactTemplate extends BaseTemplate {
       scripts: {
         dev: 'vite',
         build: 'tsc && vite build',
+        'build:analyze': 'vite build --mode analyze',
         lint: 'eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0',
         preview: 'vite preview',
         format: 'prettier --write "src/**/*.{ts,tsx,css,md}"',
@@ -294,7 +310,8 @@ export class ViteReactTemplate extends BaseTemplate {
         'react-dom': '^18.2.0',
         'react-router-dom': '^6.22.0',
         '@tanstack/react-query': '^5.17.0',
-        'zustand': '^4.5.0'
+        'zustand': '^4.5.0',
+        'react-hook-form': '^7.49.0'
       },
       devDependencies: {
         '@types/react': '^18.2.48',
@@ -308,6 +325,7 @@ export class ViteReactTemplate extends BaseTemplate {
         prettier: '^3.2.4',
         typescript: '^5.3.3',
         vite: '^5.0.12',
+        'rollup-plugin-visualizer': '^5.11.0',
         '@testing-library/react': '^14.1.0',
         '@testing-library/jest-dom': '^6.1.5',
         '@testing-library/user-event': '^14.5.1',
@@ -322,7 +340,8 @@ export class ViteReactTemplate extends BaseTemplate {
         '@storybook/addon-links': '^7.10.0',
         '@storybook/addon-themes': '^7.10.0',
         '@storybook/testing-library': '^0.2.0',
-        storybook: '^7.10.0'
+        storybook: '^7.10.0',
+        '@tanstack/react-query-devtools': '^5.17.0' 
       }
     };
   }
@@ -330,6 +349,7 @@ export class ViteReactTemplate extends BaseTemplate {
   protected generateViteConfig() {
     return `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
 // https://vitejs.dev/config/
@@ -340,6 +360,13 @@ export default defineConfig({
       babel: {
         plugins: ['@emotion/babel-plugin'],
       },
+    }),
+    // Bundle analyzer - generates stats.html and stats.json in dist/analyze
+    visualizer({
+      filename: 'dist/analyze/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
     }),
   ],
   resolve: {
@@ -492,6 +519,7 @@ export default defineConfig({
     return `import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import App from './App';
 import './index.css';
 
@@ -511,6 +539,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </React.StrictMode>
 );
@@ -529,6 +558,7 @@ const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Counter = lazy(() => import('./pages/Counter'));
+const Contact = lazy(() => import('./pages/Contact'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Loading component for Suspense fallback
@@ -581,6 +611,7 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/counter" element={<Counter />} />
+                <Route path="/contact" element={<Contact />} />
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>
@@ -784,6 +815,7 @@ export const Header: FunctionComponent<HeaderProps> = ({ theme, onToggleTheme })
           <Link to="/about" className="nav-link">About</Link>
           <Link to="/dashboard" className="nav-link">Dashboard</Link>
           <Link to="/counter" className="nav-link">Counter</Link>
+          <Link to="/contact" className="nav-link">Contact</Link>
           {onToggleTheme && (
             <button onClick={onToggleTheme} className="theme-toggle">
               {theme === 'light' ? '🌙' : '☀️'}
@@ -1072,8 +1104,10 @@ Built with React 18, Vite 5, TypeScript, and modern tooling for lightning-fast d
 - **React Router 6** - Client-side routing with lazy loading
 - **TanStack Query** - Powerful server state management with caching and synchronization
 - **Zustand** - Lightweight client state management with persistence
+- **React Hook Form** - Performant form management with validation
 - **ESLint** - Code linting with TypeScript support
 - **Prettier** - Code formatting
+- **Bundle Analysis** - Visualize bundle composition with rollup-plugin-visualizer
 - **Path Aliases** - Clean imports with @, @components, @hooks, @utils, @store
 - **Hooks** - Custom React hooks (useCounter, useFetch, useUsers, useProducts)
 - **Stores** - Zustand stores (useAppStore, useAuthStore, useUIStore)
@@ -1132,6 +1166,30 @@ npm run lint
 npm run format
 \`\`\`
 
+### Bundle Analysis
+
+Analyze your bundle size and composition:
+
+\`\`\`bash
+npm run build:analyze
+\`\`\`
+
+This will generate:
+- \`dist/analyze/stats.html\` - Interactive treemap visualization
+- \`dist/analyze/stats.json\` - Detailed bundle statistics
+
+Open \`dist/analyze/stats.html\` in your browser to explore:
+- Module dependencies and sizes
+- Gzip and Brotli compression sizes
+- Code splitting effectiveness
+- Large dependencies that may need optimization
+
+The visualizer helps you:
+- Identify bloated dependencies
+- Verify code splitting is working
+- Find opportunities to reduce bundle size
+- Track bundle size changes over time
+
 ## Project Structure
 
 \`\`\`
@@ -1139,7 +1197,8 @@ src/
 ├── components/         # React components
 │   ├── Header.tsx
 │   ├── Footer.tsx
-│   └── FeatureCard.tsx
+│   ├── FeatureCard.tsx
+│   └── ContactForm.tsx
 ├── hooks/             # Custom React hooks
 │   ├── useCounter.ts
 │   ├── useFetch.ts
@@ -1154,6 +1213,7 @@ src/
 │   ├── About.tsx
 │   ├── Dashboard.tsx
 │   ├── Counter.tsx
+│   ├── Contact.tsx
 │   └── NotFound.tsx
 ├── utils/             # Utility functions
 │   ├── api.ts
@@ -1230,6 +1290,20 @@ function Posts() {
 ## TanStack Query (React Query)
 
 TanStack Query provides powerful server state management with automatic caching, background updates, and request deduplication.
+
+### React Query DevTools
+
+This template includes React Query DevTools for debugging and inspecting your queries during development. The DevTools panel can be toggled by clicking the React Query icon in the browser or by pressing the keyboard shortcut.
+
+Features:
+- **Query Inspector**: View all active queries, their states, and cached data
+- **Mutation Inspector**: Monitor mutations and their status
+- **Query Explorer**: Browse query keys and inspect query details
+- **DevTools Settings**: Customize the DevTools behavior and appearance
+
+The DevTools are only included in development mode and automatically excluded from production builds.
+
+
 
 ### useUsers Hook
 
@@ -1433,6 +1507,164 @@ persist(
 )
 \`\`\`
 
+## React Hook Form
+
+React Hook Form provides performant form management with minimal re-renders and easy validation.
+
+### ContactForm Component
+
+The template includes a pre-built ContactForm component with validation:
+
+\`\`\`typescript
+import { ContactForm } from '@components/ContactForm';
+
+function ContactPage() {
+  const handleSubmit = async (data) => {
+    // Send data to API
+    await fetch('/api/contact', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  };
+
+  return <ContactForm onSubmit={handleSubmit} />;
+}
+\`\`\`
+
+### Form Validation
+
+The ContactForm includes built-in validation:
+
+- **Name**: Required, minimum 2 characters
+- **Email**: Required, valid email format
+- **Subject**: Required, minimum 5 characters
+- **Message**: Required, minimum 10 characters
+
+### Creating Custom Forms
+
+Use React Hook Form to create your own forms:
+
+\`\`\`typescript
+import { useForm, SubmitHandler } from 'react-hook-form';
+
+interface FormData {
+  username: string;
+  email: string;
+  age: number;
+}
+
+function MyForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
+
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input
+        {...register('username', { required: 'Username is required' })}
+        placeholder="Username"
+      />
+      {errors.username && <span>{errors.username.message}</span>}
+
+      <input
+        {...register('email', {
+          required: 'Email is required',
+          pattern: {
+            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$/i,
+            message: 'Invalid email address',
+          },
+        })}
+        placeholder="Email"
+      />
+      {errors.email && <span>{errors.email.message}</span>}
+
+      <input
+        type="number"
+        {...register('age', {
+          required: 'Age is required',
+          min: { value: 18, message: 'Must be 18 or older' },
+        })}
+      />
+      {errors.age && <span>{errors.age.message}</span>}
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+\`\`\`
+
+### Form State Management
+
+Access form state and control submission:
+
+\`\`\`typescript
+const {
+  register,
+  handleSubmit,
+  formState: {
+    errors,
+    isSubmitting,
+    isValid,
+    isDirty,
+    touchedFields,
+  },
+  reset,
+  setValue,
+  watch,
+} = useForm<FormData>();
+
+// Watch field changes
+const emailValue = watch('email');
+
+// Set field value programmatically
+setValue('username', 'johndoe');
+
+// Reset form
+reset();
+
+// Check if form is valid
+if (isValid) {
+  // Form is valid
+}
+\`\`\`
+
+### Advanced Validation
+
+Use schema validation with Zod or Yup:
+
+\`\`\`bash
+npm install zod @hookform/resolvers
+\`\`\`
+
+\`\`\`typescript
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  username: z.string().min(3),
+  email: z.string().email(),
+  age: z.number().min(18),
+});
+
+function MyForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(schema),
+  });
+
+  // ... rest of component
+}
+\`\`\`
+
 ## Environment Variables
 
 Create a \`.env\` file in the root directory:
@@ -1460,6 +1692,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 - **React plugin** with fast refresh
 - **Path aliases** for clean imports
 - **Code splitting** for vendor chunks
+- **Bundle analyzer** with rollup-plugin-visualizer
 - **Source maps** for debugging
 - **Development server** on port 5173
 
@@ -2898,4 +3131,353 @@ export const AllVariants: Story = {
 };
 `;
   }
+
+  protected generateContactForm() {
+    return `import { FunctionComponent } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import './ContactForm.css';
+
+interface ContactFormInputs {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
 }
+
+interface ContactFormProps {
+  onSubmit?: (data: ContactFormInputs) => void | Promise<void>;
+}
+
+export const ContactForm: FunctionComponent<ContactFormProps> = ({ onSubmit }) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ContactFormInputs>({
+    defaultValues: {
+      name: '',
+      email: '',
+      subject: '',
+      message: '',
+    },
+  });
+
+  const handleFormSubmit: SubmitHandler<ContactFormInputs> = async (data) => {
+    if (onSubmit) {
+      await onSubmit(data);
+    } else {
+      // Default behavior: log to console
+      console.log('Form submitted:', data);
+      alert('Thank you for your message! We will get back to you soon.');
+    }
+    reset();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="contact-form" noValidate>
+      <div className="form-group">
+        <label htmlFor="name">Name *</label>
+        <input
+          id="name"
+          type="text"
+          className={errors.name ? 'error' : ''}
+          {...register('name', {
+            required: 'Name is required',
+            minLength: {
+              value: 2,
+              message: 'Name must be at least 2 characters',
+            },
+          })}
+          placeholder="John Doe"
+        />
+        {errors.name && <span className="error-message">{errors.name.message}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="email">Email *</label>
+        <input
+          id="email"
+          type="email"
+          className={errors.email ? 'error' : ''}
+          {...register('email', {
+            required: 'Email is required',
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$/i,
+              message: 'Invalid email address',
+            },
+          })}
+          placeholder="john@example.com"
+        />
+        {errors.email && <span className="error-message">{errors.email.message}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="subject">Subject *</label>
+        <input
+          id="subject"
+          type="text"
+          className={errors.subject ? 'error' : ''}
+          {...register('subject', {
+            required: 'Subject is required',
+            minLength: {
+              value: 5,
+              message: 'Subject must be at least 5 characters',
+            },
+          })}
+          placeholder="How can we help?"
+        />
+        {errors.subject && <span className="error-message">{errors.subject.message}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="message">Message *</label>
+        <textarea
+          id="message"
+          rows={6}
+          className={errors.message ? 'error' : ''}
+          {...register('message', {
+            required: 'Message is required',
+            minLength: {
+              value: 10,
+              message: 'Message must be at least 10 characters',
+            },
+          })}
+          placeholder="Tell us more about your inquiry..."
+        />
+        {errors.message && <span className="error-message">{errors.message.message}</span>}
+      </div>
+
+      <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+        {isSubmitting ? 'Sending...' : 'Send Message'}
+      </button>
+    </form>
+  );
+};
+`;
+  }
+
+  protected generateContactPage() {
+    return `import { Link } from 'react-router-dom';
+import { ContactForm } from '@components/ContactForm';
+import './Contact.css';
+
+interface ContactFormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export default function Contact() {
+  const handleSubmit = async (data: ContactFormData) => {
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log('Form submitted:', data);
+    alert(\`Thank you \${data.name}! We have received your message and will respond soon.\`);
+  };
+
+  return (
+    <div className="contact-page">
+      <div className="contact-header">
+        <h1>Contact Us</h1>
+        <p>We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+        <Link to="/" className="back-link">← Back to Home</Link>
+      </div>
+
+      <div className="contact-content">
+        <div className="contact-info">
+          <h2>Get in Touch</h2>
+          <div className="info-item">
+            <h3>📧 Email</h3>
+            <p>contact@${this.context.normalizedName}.com</p>
+          </div>
+          <div className="info-item">
+            <h3>📱 Phone</h3>
+            <p>+1 (555) 123-4567</p>
+          </div>
+          <div className="info-item">
+            <h3>📍 Address</h3>
+            <p>123 Business Street<br />San Francisco, CA 94102</p>
+          </div>
+          <div className="info-item">
+            <h3>⏰ Business Hours</h3>
+            <p>Monday - Friday: 9:00 AM - 6:00 PM<br />Saturday: 10:00 AM - 4:00 PM<br />Sunday: Closed</p>
+          </div>
+        </div>
+
+        <div className="contact-form-wrapper">
+          <h2>Send a Message</h2>
+          <ContactForm onSubmit={handleSubmit} />
+        </div>
+      </div>
+    </div>
+  );
+}
+`;
+  }
+
+  protected generateContactPageCss() {
+    return `.contact-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.contact-page .contact-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.contact-page .contact-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.contact-page .contact-header p {
+  font-size: 1.25rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.contact-page .back-link {
+  color: #667eea;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.contact-page .back-link:hover {
+  text-decoration: underline;
+}
+
+.contact-page .contact-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .contact-page .contact-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.contact-page .contact-info {
+  background: #f9f9f9;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.contact-page .contact-info h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.contact-page .info-item {
+  margin-bottom: 2rem;
+}
+
+.contact-page .info-item:last-child {
+  margin-bottom: 0;
+}
+
+.contact-page .info-item h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #667eea;
+}
+
+.contact-page .info-item p {
+  color: #666;
+  line-height: 1.6;
+}
+
+.contact-page .contact-form-wrapper {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.contact-page .contact-form-wrapper h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+`;
+  }
+
+  protected generateContactFormCss() {
+    return `.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.contact-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contact-form label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.contact-form input.error,
+.contact-form textarea.error {
+  border-color: #e74c3c;
+}
+
+.contact-form input.error:focus,
+.contact-form textarea.error:focus {
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.contact-form textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.contact-form .error-message {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.contact-form button {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.contact-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+`;
+  }
+}
+
