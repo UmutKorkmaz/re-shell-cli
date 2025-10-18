@@ -123,9 +123,37 @@ export class VueCliTemplate extends BaseTemplate {
       content: this.generateHelloWorldComponent()
     });
 
+    // Async component for Suspense
     files.push({
-      path: 'src/store/index.js',
-      content: this.generateStore()
+      path: 'src/components/AsyncComponent.vue',
+      content: this.generateAsyncComponent()
+    });
+
+    // Form validation component with VeeValidate
+    files.push({
+      path: 'src/components/ContactForm.vue',
+      content: this.generateContactForm()
+    });
+
+    // Pinia stores
+    files.push({
+      path: 'src/stores/index.js',
+      content: this.generateStoresIndex()
+    });
+
+    files.push({
+      path: 'src/stores/counter.js',
+      content: this.generateCounterStore()
+    });
+
+    files.push({
+      path: 'src/stores/user.js',
+      content: this.generateUserStore()
+    });
+
+    files.push({
+      path: 'src/stores/auth.js',
+      content: this.generateAuthStore()
     });
 
     files.push({
@@ -151,6 +179,17 @@ export class VueCliTemplate extends BaseTemplate {
     files.push({
       path: '.eslintrc.js',
       content: this.generateEslintConfig()
+    });
+
+    // Vitest config
+    files.push({
+      path: 'vitest.config.ts',
+      content: this.generateVitestConfig()
+    });
+
+    files.push({
+      path: 'tests/unit/example.spec.ts',
+      content: this.generateVitestExample()
     });
 
     // PWA manifest and icons
@@ -206,7 +245,7 @@ export class VueCliTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { hasTypeScript, normalizedName } = this.context;
     const isTypeScript = hasTypeScript !== false;
 
@@ -218,13 +257,19 @@ export class VueCliTemplate extends BaseTemplate {
         'serve': 'vue-cli-service serve',
         'build': 'vue-cli-service build',
         'lint': 'vue-cli-service lint',
-        'test:unit': 'vue-cli-service test:unit'
+        'test:unit': 'vue-cli-service test:unit',
+        'vitest': 'vitest',
+        'vitest:ui': 'vitest --ui',
+        'test:coverage': 'vitest --coverage'
       },
       dependencies: {
         'core-js': '^3.8.3',
         'vue': '^3.3.0',
         'vue-router': '^4.0.3',
-        'vuex': '^4.0.0',
+        'pinia': '^2.1.0',
+        '@vueuse/core': '^10.7.0',
+        'vee-validate': '^4.12.0',
+        'yup': '^1.4.0',
         'register-service-worker': '^1.7.2'
       },
       devDependencies: {
@@ -257,7 +302,12 @@ export class VueCliTemplate extends BaseTemplate {
         'eslint-plugin-vue': '^8.0.1',
         'prettier': '^2.4.1',
         'sass': '^1.32.7',
-        'sass-loader': '^12.0.0'
+        'sass-loader': '^12.0.0',
+        '@vitest/ui': '^1.2.0',
+        'vitest': '^1.2.0',
+        '@vitest/coverage-v8': '^1.2.0',
+        '@vue/devtools-api': '^7.0.0',
+        'jsdom': '^24.0.0'
       }
     };
   }
@@ -396,15 +446,16 @@ not IE 11
 import type { App } from 'vue'` : `import { createApp } from 'vue'`;
 
     return `${typeImports}
+import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import store from './store'
 import './registerServiceWorker'
 import './assets/css/main.css'
 
 const app: App = createApp(App)
+const pinia = createPinia()
 
-app.use(store)
+app.use(pinia)
 app.use(router)
 
 app.mount('#app')
@@ -424,39 +475,56 @@ app.mount('#app')
       <router-view />
     </main>
     <div class="counter-demo">
-      <h2>Counter: {{ count }}</h2>
-      <button @click="increment">+</button>
-      <button @click="decrement">-</button>
+      <h2>Counter (Pinia): {{ counterStore.count }}</h2>
+      <button @click="counterStore.increment">+</button>
+      <button @click="counterStore.decrement">-</button>
       <p v-if="message" class="message">{{ message }}</p>
     </div>
+
+    <!-- Teleport Example: Modal -->
+    <button @click="showModal = true">Show Modal (Teleport)</button>
+
+    <!-- Teleport to body -->
+    <Teleport to="body">
+      <div v-if="showModal" class="modal-overlay" @click="showModal = false">
+        <div class="modal-content" @click.stop>
+          <h2>Teleport Modal</h2>
+          <p>This modal is rendered at the body level using Vue 3 Teleport</p>
+          <button @click="showModal = false">Close</button>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Suspense Example -->
+    <Suspense>
+      <template #default>
+        <AsyncComponent />
+      </template>
+      <template #fallback>
+        <div class="loading">Loading async component...</div>
+      </template>
+    </Suspense>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useStore } from 'vuex'
+import { ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { useCounterStore } from '@/stores/counter'
+
+// Async component for Suspense
+const AsyncComponent = defineAsyncComponent(() =>
+  import('./components/AsyncComponent.vue')
+)
 
 export default {
   name: 'App',
+  components: {
+    AsyncComponent
+  },
   setup() {
-    const store = useStore()
-    const count = ref(0)
+    const counterStore = useCounterStore()
     const message = ref('')
-
-    const increment = () => {
-      count.value++
-      // Emit event for other microfrontends
-      window.dispatchEvent(new CustomEvent('counter-update', {
-        detail: { type: 'COUNTER_UPDATE', value: count.value }
-      }))
-    }
-
-    const decrement = () => {
-      count.value--
-      window.dispatchEvent(new CustomEvent('counter-update', {
-        detail: { type: 'COUNTER_UPDATE', value: count.value }
-      }))
-    }
+    const showModal = ref(false)
 
     const handleCounterUpdate = (event) => {
       if (event.detail.type === 'COUNTER_UPDATE') {
@@ -473,10 +541,9 @@ export default {
     })
 
     return {
-      count,
+      counterStore,
       message,
-      increment,
-      decrement
+      showModal
     }
   }
 }
@@ -548,6 +615,34 @@ export default {
   font-size: 1rem;
   margin-top: 1rem;
 }
+
+/* Teleport Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  max-width: 500px;
+  width: 90%;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #42b983;
+}
 </style>
 `;
   }
@@ -555,7 +650,7 @@ export default {
   private generateRouter() {
     const { normalizedName } = this.context;
     return `import { createRouter, createWebHistory } from 'vue-router'
-import { store } from '../store'
+import { useAuthStore } from '@/stores/auth'
 
 // Routes with nested children, meta fields, and lazy loading
 const routes = [
@@ -703,8 +798,9 @@ router.beforeEach(async (to, from, next) => {
   // Update page title
   document.title = to.meta.title ? \`\${to.meta.title} - ${normalizedName}\` : normalizedName
 
-  // Check authentication
-  const isAuthenticated = store.getters['auth/isAuthenticated']
+  // Check authentication using Pinia store
+  const authStore = useAuthStore()
+  const isAuthenticated = authStore.isAuthenticated
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (requiresAuth && !isAuthenticated) {
@@ -718,7 +814,7 @@ router.beforeEach(async (to, from, next) => {
 
   // Check admin role
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
-  const isAdmin = store.getters['auth/isAdmin']
+  const isAdmin = authStore.isAdmin
 
   if (requiresAdmin && !isAdmin) {
     next({ name: 'home' })
@@ -961,7 +1057,7 @@ ul {
       <header class="header">
         <h1>{{ $route.meta.title || 'Dashboard' }}</h1>
         <div class="user-menu">
-          <span>Welcome, User</span>
+          <span>Welcome, {{ authStore.user?.name || 'User' }}</span>
           <button @click="logout">Logout</button>
         </div>
       </header>
@@ -974,20 +1070,20 @@ ul {
 
 <script>
 import { useRouter } from 'vue-router'
-import { useStore } from 'vuex'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'DashboardLayout',
   setup() {
     const router = useRouter()
-    const store = useStore()
+    const authStore = useAuthStore()
 
     const logout = () => {
-      store.dispatch('auth/logout')
+      authStore.logout()
       router.push({ name: 'home' })
     }
 
-    return { logout }
+    return { logout, authStore }
   }
 }
 </script>
@@ -1860,7 +1956,9 @@ a {
   }
 
   private generateStore() {
-    return `import { createStore } from 'vuex'
+    return `// DEPRECATED: Using Pinia instead of Vuex
+// This file is kept for backward compatibility only
+import { createStore } from 'vuex'
 
 export default createStore({
   state: {
@@ -1896,6 +1994,309 @@ export default createStore({
     }
   },
   modules: {}
+})
+`;
+  }
+
+  private generateStoresIndex() {
+    return `// Pinia stores index
+// Export all stores for easy importing
+
+export { default as useCounterStore } from './counter'
+export { default as useUserStore } from './user'
+export { default as useAuthStore } from './auth'
+`;
+  }
+
+  private generateCounterStore() {
+    return `import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+export const useCounterStore = defineStore('counter', () => {
+  // State
+  const count = ref(0)
+  const lastChanged = ref<Date | null>(null)
+
+  // Getters
+  const doubleCount = computed(() => count.value * 2)
+  const tripleCount = computed(() => count.value * 3)
+
+  // Actions
+  function increment() {
+    count.value++
+    lastChanged.value = new Date()
+
+    // Emit event for microfrontend communication
+    window.dispatchEvent(new CustomEvent('counter-update', {
+      detail: { type: 'COUNTER_UPDATE', value: count.value }
+    }))
+  }
+
+  function decrement() {
+    count.value--
+    lastChanged.value = new Date()
+
+    window.dispatchEvent(new CustomEvent('counter-update', {
+      detail: { type: 'COUNTER_UPDATE', value: count.value }
+    }))
+  }
+
+  function reset() {
+    count.value = 0
+    lastChanged.value = new Date()
+  }
+
+  function setValue(value: number) {
+    count.value = value
+    lastChanged.value = new Date()
+  }
+
+  return {
+    // State
+    count,
+    lastChanged,
+    // Getters
+    doubleCount,
+    tripleCount,
+    // Actions
+    increment,
+    decrement,
+    reset,
+    setValue
+  }
+})
+`;
+  }
+
+  private generateUserStore() {
+    return `import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+interface User {
+  id: number
+  name: string
+  email: string
+  avatar?: string
+  role: 'user' | 'admin' | 'editor'
+}
+
+export const useUserStore = defineStore('user', () => {
+  // State
+  const users = ref<User[]>([
+    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'admin' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'user' },
+    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'editor' }
+  ])
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+
+  // Getters
+  const admins = computed(() =>
+    users.value.filter(user => user.role === 'admin')
+  )
+
+  const userById = (id: number) => {
+    return computed(() => users.value.find(user => user.id === id))
+  }
+
+  // Actions
+  async function fetchUsers() {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await fetch('/api/users')
+      const data = await response.json()
+      users.value = data
+    } catch (err) {
+      error.value = 'Failed to fetch users'
+      console.error(err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function updateUser(id: number, updates: Partial<User>) {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await fetch(\`/api/users/\${id}\`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      })
+      const data = await response.json()
+
+      const index = users.value.findIndex(user => user.id === id)
+      if (index !== -1) {
+        users.value[index] = { ...users.value[index], ...data }
+      }
+    } catch (err) {
+      error.value = 'Failed to update user'
+      console.error(err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function addUser(user: Omit<User, 'id'>) {
+    const newId = Math.max(...users.value.map(u => u.id)) + 1
+    users.value.push({ id: newId, ...user })
+  }
+
+  function deleteUser(id: number) {
+    const index = users.value.findIndex(user => user.id === id)
+    if (index !== -1) {
+      users.value.splice(index, 1)
+    }
+  }
+
+  return {
+    // State
+    users,
+    loading,
+    error,
+    // Getters
+    admins,
+    userById,
+    // Actions
+    fetchUsers,
+    updateUser,
+    addUser,
+    deleteUser
+  }
+})
+`;
+  }
+
+  private generateAuthStore() {
+    return `import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+interface AuthUser {
+  id: number
+  name: string
+  email: string
+  role: 'user' | 'admin' | 'editor'
+}
+
+export const useAuthStore = defineStore('auth', () => {
+  // State
+  const user = ref<AuthUser | null>(null)
+  const token = ref<string | null>(localStorage.getItem('auth_token'))
+  const loading = ref(false)
+
+  // Getters
+  const isAuthenticated = computed(() => !!token.value && !!user.value)
+  const isAdmin = computed(() => user.value?.role === 'admin')
+  const isEditor = computed(() => user.value?.role === 'editor')
+
+  // Actions
+  async function login(email: string, password: string) {
+    loading.value = true
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+
+      if (!response.ok) {
+        throw new Error('Login failed')
+      }
+
+      const data = await response.json()
+      token.value = data.token
+      user.value = data.user
+      localStorage.setItem('auth_token', data.token)
+
+      return true
+    } catch (error) {
+      console.error('Login error:', error)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function register(userData: {
+    name: string
+    email: string
+    password: string
+  }) {
+    loading.value = true
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      })
+
+      if (!response.ok) {
+        throw new Error('Registration failed')
+      }
+
+      const data = await response.json()
+      token.value = data.token
+      user.value = data.user
+      localStorage.setItem('auth_token', data.token)
+
+      return true
+    } catch (error) {
+      console.error('Registration error:', error)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function logout() {
+    user.value = null
+    token.value = null
+    localStorage.removeItem('auth_token')
+  }
+
+  async function fetchUser() {
+    if (!token.value) return
+
+    loading.value = true
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': \`Bearer \${token.value}\`
+        }
+      })
+
+      if (response.ok) {
+        user.value = await response.json()
+      }
+    } catch (error) {
+      console.error('Fetch user error:', error)
+      logout()
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Initialize auth state on store creation
+  if (token.value) {
+    fetchUser()
+  }
+
+  return {
+    // State
+    user,
+    token,
+    loading,
+    // Getters
+    isAuthenticated,
+    isAdmin,
+    isEditor,
+    // Actions
+    login,
+    register,
+    logout,
+    fetchUser
+  }
 })
 `;
   }
@@ -1979,7 +2380,7 @@ code {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compilerOptions: {
         target: 'es5',
@@ -2002,7 +2403,7 @@ code {
     }, null, 2);
   }
 
-  private generateEslintConfig() {
+  protected generateEslintConfig() {
     return `module.exports = {
   root: true,
   env: {
@@ -2150,23 +2551,47 @@ README.md
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager } = this.context;
     return `# ${name}
 
-${description || 'A Vue CLI application with PWA support and legacy browser compatibility'}
+${description || 'A Vue CLI application with PWA support and advanced Vue 3 ecosystem'}
 
 ## Features
 
+### Core
 - ⚡ Vue 3 with Composition API
 - 📱 Progressive Web App (PWA) support
 - 🌐 Legacy browser support via Babel
-- 🛣️ Vue Router for navigation
-- 📦 Vuex for state management
-- 🧪 Unit testing with Jest
-- 🎨 Sass for styling
+- 🛣️ Vue Router for navigation with advanced features
+
+### State Management
+- 📦 Pinia for state management (replaces Vuex)
+  - Type-safe stores with TypeScript support
+  - Composition API style stores
+  - DevTools integration
+
+### Testing & Quality
+- 🧪 Vitest for unit testing with Vue Test Utils
+  - Fast testing with ESM support
+  - Built-in code coverage
+  - UI mode for debugging tests
 - 📊 ESLint and Prettier
+
+### Developer Experience
+- 🎨 Sass/SCSS for style preprocessing
+- 🔍 Vue DevTools integration
+- 🚀 Vite-ready architecture
 - 🐳 Docker support
+
+### Form Validation
+- ✅ VeeValidate for form validation
+- 📝 Yup schema validation
+
+### Vue 3 Features
+- 🎭 Teleport for portal-like behavior
+- ⏳ Suspense for async components
+- 🎪 Composition API utilities with VueUse
 
 ## Quick Start
 
@@ -2180,11 +2605,208 @@ ${packageManager} run serve
 # Build for production
 ${packageManager} run build
 
-# Run tests
+# Run tests (Jest - legacy)
 ${packageManager} run test:unit
+
+# Run tests (Vitest - modern)
+${packageManager} run vitest
+${packageManager} run vitest:ui        # UI mode
+${packageManager} run test:coverage    # Coverage report
 
 # Run linter
 ${packageManager} run lint
+\`\`\`
+
+## State Management with Pinia
+
+Pinia is the official state management library for Vue 3. It provides:
+- **TypeScript Support**: Fully typed stores
+- **DevTools Integration**: Track state changes
+- **Extensible**: Compatible with Vue DevTools
+- **Modular**: Organize stores by feature
+
+### Example Store
+
+\`\`\`javascript
+// stores/counter.js
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+export const useCounterStore = defineStore('counter', () => {
+  const count = ref(0)
+  const doubleCount = computed(() => count.value * 2)
+
+  function increment() {
+    count.value++
+  }
+
+  return { count, doubleCount, increment }
+})
+\`\`\`
+
+### Using in Components
+
+\`\`\`vue
+<script setup>
+import { useCounterStore } from '@/stores/counter'
+
+const counterStore = useCounterStore()
+</script>
+
+<template>
+  <div>{{ counterStore.count }}</div>
+  <button @click="counterStore.increment">Increment</button>
+</template>
+\`\`\`
+
+### Available Stores
+
+1. **Counter Store**: Demo store with counters and computed values
+2. **User Store**: User management with CRUD operations
+3. **Auth Store**: Authentication state with login/logout
+
+## VueUse Integration
+
+VueUse provides 200+ essential Vue utilities. Example usage:
+
+\`\`\`javascript
+import {
+  useLocalStorage,
+  useMouse,
+  usePreferredDark,
+  useWindowSize
+} from '@vueuse/core'
+
+// Local storage reactive state
+const store = useLocalStorage('my-key', { foo: 'bar' })
+
+// Mouse position
+const { x, y } = useMouse()
+
+// Dark mode preference
+const isDark = usePreferredDark()
+
+// Window size
+const { width, height } = useWindowSize()
+\`\`\`
+
+## Form Validation with VeeValidate
+
+Example contact form with validation:
+
+\`\`\`vue
+<script setup>
+import { useForm, useField } from 'vee-validate'
+import * as yup from 'yup'
+
+const schema = yup.object({
+  name: yup.string().required().min(2),
+  email: yup.string().required().email(),
+  message: yup.string().required().min(10)
+})
+
+const { handleSubmit, errors } = useForm({ validationSchema: schema })
+
+const { value: name } = useField('name')
+const { value: email } = useField('email')
+const { value: message } = useField('message')
+
+const onSubmit = handleSubmit(values => {
+  console.log('Form submitted:', values)
+})
+</script>
+\`\`\`
+
+## Vue 3 Advanced Features
+
+### Teleport
+
+Render components outside their parent DOM hierarchy:
+
+\`\`\`vue
+<Teleport to="body">
+  <div class="modal">Modal content</div>
+</Teleport>
+\`\`\`
+
+### Suspense
+
+Handle async components with loading states:
+
+\`\`\`vue
+<Suspense>
+  <template #default>
+    <AsyncComponent />
+  </template>
+  <template #fallback>
+    <div>Loading...</div>
+  </template>
+</Suspense>
+\`\`\`
+
+## Testing with Vitest
+
+Vitest is a blazing fast unit test framework powered by Vite.
+
+\`\`\`bash
+# Run tests
+pnpm vitest
+
+# Watch mode
+pnpm vitest --watch
+
+# UI mode
+pnpm vitest --ui
+
+# Coverage
+pnpm vitest --coverage
+\`\`\`
+
+### Example Test
+
+\`\`\`javascript
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
+import { useCounterStore } from '@/stores/counter'
+
+describe('Counter Store', () => {
+  it('increments count', () => {
+    const counter = useCounterStore()
+    expect(counter.count).toBe(0)
+    counter.increment()
+    expect(counter.count).toBe(1)
+  })
+})
+\`\`\`
+
+## Vue DevTools
+
+The Vue DevTools browser extension integrates automatically with:
+- **Component Tree**: Inspect component hierarchy
+- **Vuex/Pinia**: Monitor state changes
+- **Events**: Track emitted events
+- **Performance**: Profile component rendering
+- **Router**: View route history
+
+## Style Preprocessing
+
+Sass/SCSS is configured with:
+- Global variables and mixins
+- Scoped styles in components
+- Auto-import of styles
+- Nested selectors
+
+\`\`\`vue
+<style lang="scss" scoped>
+.my-component {
+  padding: 1rem;
+
+  &__child {
+    color: $primary-color;
+  }
+}
+</style>
 \`\`\`
 
 ## Project Setup
@@ -2274,7 +2896,7 @@ This application includes an advanced Vue Router setup with:
 
 The router includes global navigation guards for:
 
-- **Authentication**: Protects routes that require login
+- **Authentication**: Protects routes that require login (uses Pinia auth store)
 - **Authorization**: Checks admin role for admin routes
 - **Page titles**: Automatically updates document title
 - **Analytics**: Tracks page views with Google Analytics
@@ -2365,13 +2987,66 @@ router.replace('/dashboard')
 router.go(-1)
 \`\`\`
 
+## Project Structure
+
+\`\`\`
+src/
+├── assets/          # Static assets (images, styles)
+├── components/      # Reusable Vue components
+│   ├── AsyncComponent.vue    # Suspense example
+│   ├── ContactForm.vue       # VeeValidate form example
+│   └── HelloWorld.vue        # Demo component
+├── stores/          # Pinia stores
+│   ├── index.js     # Store exports
+│   ├── counter.js   # Counter store
+│   ├── user.js      # User store
+│   └── auth.js      # Authentication store
+├── views/           # Page components
+│   ├── dashboard/   # Dashboard nested routes
+│   └── admin/       # Admin nested routes
+├── router/          # Vue Router configuration
+├── App.vue          # Root component
+└── main.js          # Application entry point
+
+tests/
+└── unit/            # Vitest unit tests
+\`\`\`
+
+## Migration from Vuex
+
+This project uses Pinia instead of Vuex. Key differences:
+
+**Vuex:**
+\`\`\`javascript
+// Old Vuex way
+this.$store.commit('INCREMENT')
+this.$store.dispatch('fetchUser')
+this.$store.getters.doubleCount
+\`\`\`
+
+**Pinia:**
+\`\`\`javascript
+// New Pinia way
+const counterStore = useCounterStore()
+counterStore.increment()
+counterStore.doubleCount
+\`\`\`
+
 ## Learn More
 
-- [Vue CLI Documentation](https://cli.vuejs.org/)
-- [Vue Documentation](https://vuejs.org/)
+### Official Documentation
+- [Vue 3 Documentation](https://vuejs.org/)
+- [Pinia Documentation](https://pinia.vuejs.org/)
 - [Vue Router](https://router.vuejs.org/)
-- [Vuex](https://vuex.vuejs.org/)
+- [VueUse](https://vueuse.org/)
+- [VeeValidate](https://vee-validate.logaretm.com/)
+- [Vitest](https://vitest.dev/)
+
+### Tools & Guides
+- [Vue CLI Documentation](https://cli.vuejs.org/)
+- [Vue DevTools](https://devtools.vuejs.org/)
 - [PWA Guide](https://web.dev/progressive-web-apps/)
+- [TypeScript with Vue](https://vuejs.org/guide/typescript/overview.html)
 
 ## License
 
@@ -2407,6 +3082,383 @@ yarn-error.log*
 # IDE
 .vscode
 .idea
+`;
+  }
+
+  private generateAsyncComponent() {
+    return `<template>
+  <div class="async-component">
+    <h2>Async Component (Suspense)</h2>
+    <p>This component was loaded asynchronously and wrapped in Suspense</p>
+    <div class="content">
+      <p>Current time: {{ currentTime }}</p>
+      <button @click="refreshTime">Refresh Time</button>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref, onMounted } from 'vue'
+
+export default {
+  name: 'AsyncComponent',
+  setup() {
+    const currentTime = ref(new Date().toLocaleString())
+
+    // Simulate async data loading
+    onMounted(async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('Async component loaded!')
+    })
+
+    const refreshTime = () => {
+      currentTime.value = new Date().toLocaleString()
+    }
+
+    return {
+      currentTime,
+      refreshTime
+    }
+  }
+}
+</script>
+
+<style scoped>
+.async-component {
+  padding: 2rem;
+  background-color: #f0f9ff;
+  border-radius: 0.5rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.async-component h2 {
+  color: #42b983;
+  margin-bottom: 1rem;
+}
+
+.content {
+  margin-top: 1.5rem;
+}
+
+.content button {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  background-color: #42b983;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+</style>
+`;
+  }
+
+  private generateContactForm() {
+    return `<template>
+  <div class="contact-form">
+    <h2>Contact Form (VeeValidate)</h2>
+    <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors }">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <Field
+          id="name"
+          name="name"
+          type="text"
+          v-model="form.name"
+          :class="{ 'error': errors.name }"
+        />
+        <ErrorMessage name="name" class="error-message" />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <Field
+          id="email"
+          name="email"
+          type="email"
+          v-model="form.email"
+          :class="{ 'error': errors.email }"
+        />
+        <ErrorMessage name="email" class="error-message" />
+      </div>
+
+      <div class="form-group">
+        <label for="message">Message</label>
+        <Field
+          id="message"
+          name="message"
+          as="textarea"
+          v-model="form.message"
+          :class="{ 'error': errors.message }"
+          rows="4"
+        />
+        <ErrorMessage name="message" class="error-message" />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone (Optional)</label>
+        <Field
+          id="phone"
+          name="phone"
+          type="tel"
+          v-model="form.phone"
+          placeholder="(123) 456-7890"
+        />
+        <ErrorMessage name="phone" class="error-message" />
+      </div>
+
+      <button type="submit" :disabled="isSubmitting">
+        {{ isSubmitting ? 'Sending...' : 'Send Message' }}
+      </button>
+
+      <div v-if="submitted" class="success-message">
+        Message sent successfully!
+      </div>
+    </Form>
+  </div>
+</template>
+
+<script>
+import { ref, reactive } from 'vue'
+import { Form, Field, ErrorMessage } from 'vee-validate'
+import * as yup from 'yup'
+
+export default {
+  name: 'ContactForm',
+  components: {
+    Form,
+    Field,
+    ErrorMessage
+  },
+  setup() {
+    const isSubmitting = ref(false)
+    const submitted = ref(false)
+
+    const form = reactive({
+      name: '',
+      email: '',
+      message: '',
+      phone: ''
+    })
+
+    // Validation schema using Yup
+    const schema = yup.object({
+      name: yup.string()
+        .required('Name is required')
+        .min(2, 'Name must be at least 2 characters')
+        .max(50, 'Name must not exceed 50 characters'),
+      email: yup.string()
+        .required('Email is required')
+        .email('Invalid email format'),
+      message: yup.string()
+        .required('Message is required')
+        .min(10, 'Message must be at least 10 characters')
+        .max(500, 'Message must not exceed 500 characters'),
+      phone: yup.string()
+        .matches(/^[\\d\\s\\-()]+$/, 'Invalid phone format')
+        .min(10, 'Phone must be at least 10 digits')
+    })
+
+    const onSubmit = async (values, { resetForm }) => {
+      isSubmitting.value = true
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      console.log('Form submitted:', values)
+
+      // Reset form
+      resetForm()
+      submitted.value = true
+      isSubmitting.value = false
+
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        submitted.value = false
+      }, 3000)
+    }
+
+    return {
+      form,
+      schema,
+      isSubmitting,
+      submitted,
+      onSubmit
+    }
+  }
+}
+</script>
+
+<style scoped>
+.contact-form {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.contact-form h2 {
+  color: #42b983;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #42b983;
+}
+
+.form-group input.error,
+.form-group textarea.error {
+  border-color: #e74c3c;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 0.75rem 2rem;
+  background: #42b983;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background: #3aa876;
+}
+
+button[type="submit"]:disabled {
+  background: #a8e6cf;
+  cursor: not-allowed;
+}
+
+.success-message {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #d4edda;
+  color: #155724;
+  border-radius: 0.25rem;
+  text-align: center;
+}
+</style>
+`;
+  }
+
+  private generateVitestConfig() {
+    return `import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
+import { fileURLToPath } from 'node:url'
+
+export default defineConfig({
+  plugins: [vue()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'tests/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/dist/**',
+        '**/coverage/**'
+      ]
+    },
+    root: fileURLToPath(new URL('./', import.meta.url))
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  }
+})
+`;
+  }
+
+  private generateVitestExample() {
+    return `import { describe, it, expect, beforeEach } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { useCounterStore } from '@/stores/counter'
+
+describe('Counter Store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('increments count', () => {
+    const counter = useCounterStore()
+    expect(counter.count).toBe(0)
+    counter.increment()
+    expect(counter.count).toBe(1)
+  })
+
+  it('decrements count', () => {
+    const counter = useCounterStore()
+    counter.increment()
+    expect(counter.count).toBe(1)
+    counter.decrement()
+    expect(counter.count).toBe(0)
+  })
+
+  it('doubles count correctly', () => {
+    const counter = useCounterStore()
+    counter.count = 5
+    expect(counter.doubleCount).toBe(10)
+  })
+
+  it('resets count', () => {
+    const counter = useCounterStore()
+    counter.increment()
+    counter.increment()
+    counter.reset()
+    expect(counter.count).toBe(0)
+  })
+})
+
+describe('Component Testing Example', () => {
+  it('renders HelloWorld component', () => {
+    const wrapper = mount({
+      template: '<div>Hello World</div>'
+    })
+    expect(wrapper.text()).toContain('Hello World')
+  })
+})
 `;
   }
 }

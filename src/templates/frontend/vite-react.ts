@@ -311,7 +311,9 @@ export class ViteReactTemplate extends BaseTemplate {
         'react-router-dom': '^6.22.0',
         '@tanstack/react-query': '^5.17.0',
         'zustand': '^4.5.0',
-        'react-hook-form': '^7.49.0'
+        'react-hook-form': '^7.49.0',
+        '@emotion/react': '^11.11.0',
+        '@emotion/styled': '^11.11.0'
       },
       devDependencies: {
         '@types/react': '^18.2.48',
@@ -1105,6 +1107,7 @@ Built with React 18, Vite 5, TypeScript, and modern tooling for lightning-fast d
 - **TanStack Query** - Powerful server state management with caching and synchronization
 - **Zustand** - Lightweight client state management with persistence
 - **React Hook Form** - Performant form management with validation
+- **Emotion** - CSS-in-JS styling with styled components and css prop
 - **ESLint** - Code linting with TypeScript support
 - **Prettier** - Code formatting
 - **Bundle Analysis** - Visualize bundle composition with rollup-plugin-visualizer
@@ -1686,6 +1689,333 @@ const apiUrl = import.meta.env.VITE_API_URL;
 - **Path aliases** configured
 - **JSX** set to react-jsx
 - **No unused locals/parameters**
+
+## Emotion CSS-in-JS
+
+Emotion is a performant and flexible CSS-in-JS library that allows you to style components with JavaScript. This template is configured to use both styled components and the css prop.
+
+### Configuration
+
+Emotion is already configured in \`vite.config.ts\`:
+
+\`\`\`typescript
+react({
+  jsxImportSource: '@emotion/react',
+  babel: {
+    plugins: ['@emotion/babel-plugin'],
+  },
+})
+\`\`\`
+
+This configuration enables:
+- **jsxImportSource**: Tells React to use Emotion's JSX runtime
+- **babel plugin**: Enables the css prop and optimizes styles
+
+### Using Styled Components
+
+Create styled components using \`@emotion/styled\`:
+
+\`\`\`typescript
+import styled from '@emotion/styled';
+
+const Button = styled.button\`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75em 1.5em;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  \${(props) => props.disabled && \`
+    opacity: 0.6;
+    cursor: not-allowed;
+  \`}
+\`;
+
+interface ButtonProps {
+  disabled?: boolean;
+  onClick?: () => void;
+  children: React.ReactNode;
+}
+
+function MyButton({ disabled, onClick, children }: ButtonProps) {
+  return <Button disabled={disabled} onClick={onClick}>{children}</Button>;
+}
+\`\`\`
+
+### Using the CSS Prop
+
+The css prop allows you to style any element inline:
+
+\`\`\`typescript
+import { css } from '@emotion/react';
+
+const buttonStyle = css\`
+  background: #667eea;
+  color: white;
+  padding: 0.75em 1.5em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background: #5568d3;
+  }
+\`;
+
+function MyComponent() {
+  return (
+    <button css={buttonStyle}>
+      Click me
+    </button>
+  );
+}
+\`\`\`
+
+### Dynamic Styles
+
+Emotion makes it easy to create dynamic styles based on props:
+
+\`\`\`typescript
+import styled from '@emotion/styled';
+
+const Card = styled.div<(props: { variant: 'primary' | 'secondary' })>\`
+  padding: 1.5rem;
+  border-radius: 8px;
+  background: \${(props) =>
+    props.variant === 'primary' ? '#667eea' : '#764ba2'};
+  color: white;
+\`;
+
+function App() {
+  return (
+    <div>
+      <Card variant="primary">Primary Card</Card>
+      <Card variant="secondary">Secondary Card</Card>
+    </div>
+  );
+}
+\`\`\`
+
+### Composition
+
+Compose styles from other styled components:
+
+\`\`\`typescript
+import styled from '@emotion/styled';
+
+const BaseButton = styled.button\`
+  padding: 0.75em 1.5em;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+\`;
+
+const PrimaryButton = styled(BaseButton)\`
+  background: #667eea;
+  color: white;
+
+  &:hover {
+    background: #5568d3;
+  }
+\`;
+
+const SecondaryButton = styled(BaseButton)\`
+  background: #f0f0f0;
+  color: #333;
+
+  &:hover {
+    background: #e0e0e0;
+  }
+\`;
+\`\`\`
+
+### Theme Support
+
+Use Emotion's ThemeProvider for consistent theming:
+
+\`\`\`typescript
+import { ThemeProvider } from '@emotion/react';
+import styled from '@emotion/styled';
+
+const theme = {
+  colors: {
+    primary: '#667eea',
+    secondary: '#764ba2',
+    text: '#333',
+    background: '#fff',
+  },
+  spacing: {
+    small: '0.5rem',
+    medium: '1rem',
+    large: '2rem',
+  },
+};
+
+const ThemedButton = styled.button\`
+  background: \${(props) => props.theme.colors.primary};
+  color: white;
+  padding: \${(props) => props.theme.spacing.medium};
+  border: none;
+  border-radius: 8px;
+\`;
+
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <ThemedButton>Themed Button</ThemedButton>
+    </ThemeProvider>
+  );
+}
+\`\`\`
+
+### Responsive Design
+
+Create responsive styles with Emotion:
+
+\`\`\`typescript
+import styled from '@emotion/styled';
+
+const ResponsiveContainer = styled.div\`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+\`;
+\`\`\`
+
+### Global Styles
+
+Apply global styles with \`@emotion/react\`:
+
+\`\`\`typescript
+import { Global, css } from '@emotion/react';
+
+const globalStyles = css\`
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+\`;
+
+function App() {
+  return (
+    <>
+      <Global styles={globalStyles} />
+      {/* Your app content */}
+    </>
+  );
+}
+\`\`\`
+
+### Type Safety
+
+Emotion works seamlessly with TypeScript:
+
+\`\`\`typescript
+import styled from '@emotion/styled';
+
+interface CardProps {
+  padding?: 'small' | 'medium' | 'large';
+  variant?: 'primary' | 'secondary';
+}
+
+const Card = styled.div<CardProps>\`
+  padding: \${(props) => {
+    switch (props.padding) {
+      case 'small':
+        return '0.5rem';
+      case 'medium':
+        return '1rem';
+      case 'large':
+        return '2rem';
+      default:
+        return '1rem';
+    }
+  }};
+  background: \${(props) =>
+    props.variant === 'primary' ? '#667eea' : '#764ba2'};
+  border-radius: 8px;
+\`;
+
+// Usage with full type safety
+<Card padding="large" variant="primary">
+  Content
+</Card>
+\`\`\`
+
+### Best Practices
+
+1. **Use styled components for reusable UI elements**
+   - Create a library of styled components for buttons, cards, inputs, etc.
+   - Keep them in a dedicated \`src/components/ui\` directory
+
+2. **Use the css prop for one-off styles**
+   - Perfect for component-specific overrides
+   - Great for dynamic styles based on state
+
+3. **Extract common styles**
+   - Use composition to avoid repeating styles
+   - Create base components and extend them
+
+4. **Use ThemeProvider for global design tokens**
+   - Define colors, spacing, typography in one place
+   - Access theme values in any styled component
+
+5. **Keep styles co-located**
+   - Define styles near where they're used
+   - Improves maintainability and reduces context switching
+
+### Migration from CSS Modules
+
+Migrating from CSS modules to Emotion is straightforward:
+
+**Before (CSS Modules):**
+\`\`\`typescript
+import styles from './Button.module.css';
+
+function Button() {
+  return <button className={styles.button}>Click me</button>;
+}
+\`\`\`
+
+**After (Emotion):**
+\`\`\`typescript
+import styled from '@emotion/styled';
+
+const StyledButton = styled.button\`
+  /* same styles as before */
+\`;
+
+function Button() {
+  return <StyledButton>Click me</StyledButton>;
+}
+\`\`\`
 
 ## Vite Configuration
 
