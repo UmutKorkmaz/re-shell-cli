@@ -56,6 +56,11 @@ export class VueCliTemplate extends BaseTemplate {
     });
 
     files.push({
+      path: 'src/i18n/index.js',
+      content: this.generateI18nSetup()
+    });
+
+    files.push({
       path: 'src/views/Home.vue',
       content: this.generateHomeView()
     });
@@ -121,6 +126,11 @@ export class VueCliTemplate extends BaseTemplate {
     files.push({
       path: 'src/components/HelloWorld.vue',
       content: this.generateHelloWorldComponent()
+    });
+
+    files.push({
+      path: 'src/components/LanguageSwitcher.vue',
+      content: this.generateLanguageSwitcher()
     });
 
     // Async component for Suspense
@@ -270,6 +280,7 @@ export class VueCliTemplate extends BaseTemplate {
         '@vueuse/core': '^10.7.0',
         'vee-validate': '^4.12.0',
         'yup': '^1.4.0',
+        'vue-i18n': '^9.9.0',
         'register-service-worker': '^1.7.2'
       },
       devDependencies: {
@@ -449,6 +460,7 @@ import type { App } from 'vue'` : `import { createApp } from 'vue'`;
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import i18n from './i18n'
 import './registerServiceWorker'
 import './assets/css/main.css'
 
@@ -457,6 +469,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.use(i18n)
 
 app.mount('#app')
 `;
@@ -467,22 +480,23 @@ app.mount('#app')
   <div id="app">
     <div class="header">
       <nav>
-        <router-link to="/">Home</router-link> |
-        <router-link to="/about">About</router-link>
+        <router-link to="/">{{ $t('nav.home') }}</router-link> |
+        <router-link to="/about">{{ $t('nav.about') }}</router-link>
       </nav>
+      <LanguageSwitcher />
     </div>
     <main class="main">
       <router-view />
     </main>
     <div class="counter-demo">
-      <h2>Counter (Pinia): {{ counterStore.count }}</h2>
+      <h2>{{ $t('common.loading') }} (Pinia): {{ counterStore.count }}</h2>
       <button @click="counterStore.increment">+</button>
       <button @click="counterStore.decrement">-</button>
       <p v-if="message" class="message">{{ message }}</p>
     </div>
 
     <!-- Teleport Example: Modal -->
-    <button @click="showModal = true">Show Modal (Teleport)</button>
+    <button @click="showModal = true">{{ $t('common.submit') }} Modal (Teleport)</button>
 
     <!-- Teleport to body -->
     <Teleport to="body">
@@ -490,7 +504,7 @@ app.mount('#app')
         <div class="modal-content" @click.stop>
           <h2>Teleport Modal</h2>
           <p>This modal is rendered at the body level using Vue 3 Teleport</p>
-          <button @click="showModal = false">Close</button>
+          <button @click="showModal = false">{{ $t('common.cancel') }}</button>
         </div>
       </div>
     </Teleport>
@@ -501,7 +515,7 @@ app.mount('#app')
         <AsyncComponent />
       </template>
       <template #fallback>
-        <div class="loading">Loading async component...</div>
+        <div class="loading">{{ $t('common.loading') }} async component...</div>
       </template>
     </Suspense>
   </div>
@@ -510,6 +524,7 @@ app.mount('#app')
 <script>
 import { ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { useCounterStore } from '@/stores/counter'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 // Async component for Suspense
 const AsyncComponent = defineAsyncComponent(() =>
@@ -519,7 +534,8 @@ const AsyncComponent = defineAsyncComponent(() =>
 export default {
   name: 'App',
   components: {
-    AsyncComponent
+    AsyncComponent,
+    LanguageSwitcher
   },
   setup() {
     const counterStore = useCounterStore()
@@ -562,6 +578,9 @@ export default {
   padding: 1rem 2rem;
   background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .header nav a {
@@ -856,9 +875,10 @@ export default router
     return `<template>
   <div class="home">
     <div class="hero">
-      <h1>Welcome to Your Vue.js App</h1>
+      <h1>{{ $t('home.welcome') }}</h1>
       <p class="subtitle">
-        Built with Vue CLI 3, PWA support, and legacy browser compatibility
+        {{ $t('home.description') }} {{ $t('home.docs') }},
+        {{ $t('home.install') }}, and {{ $t('home.plugins') }}
       </p>
     </div>
 
@@ -877,7 +897,7 @@ export default router
       </div>
     </div>
 
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <HelloWorld :msg="$t('home.welcome')" />
   </div>
 </template>
 
@@ -946,22 +966,22 @@ export default {
   private generateAboutView() {
     return `<template>
   <div class="about">
-    <h1>About This Application</h1>
+    <h1>{{ $t('about.title') }}</h1>
 
     <p>
-      This is a Vue CLI 3 application with Progressive Web App (PWA) support
-      and legacy browser compatibility.
+      {{ $t('about.description') }}
     </p>
 
     <h2>Features</h2>
     <ul>
       <li>Vue 3 with Composition API</li>
       <li>Vue Router for navigation</li>
-      <li>Vuex for state management</li>
+      <li>Pinia for state management</li>
       <li>PWA with service worker</li>
+      <li>Internationalization support</li>
       <li>Legacy browser support via Babel</li>
       <li>ESLint and Prettier for code quality</li>
-      <li>Unit testing with Jest</li>
+      <li>Unit testing with Vitest</li>
     </ul>
 
     <h2>PWA Features</h2>
@@ -971,9 +991,9 @@ export default {
     </p>
 
     <div class="counter-demo">
-      <h2>Interactive Counter</h2>
+      <h2>{{ $t('common.loading') }} Counter</h2>
       <p>{{ count }}</p>
-      <button @click="count++">Increment</button>
+      <button @click="count++">{{ $t('common.submit') }}</button>
     </div>
   </div>
 </template>
@@ -1998,6 +2018,196 @@ export default createStore({
 `;
   }
 
+  protected generateI18nSetup() {
+    return `import { createI18n } from 'vue-i18n';
+
+const messages = {
+  en: {
+    nav: {
+      home: 'Home',
+      about: 'About',
+      dashboard: 'Dashboard',
+      admin: 'Admin',
+      login: 'Login',
+    },
+    home: {
+      welcome: 'Welcome to Your Vue.js App',
+      description: 'For a guide and recipes on how to configure / customize this project, check out the',
+      docs: 'Vue documentation',
+      install: 'CLI Installation',
+      plugins: 'Plugins/Guides',
+    },
+    about: {
+      title: 'About This App',
+      description: 'This is a Vue.js application built with Vue CLI.',
+    },
+    common: {
+      loading: 'Loading...',
+      error: 'An error occurred',
+      submit: 'Submit',
+      cancel: 'Cancel',
+      save: 'Save',
+      delete: 'Delete',
+    },
+  },
+  es: {
+    nav: {
+      home: 'Inicio',
+      about: 'Acerca de',
+      dashboard: 'Panel',
+      admin: 'Admin',
+      login: 'Iniciar sesión',
+    },
+    home: {
+      welcome: 'Bienvenido a tu aplicación Vue.js',
+      description: 'Para obtener una guía y recetas sobre cómo configurar / personalizar este proyecto, consulte la',
+      docs: 'documentación de Vue',
+      install: 'Instalación CLI',
+      plugins: 'Complementos/Guías',
+    },
+    about: {
+      title: 'Acerca de esta aplicación',
+      description: 'Esta es una aplicación Vue.js construida con Vue CLI.',
+    },
+    common: {
+      loading: 'Cargando...',
+      error: 'Ocurrió un error',
+      submit: 'Enviar',
+      cancel: 'Cancelar',
+      save: 'Guardar',
+      delete: 'Eliminar',
+    },
+  },
+  fr: {
+    nav: {
+      home: 'Accueil',
+      about: 'À propos',
+      dashboard: 'Tableau de bord',
+      admin: 'Admin',
+      login: 'Connexion',
+    },
+    home: {
+      welcome: 'Bienvenue dans votre application Vue.js',
+      description: 'Pour un guide et des recettes sur la façon de configurer / personnaliser ce projet, consultez la',
+      docs: 'documentation Vue',
+      install: 'Installation CLI',
+      plugins: 'Plugins/Guides',
+    },
+    about: {
+      title: 'À propos de cette application',
+      description: 'Ceci est une application Vue.js construite avec Vue CLI.',
+    },
+    common: {
+      loading: 'Chargement...',
+      error: 'Une erreur s\'est produite',
+      submit: 'Soumettre',
+      cancel: 'Annuler',
+      save: 'Enregistrer',
+      delete: 'Supprimer',
+    },
+  },
+  zh: {
+    nav: {
+      home: '首页',
+      about: '关于',
+      dashboard: '仪表板',
+      admin: '管理员',
+      login: '登录',
+    },
+    home: {
+      welcome: '欢迎使用您的 Vue.js 应用',
+      description: '有关如何配置/自定义此项目的指南和配方,请查看',
+      docs: 'Vue 文档',
+      install: 'CLI 安装',
+      plugins: '插件/指南',
+    },
+    about: {
+      title: '关于此应用',
+      description: '这是一个使用 Vue CLI 构建的 Vue.js 应用程序。',
+    },
+    common: {
+      loading: '加载中...',
+      error: '发生错误',
+      submit: '提交',
+      cancel: '取消',
+      save: '保存',
+      delete: '删除',
+    },
+  },
+};
+
+const i18n = createI18n({
+  legacy: false, // Use Composition API mode
+  locale: 'en', // Set default locale
+  fallbackLocale: 'en', // Set fallback locale
+  messages,
+  globalInjection: true, // Allow global use of $t()
+});
+
+export default i18n;
+`;
+  }
+
+  protected generateLanguageSwitcher() {
+    return `<template>
+  <div class="language-switcher">
+    <select v-model="currentLocale" @change="changeLocale" class="locale-select">
+      <option value="en">🇺🇸 English</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="zh">🇨🇳 中文</option>
+    </select>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { locale } = useI18n();
+const currentLocale = ref(locale.value);
+
+const changeLocale = () => {
+  locale.value = currentLocale.value;
+  localStorage.setItem('user-locale', currentLocale.value);
+};
+
+// Load saved locale from localStorage
+const savedLocale = localStorage.getItem('user-locale');
+if (savedLocale) {
+  currentLocale.value = savedLocale;
+  locale.value = savedLocale;
+}
+</script>
+
+<style scoped>
+.language-switcher {
+  display: inline-block;
+}
+
+.locale-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.locale-select:hover {
+  border-color: #42b983;
+}
+
+.locale-select:focus {
+  outline: none;
+  border-color: #42b983;
+  box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
+</style>
+`;
+  }
+
   private generateStoresIndex() {
     return `// Pinia stores index
 // Export all stores for easy importing
@@ -2564,6 +2774,7 @@ ${description || 'A Vue CLI application with PWA support and advanced Vue 3 ecos
 - 📱 Progressive Web App (PWA) support
 - 🌐 Legacy browser support via Babel
 - 🛣️ Vue Router for navigation with advanced features
+- 🌍 Internationalization (i18n) with Vue i18n
 
 ### State Management
 - 📦 Pinia for state management (replaces Vuex)
@@ -2688,6 +2899,110 @@ const isDark = usePreferredDark()
 
 // Window size
 const { width, height } = useWindowSize()
+\`\`\`
+
+## Internationalization with Vue i18n
+
+This template includes Vue i18n for multi-language support out of the box:
+
+### Features
+- 🌍 Support for English, Spanish, French, and Chinese
+- 🔄 Locale switching with persistence
+- 📦 Built-in translation keys for common UI elements
+- 🎯 Nested translation structure for organization
+- 💾 Local storage integration for user preference
+
+### Using Translations
+
+In Vue components, use the \`$t\` function:
+
+\`\`\`vue
+<template>
+  <div>
+    <h1>{{ $t('home.welcome') }}</h1>
+    <p>{{ $t('common.loading') }}</p>
+    <button>{{ $t('common.submit') }}</button>
+  </div>
+</template>
+\`\`\`
+
+### Translation Structure
+
+Translations are organized by category:
+
+\`\`\`
+messages = {
+  en: {
+    nav: { home: 'Home', about: 'About' },
+    home: {
+      welcome: 'Welcome to Your Vue.js App',
+      description: 'Built with Vue CLI...'
+    },
+    about: {
+      title: 'About This App',
+      description: 'This is a Vue.js application...'
+    },
+    common: {
+      loading: 'Loading...',
+      submit: 'Submit',
+      cancel: 'Cancel',
+      save: 'Save',
+      delete: 'Delete'
+    }
+  }
+}
+\`\`\`
+
+### Adding New Languages
+
+1. Add new translations to the \`messages\` object in \`src/i18n/index.js\`
+2. Add the new language option to the LanguageSwitcher component
+3. Update the \`locale\` in the i18n configuration if needed
+
+### Language Switcher
+
+The \`LanguageSwitcher.vue\` component provides a dropdown to change languages:
+
+\`\`\`vue
+<template>
+  <div class="language-switcher">
+    <select v-model="currentLocale" @change="changeLocale" class="locale-select">
+      <option value="en">🇺🇸 English</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="zh">🇨🇳 中文</option>
+    </select>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { locale } = useI18n();
+const currentLocale = ref(locale.value);
+
+const changeLocale = () => {
+  locale.value = currentLocale.value;
+  localStorage.setItem('user-locale', currentLocale.value);
+};
+</script>
+\`\`\`
+
+### Programmatic Locale Change
+
+You can also change the locale programmatically:
+
+\`\`\`javascript
+import { useI18n } from 'vue-i18n';
+
+const { locale } = useI18n();
+
+// Change to Spanish
+locale.value = 'es';
+
+// Get current locale
+console.log(locale.value);
 \`\`\`
 
 ## Form Validation with VeeValidate
