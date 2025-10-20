@@ -464,12 +464,30 @@ import i18n from './i18n'
 import './registerServiceWorker'
 import './assets/css/main.css'
 
+// Import and register custom directives
+import { registerDirectives } from './directives'
+// Import and register custom plugins
+import { registerPlugins } from './plugins'
+
 const app: App = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
 app.use(i18n)
+
+// Register all custom directives
+registerDirectives(app)
+
+// Register all custom plugins
+const { toast, modal, loading, storage, eventBus } = registerPlugins(app)
+
+// Store plugins globally for easy access
+app.config.globalProperties.$toast = toast
+app.config.globalProperties.$modal = modal
+app.config.globalProperties.$loading = loading
+app.config.globalProperties.$storage = storage
+app.config.globalProperties.$eventBus = eventBus
 
 app.mount('#app')
 `;
@@ -493,6 +511,22 @@ app.mount('#app')
       <button @click="counterStore.increment">+</button>
       <button @click="counterStore.decrement">-</button>
       <p v-if="message" class="message">{{ message }}</p>
+    </div>
+
+    <!-- Demo Navigation -->
+    <div class="demo-nav">
+      <h3>Feature Demos</h3>
+      <nav class="demo-links">
+        <router-link to="/dashboard/directives" class="demo-link">
+          🎯 Custom Directives Demo
+        </router-link>
+        <router-link to="/dashboard/plugins" class="demo-link">
+          🔌 Custom Plugins Demo
+        </router-link>
+      </nav>
+      <p class="demo-note">
+        Explore the power of Vue 3 custom directives and plugins!
+      </p>
     </div>
 
     <!-- Teleport Example: Modal -->
@@ -635,6 +669,48 @@ export default {
   margin-top: 1rem;
 }
 
+/* Demo Navigation Styles */
+.demo-nav {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0.5rem;
+  color: white;
+}
+
+.demo-nav h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+}
+
+.demo-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.demo-link {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-decoration: none;
+  border-radius: 0.25rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.demo-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(5px);
+}
+
+.demo-note {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
 /* Teleport Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -709,6 +785,24 @@ const routes = [
         component: () => import('../views/dashboard/Home.vue'),
         meta: {
           title: 'Dashboard Home',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'directives',
+        name: 'directives-demo',
+        component: () => import('../components/DirectivesDemo.vue'),
+        meta: {
+          title: 'Directives Demo',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'plugins',
+        name: 'plugins-demo',
+        component: () => import('../components/PluginsDemo.vue'),
+        meta: {
+          title: 'Plugins Demo',
           requiresAuth: true
         }
       },
@@ -3310,7 +3404,13 @@ src/
 ├── components/      # Reusable Vue components
 │   ├── AsyncComponent.vue    # Suspense example
 │   ├── ContactForm.vue       # VeeValidate form example
-│   └── HelloWorld.vue        # Demo component
+│   ├── DirectivesDemo.vue    # Custom directives demo
+│   ├── HelloWorld.vue        # Demo component
+│   └── PluginsDemo.vue       # Custom plugins demo
+├── directives/      # Custom directives
+│   └── index.js     # All custom directives (v-click-outside, v-tooltip, v-loading, v-lazy, v-autofocus, v-debounce)
+├── plugins/         # Custom plugins
+│   └── index.js     # All custom plugins (Event bus, Toast, Modal, Loading, Storage)
 ├── stores/          # Pinia stores
 │   ├── index.js     # Store exports
 │   ├── counter.js   # Counter store
@@ -3326,6 +3426,245 @@ src/
 tests/
 └── unit/            # Vitest unit tests
 \`\`\`
+
+## Custom Directives
+
+This template includes 6 powerful custom directives to solve common UI/UX problems:
+
+### v-click-outside
+Detects clicks outside an element and triggers a handler.
+
+**Usage:**
+\`\`\`vue
+<template>
+  <div v-click-outside="handleClose">
+    <!-- Content -->
+  </div>
+</template>
+
+<script setup>
+const handleClose = () => {
+  console.log('Clicked outside!')
+}
+</script>
+\`\`\`
+
+### v-tooltip
+Shows tooltips on hover with configurable position.
+
+**Usage:**
+\`\`\`vue
+<template>
+  <!-- Default (bottom) -->
+  <button v-tooltip="'Hello World'">Tooltip</button>
+
+  <!-- Different positions -->
+  <button v-tooltip.top="'Top tooltip'">Top</button>
+  <button v-tooltip.left="'Left tooltip'">Left</button>
+  <button v-tooltip.right="'Right tooltip'">Right</button>
+</template>
+\`\`\`
+
+### v-loading
+Shows a loading overlay on any element.
+
+**Usage:**
+\`\`\`vue
+<template>
+  <div v-loading="'Loading data...'">
+    <!-- Content -->
+  </div>
+
+  <!-- Without message -->
+  <div v-loading="isLoading">
+    <!-- Content -->
+  </div>
+</template>
+
+<script setup>
+const isLoading = ref(true)
+</script>
+\`\`\`
+
+### v-lazy
+Lazy loads images with intersection observer.
+
+**Usage:**
+\`\`\`vue
+<template>
+  <img v-lazy="'/path/to/image.jpg'" alt="Lazy loaded">
+</template>
+\`\`\`
+
+### v-autofocus
+Auto focuses elements on mount with options.
+
+**Usage:**
+\`\`\`vue
+<template>
+  <!-- Basic autofocus -->
+  <input v-autofocus>
+
+  <!-- With delay -->
+  <input v-autofocus.delay="500">
+
+  <!-- Select text on focus -->
+  <input v-autofocus.select>
+
+  <!-- Set input mode -->
+  <input v-autofocus="'numeric'">
+</template>
+\`\`\`
+
+### v-debounce
+Debounces input events.
+
+**Usage:**
+\`\`\`vue
+<template>
+  <!-- Default (input event, 300ms delay) -->
+  <input v-debounce="handleInput">
+
+  <!-- Custom delay -->
+  <input v-debounce.500="handleInput">
+
+  <!-- Different events -->
+  <input v-debounce.keyup="handleKeyup">
+  <input v-debounce.change="handleChange">
+</template>
+\`\`\`
+
+## Custom Plugins
+
+This template includes 5 powerful custom plugins:
+
+### Event Bus Plugin
+Centralized event system for component communication.
+
+**Usage:**
+\`\`\`javascript
+// Emit event
+eventBus.emit('custom-event', data)
+
+// Listen for event
+eventBus.on('custom-event', (data) => {
+  console.log(data)
+})
+
+// Once listener
+eventBus.once('custom-event', callback)
+
+// Remove listener
+eventBus.off('custom-event', callback)
+\`\`\`
+
+### Toast Notification Plugin
+Displays toast notifications with various types and options.
+
+**Usage:**
+\`\`\`javascript
+// Basic toasts
+toast.success('Success message!')
+toast.error('Error message!')
+toast.warning('Warning message!')
+toast.info('Info message!')
+
+// Custom options
+toast.show('Custom message', {
+  type: 'success',
+  duration: 5000,
+  action: {
+    text: 'Undo',
+    handler: () => console.log('Undo clicked')
+  }
+})
+
+// Remove toast
+toast.remove(id)
+\`\`\`
+
+### Modal Dialog Plugin
+Creates customizable modal dialogs.
+
+**Usage:**
+\`\`\`javascript
+// Basic modal
+modal.show({
+  title: 'Title',
+  content: 'Content HTML',
+  buttons: [
+    { text: 'Close', type: 'secondary' },
+    { text: 'Save', type: 'primary' }
+  ]
+})
+
+// Alert modal
+await modal.alert('Message', 'Title')
+
+// Confirm modal
+const confirmed = await modal.confirm('Are you sure?', 'Confirm')
+\`\`\`
+
+### Loading State Plugin
+Global loading state management.
+
+**Usage:**
+\`\`\`javascript
+// Basic usage
+loading.show('Loading...')
+loading.hide()
+
+// With async function
+await loading.withLoading(async () => {
+  // Your async code here
+}, 'Loading message')
+
+// Reactivity
+const { isLoading } = loading
+\`\`\`
+
+### Storage Plugin
+Wrapper for localStorage/sessionStorage with Vue reactivity.
+
+**Usage:**
+\`\`\`javascript
+// localStorage
+storage.localStorage.set('key', value)
+const data = storage.localStorage.get('key')
+storage.localStorage.remove('key')
+
+// sessionStorage
+storage.sessionStorage.set('key', value)
+const data = storage.sessionStorage.get('key')
+\`\`\`
+
+## Demo Pages
+
+The template includes two demo pages to showcase all features:
+
+1. **Directives Demo** (`/dashboard/directives`)
+   - Interactive examples of all custom directives
+   - Live demonstrations with explanations
+
+2. **Plugins Demo** (`/dashboard/plugins`)
+   - Examples of all custom plugins
+   - Interactive tests and demonstrations
+
+## TypeScript Support
+
+All custom directives and plugins are written with TypeScript-style JSDoc comments for better IDE support and type checking.
+
+## Browser Support
+
+These custom directives and plugins are compatible with all modern browsers that support Vue 3 and Intersection Observer API.
+
+## Performance Considerations
+
+- Directives use efficient event listeners and cleanup
+- Lazy loading uses Intersection Observer for optimal performance
+- Event bus includes error handling to prevent crashes
+- Toast notifications use efficient DOM manipulation
+- Modals are properly cleaned up after closing
 
 ## Migration from Vuex
 
