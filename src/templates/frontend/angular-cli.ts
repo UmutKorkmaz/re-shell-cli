@@ -43,6 +43,11 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateTsConfigWorker()
     });
 
+    files.push({
+      path: 'tsconfig.server.json',
+      content: this.generateTsConfigServer()
+    });
+
     // Angular application files
     files.push({
       path: 'src/main.ts',
@@ -385,6 +390,24 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateManifest()
     });
 
+    // Server file for SSR
+    files.push({
+      path: 'server.ts',
+      content: this.generateServer()
+    });
+
+    // Server-side main file
+    files.push({
+      path: 'src/main.server.ts',
+      content: this.generateMainServer()
+    });
+
+    // Server app module
+    files.push({
+      path: 'src/app/app.server.module.ts',
+      content: this.generateAppServerModule()
+    });
+
     // Docker support
     files.push({
       path: 'Dockerfile',
@@ -425,6 +448,10 @@ export class AngularCliTemplate extends BaseTemplate {
         'ng': 'ng',
         'start': 'ng serve',
         'build': 'ng build',
+        'build:ssr': 'ng build --configuration production && ng run ${normalizedName}:server:production',
+        'serve:ssr': 'node dist/${normalizedName}/server/main.js',
+        'dev:ssr': 'ng run ${normalizedName}:serve-ssr',
+        'prerender': 'ng run ${normalizedName}:prerender',
         'watch': 'ng build --watch --configuration development',
         'test': 'ng test',
         'test:ci': 'ng test --watch=false --browsers=ChromeHeadlessCI',
@@ -446,14 +473,19 @@ export class AngularCliTemplate extends BaseTemplate {
         '@angular/material': '^17.0.0',
         '@angular/platform-browser': '^17.0.0',
         '@angular/platform-browser-dynamic': '^17.0.0',
+        '@angular/platform-server': '^17.0.0',
         '@angular/router': '^17.0.0',
         '@angular/service-worker': '^17.0.0',
+        '@nguniversal/express-engine': '^17.0.0',
+        '@nguniversal/common': '^17.0.0',
+        '@nguniversal/builders': '^17.0.0',
         '@ngrx/effects': '^17.0.0',
         '@ngrx/entity': '^17.0.0',
         '@ngrx/operators': '^17.0.0',
         '@ngrx/router-store': '^17.0.0',
         '@ngrx/store': '^17.0.0',
         '@ngrx/store-devtools': '^17.0.0',
+        'express': '^4.18.0',
         'rxjs': '^7.8.0',
         'tslib': '^2.6.0',
         'zone.js': '^0.14.0'
@@ -464,6 +496,7 @@ export class AngularCliTemplate extends BaseTemplate {
         '@angular/compiler-cli': '^17.0.0',
         '@types/jasmine': '^5.1.0',
         '@types/node': '^20.0.0',
+        '@types/express': '^4.17.17',
         'jasmine-core': '^5.1.0',
         'jasmine-spec-reporter': '^7.0.0',
         'karma': '^6.4.0',
@@ -569,6 +602,37 @@ export class AngularCliTemplate extends BaseTemplate {
             buildTarget: `${normalizedName}:build`
           }
         },
+        server: {
+          builder: '@angular-devkit/build-angular:server',
+          options: {
+            outputPath: `dist/${normalizedName}/server`,
+            main: 'src/main.server.ts',
+            tsConfig: 'tsconfig.server.json',
+            inlineStyleLanguage: 'scss'
+          },
+          configurations: {
+            development: {
+              outputHashing: 'none',
+              sourceMap: true,
+            },
+            production: {
+              outputHashing: 'all',
+              sourceMap: false,
+            }
+          }
+        },
+        serve: {
+          builder: '@angular-devkit/build-angular:dev-server',
+          configurations: {
+            production: {
+              buildTarget: `${normalizedName}:build:production`
+            },
+            development: {
+              buildTarget: `${normalizedName}:build:development`
+            }
+          },
+          defaultConfiguration: 'development'
+        },
         test: {
           builder: '@angular-devkit/build-angular:karma',
           options: {
@@ -596,6 +660,51 @@ export class AngularCliTemplate extends BaseTemplate {
           builder: '@angular-eslint/builder:lint',
           options: {
             lintFilePatterns: ['src/**/*.ts', 'src/**/*.html']
+          }
+        }
+      }
+    };
+
+    // Add server project configuration
+    projects[normalizedName + '-server'] = {
+      root: '',
+      sourceRoot: 'src',
+      projectType: 'application',
+      architect: {
+        build: {
+          builder: '@angular-devkit/build-angular:server',
+          options: {
+            outputPath: `dist/${normalizedName}/server`,
+            main: 'src/main.server.ts',
+            tsConfig: 'tsconfig.server.json',
+            inlineStyleLanguage: 'scss'
+          },
+          configurations: {
+            development: {
+              outputHashing: 'none',
+              sourceMap: true,
+            },
+            production: {
+              outputHashing: 'all',
+              sourceMap: false,
+            }
+          }
+        },
+        serve: {
+          builder: '@angular-devkit/build-angular:dev-server',
+          options: {
+            outputPath: `dist/${normalizedName}/server`,
+            main: 'src/main.server.ts',
+            tsConfig: 'tsconfig.server.json',
+            inlineStyleLanguage: 'scss'
+          },
+          configurations: {
+            development: {
+              buildTarget: `${normalizedName}-server:build:development`
+            },
+            production: {
+              buildTarget: `${normalizedName}-server:build:production`
+            }
           }
         }
       }
@@ -673,6 +782,130 @@ export class AngularCliTemplate extends BaseTemplate {
       },
       include: ['src/**/*.worker.ts', 'src/**/*.worker.ts']
     }, null, 2);
+  }
+
+  private generateTsConfigServer() {
+    return JSON.stringify({
+      extends: './tsconfig.json',
+      compilerOptions: {
+        outDir: './out-tsc/server',
+        types: ['node']
+      },
+      files: ['src/main.server.ts'],
+      include: ['src/**/*.ts']
+    }, null, 2);
+  }
+
+  private generateServer() {
+    const { normalizedName } = this.context;
+    return `import 'zone.js/node';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as express from 'express';
+import { ngExpressEngine } from '@nguniversal/express-engine';
+import { BASE_URL, APP_BASE_HREF } from '@angular/common';
+import { provideClientHydration } from '@angular/platform-browser';
+
+// Import the server module
+import { AppServerModule } from './src/app/app.server.module';
+
+// The Express app is exported so that it can be used by serverless Functions.
+export function app() {
+  const server = express();
+  const distFolder = path.join(process.cwd(), 'dist/${normalizedName}');
+
+  // Our Universal express-engine (found in @nguniversal/express-engine)
+  // It will render the Angular app to HTML on the server, using the
+  // 'server.ts' file located in the 'src' folder as the entry point.
+  server.engine('html', ngExpressEngine({
+    bootstrap: AppServerModule,
+    providers: [
+      provideClientHydration(),
+      { provide: BASE_URL, useValue: '/' },
+      { provide: APP_BASE_HREF, useValue: '/' }
+    ]
+  }));
+
+  // Serve static files from /browser
+  server.get('*.*', express.static(distFolder, {
+    maxAge: '1y'
+  }));
+
+  // All regular routes use the Universal engine
+  server.get('*', (req, res) => {
+    res.render('index.html', { req });
+  });
+
+  return server;
+}
+
+// The following code is for deploying to serverless environments
+// See: https://angular.io/guide/universal/deployment
+const port = process.env.PORT || 4000;
+if (process.env.NODE_ENV !== 'test') {
+  app().listen(port, () => {
+    console.log(\`Node server listening on http://localhost:\${port}\`);
+  });
+}`;
+
+  }
+
+  private generateMainServer() {
+    return `import { enableProdMode } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-server';
+import { provideServerRendering } from '@angular/platform-server';
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
+import { AppModule } from './app/app.module';
+
+enableProdMode();
+
+// The browser platform with server rendering
+bootstrapApplication(AppModule, {
+  ...appConfig,
+  providers: [
+    ...appConfig.providers,
+    provideServerRendering()
+  ]
+})
+.then(() => console.log('Server rendering app complete'))
+.catch(err => console.error(err));
+`;
+
+  }
+
+  private generateAppServerModule() {
+    return `import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { ServerModule } from '@angular/platform-server';
+import { RouterModule } from '@angular/router';
+
+import { AppComponent } from './app.component';
+import { appRoutes } from './app/app.routes';
+import { HeaderComponent } from './core/header/header.component';
+import { FooterComponent } from './core/footer/footer.component';
+import { ThemeToggleComponent } from './core/theme-toggle/theme-toggle.component';
+
+@NgModule({
+  imports: [
+    BrowserModule.withServerTransition(),
+    ServerModule,
+    RouterModule.forRoot(appRoutes)
+  ],
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    FooterComponent,
+    ThemeToggleComponent
+  ],
+  providers: [
+    // Add server-specific providers here
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+`;
+
   }
 
   private generateMain() {
@@ -2294,8 +2527,7 @@ export const appRoutes: Routes = [
     path: '',
     loadComponent: () =>
       import('./home/home.component').then((m) => m.HomeComponent),
-    title: '${this.context.name}',
-    canActivate: [() => inject(AuthGuard).canActivate()]
+    title: '${this.context.name}'
   },
   {
     path: 'about',
@@ -2322,7 +2554,7 @@ export const appRoutes: Routes = [
           import('./dashboard/profile/profile.component').then((m) => m.ProfileComponent),
         title: 'Profile',
         resolve: {
-          user: () => inject(UserResolver).resolve()
+          user: () => inject(userResolver).resolve()
         }
       },
       {
@@ -2648,7 +2880,7 @@ describe('HomeComponent', () => {
   }
 
   private generateDockerfile() {
-    return `# Multi-stage Dockerfile for Angular CLI
+    return `# Multi-stage Dockerfile for Angular CLI with SSR
 
 # Build stage
 FROM node:18-alpine AS build
@@ -2665,25 +2897,31 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN npm run build:ssr
 
-# Production stage
-FROM nginx:alpine
+# Production stage - use Node.js for SSR
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci --only=production
 
 # Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /app/dist
 
 # Expose port
-EXPOSE 80
+EXPOSE 4000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \\
-  CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:4000 || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+# Start the SSR server
+CMD ["node", "dist/server/main.js"]
 `;
   }
 
@@ -2750,6 +2988,7 @@ ${description || 'Angular CLI application with Angular Material and NgRx state m
 - 🎯 NgRx for state management
 - 🌙 Dark mode with theme toggle (light/dark/auto)
 - 🔧 Angular CLI for best practices
+- 🚀 Angular Universal for Server-Side Rendering (SSR)
 - ♿ Accessibility-first design (WCAG 2.1 AA)
 - 📱 Progressive Web App (PWA) support
 - 🧪 Testing with Jasmine and Karma
@@ -3014,12 +3253,113 @@ Router guards use functional approach with \`CanActivateFn\` instead of classes.
 ## Docker
 
 \`\`\`bash
-# Build Docker image
-docker build -t ${name} .
+# Build Docker image for SSR
+docker build -t ${name}-ssr .
 
-# Run container
-docker run -p 80:80 ${name}
+# Run container (SSR server runs on port 4000)
+docker run -p 4000:4000 ${name}-ssr
 \`\`\`
+
+## Angular Universal Server-Side Rendering
+
+This application is configured with Angular Universal for server-side rendering (SSR), providing SEO benefits and improved performance for users.
+
+### What is Angular Universal?
+
+Angular Universal allows Angular applications to be rendered on the server (SSR) instead of only on the client-side. This approach:
+
+- **Improves SEO**: Search engines can crawl the fully rendered HTML
+- **Faster First Paint**: Users see content immediately without waiting for JavaScript to load and execute
+- **Better Performance**: Reduced client-side JavaScript processing
+- **Improved Accessibility**: Content is available to screen readers immediately
+
+### SSR Build Commands
+
+\`\`\`bash
+# Build for SSR (production)
+npm run build:ssr
+
+# Serve the SSR application
+npm run serve:ssr
+
+# Development SSR mode
+npm run dev:ssr
+
+# Pre-render static pages
+npm run prerender
+\`\`\`
+
+### Development with SSR
+
+The SSR server runs on port 4000 by default:
+
+\`\`\`bash
+# Start SSR development server
+npm run dev:ssr
+
+# Navigate to http://localhost:4000
+\`\`\`
+
+### SSR Architecture
+
+The SSR implementation includes:
+
+1. **server.ts** - Express server configuration
+2. **src/main.server.ts** - Server-side application entry point
+3. **src/app/app.server.module.ts** - Server-specific module configuration
+4. **angular.json** - SSR build configurations
+5. **tsconfig.server.json** - TypeScript configuration for server builds
+
+### Deployment Considerations
+
+When deploying with SSR:
+
+1. **Node.js Environment**: Ensure your deployment environment supports Node.js
+2. **Port Configuration**: The SSR server runs on PORT 4000 by default
+3. **Static Files**: Static assets are served from the dist folder
+4. **Environment Variables**: Set NODE_ENV appropriately
+
+### Common SSR Issues
+
+**SSR vs Browser APIs**
+- Avoid using browser-only APIs directly in components
+- Use Angular's `isPlatformServer()` to check platform context
+- Move browser-specific code to `ngAfterViewInit()` or use dependency injection
+
+**Styling Considerations**
+- CSS is scoped to the server context
+- Use global styles in `styles.scss` for SSR compatibility
+- Angular Material styles work seamlessly with SSR
+
+**Performance Optimization**
+- Implement route preloading for better user experience
+- Use lazy loading for routes that don't require SSR
+- Consider static site generation for marketing pages
+
+### Platform-Specific Code Handling
+
+Example of platform-specific code:
+
+\`\`\`typescript
+import { isPlatformServer, isPlatformBrowser } from '@angular/common';
+
+@Component({
+  // ...
+})
+export class MyComponent {
+  constructor(@Inject(PLATFORM_ID) private platformId: string) {
+    if (isPlatformServer(this.platformId)) {
+      // Server-side code
+      console.log('Running on server');
+    } else {
+      // Client-side code
+      console.log('Running in browser');
+    }
+  }
+}
+\`\`\`
+
+For more information on Angular Universal, visit the [official guide](https://angular.io/guide/universal).
 
 ## Further Help
 
