@@ -48,10 +48,22 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateTsConfigServer()
     });
 
+    // PWA Service Worker Configuration
+    files.push({
+      path: 'src/ngsw-config.json',
+      content: this.generateNgswConfig()
+    });
+
     // Angular application files
     files.push({
       path: 'src/main.ts',
       content: this.generateMain()
+    });
+
+    // PWA Manifest
+    files.push({
+      path: 'src/manifest.webmanifest',
+      content: this.generateManifest()
     });
 
     files.push({
@@ -424,6 +436,18 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateNginxConf()
     });
 
+    // App Shell Component
+    files.push({
+      path: 'src/app/app-shell.component.ts',
+      content: this.generateAppShell()
+    });
+
+    // Offline Service
+    files.push({
+      path: 'src/app/services/offline.service.ts',
+      content: this.generateOfflineService()
+    });
+
     // README
     files.push({
       path: 'README.md',
@@ -453,6 +477,8 @@ export class AngularCliTemplate extends BaseTemplate {
         'dev:ssr': 'ng run ${normalizedName}:serve-ssr',
         'prerender': 'ng run ${normalizedName}:prerender',
         'watch': 'ng build --watch --configuration development',
+        'install:pwa': 'ng add @angular/pwa',
+        'pwainit': 'ng add @angular/pwa',
         'test': 'ng test',
         'test:ci': 'ng test --watch=false --browsers=ChromeHeadlessCI',
         'test:coverage': 'ng test --watch=false --code-coverage',
@@ -475,6 +501,7 @@ export class AngularCliTemplate extends BaseTemplate {
         '@angular/platform-browser-dynamic': '^17.0.0',
         '@angular/platform-server': '^17.0.0',
         '@angular/router': '^17.0.0',
+        '@angular/pwa': '^17.0.0',
         '@angular/service-worker': '^17.0.0',
         '@nguniversal/express-engine': '^17.0.0',
         '@nguniversal/common': '^17.0.0',
@@ -533,6 +560,9 @@ export class AngularCliTemplate extends BaseTemplate {
         },
         '@schematics/angular:pipe': {
           standalone: true
+        },
+        '@schematics/angular:application': {
+          serviceWorker: true
         }
       },
       root: '',
@@ -551,7 +581,12 @@ export class AngularCliTemplate extends BaseTemplate {
             assets: [
               'src/favicon.ico',
               'src/assets',
-              'src/manifest.webmanifest'
+              'src/manifest.webmanifest',
+              {
+                'glob': '**/*',
+                'input': './src/assets/icons',
+                'output': './assets/icons'
+              }
             ],
             styles: ['src/styles.scss'],
             scripts: [],
@@ -924,9 +959,58 @@ bootstrapApplication(AppComponent, {
   ]
 }).catch((err) => console.error(err));
 
-// Register service worker for PWA
+// Register service worker for PWA with update handling
 if ('serviceWorker' in navigator && environment.production) {
-  navigator.serviceWorker.register('/ngsw-worker.js');
+  // Register service worker
+  navigator.serviceWorker.register('/ngsw-worker.js')
+    .then((registration) => {
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+      // Check for service worker updates
+      registration.addEventListener('updatefound', () => {
+        const installingWorker = registration.installing;
+
+        installingWorker?.addEventListener('statechange', () => {
+          if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New content is available, please refresh
+            console.log('New content is available, please refresh the page.');
+
+            // Show update notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Update Available', {
+                body: 'New content is available. Click to update now.',
+                icon: '/assets/icons/icon-192x192.png',
+                tag: 'update-notification'
+              }).onclick = () => {
+                window.location.reload();
+                registration.update();
+              };
+            }
+
+            // Optionally trigger a banner in the UI
+            const updateEvent = new CustomEvent('swupdate', {
+              detail: { waitingWorker: installingWorker }
+            });
+            window.dispatchEvent(updateEvent);
+          }
+        });
+      });
+    })
+    .catch((error) => {
+      console.error('ServiceWorker registration failed: ', error);
+    });
+
+  // Listen for controller change (when service worker activates)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('Service worker has been updated');
+  });
+
+  // Listen for message from service worker
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'CACHE_UPDATED') {
+      console.log('Content has been updated and cached');
+    }
+  });
 }
 
 // Import environment
@@ -947,10 +1031,57 @@ import { environment } from './environments/environment';
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#1976d2">
   <meta name="description" content="Angular CLI application with standalone components and signals">
+
+  <!-- Apple touch icon -->
+  <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
+
+  <!-- Apple mobile web app capable -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="${name}">
+
+  <!-- Microsoft tile -->
+  <meta name="msapplication-TileColor" content="#1976d2">
+  <meta name="msapplication-config" content="assets/icons/browserconfig.xml">
+
+  <!-- SEO meta tags -->
+  <link rel="canonical" href="/">
+
+  <!-- Preconnect to external domains -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- PWA splash screen -->
+  <link rel="apple-touch-startup-image" href="assets/icons/splash-screen.png">
+
+  <!-- Fallback for older browsers -->
+  <link rel="icon" href="favicon.ico">
+
+  <!-- Prevent zooming on iOS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <!-- Additional meta tags for better PWA experience -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="${name}">
 </head>
 <body>
   <app-root></app-root>
   <noscript>Please enable JavaScript to continue using this application.</noscript>
+
+  <!-- Fallback service worker registration for production -->
+  <script>
+    if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/ngsw-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(error => {
+            console.log('ServiceWorker registration failed: ', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
 `;
@@ -2990,7 +3121,7 @@ ${description || 'Angular CLI application with Angular Material and NgRx state m
 - 🔧 Angular CLI for best practices
 - 🚀 Angular Universal for Server-Side Rendering (SSR)
 - ♿ Accessibility-first design (WCAG 2.1 AA)
-- 📱 Progressive Web App (PWA) support
+- 📱 Progressive Web App (PWA) support with service workers and offline capabilities
 - 🧪 Testing with Jasmine and Karma
 - 🎨 SCSS for styling
 - 🐳 Docker support
@@ -3001,10 +3132,13 @@ ${description || 'Angular CLI application with Angular Material and NgRx state m
 # Install dependencies
 ${packageManager} install
 
+# Initialize PWA features
+${packageManager} run pwainit
+
 # Serve with hot reload
 ${packageManager} start
 
-# Build for production
+# Build for production (with PWA)
 ${packageManager} run build
 
 # Run tests
@@ -3012,6 +3146,9 @@ ${packageManager} test
 
 # Run linter
 ${packageManager} run lint
+
+# Test PWA with Lighthouse
+npx lighthouse http://localhost:4200 --output=html --output-path=./lighthouse-report.html
 \`\`\`
 
 ## Development Server
@@ -3360,6 +3497,191 @@ export class MyComponent {
 \`\`\`
 
 For more information on Angular Universal, visit the [official guide](https://angular.io/guide/universal).
+
+## Progressive Web App (PWA)
+
+This application is configured as a Progressive Web App (PWA), providing a native app-like experience with offline capabilities and installable on supported devices.
+
+### What is a PWA?
+
+A Progressive Web App is a web application that uses modern web capabilities to deliver an app-like experience to users. PWAs are:
+
+- **Reliable** - Load instantly and never show the down page
+- **Fast** - Respond quickly to user interactions
+- **Engaging** - Feel like a natural app on the device
+
+### Key PWA Features
+
+#### 1. Service Worker
+The application includes a service worker (`ngsw-worker.js`) that:
+- Caches application assets for offline use
+- Manages background sync
+- Handles push notifications
+- Provides update management
+
+#### 2. App Shell
+The `AppShellComponent` provides:
+- Loading states with spinner
+- Skeleton screens during content loading
+- Offline detection and notifications
+- Retry functionality for failed requests
+
+#### 3. Offline Support
+The `OfflineService` monitors network connectivity and:
+- Tracks online/offline status
+- Queues requests when offline
+- Shows offline notifications
+- Retries failed requests when back online
+
+### Service Worker Configuration
+
+The service worker is configured in `src/ngsw-config.json`:
+
+```json
+{
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": ["/*.css", "/*.js", "/index.html"]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch"
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api",
+      "urls": ["/api/**"],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1d"
+      }
+    }
+  ]
+}
+```
+
+### PWA Manifest
+
+The `manifest.webmanifest` file defines the PWA metadata:
+- Application name and icons
+- Start URL and display mode
+- Theme colors
+- Orientation and background color
+
+### Offline Detection and Management
+
+The application automatically detects offline status and:
+
+1. Shows a warning banner
+2. Prevents API calls when offline
+3. Queues requests for later execution
+4. Notifies users when returning online
+
+```typescript
+// Usage in components
+constructor(private offlineService: OfflineService) {}
+
+// Check online status
+const isOnline = this.offlineService.isOnline();
+
+// Make requests with retry
+this.offlineService.requestWithRetry('/api/data')
+  .then(response => {
+    // Handle success
+  })
+  .catch(error => {
+    // Handle failure
+  });
+```
+
+### Installation
+
+Users can install the PWA by:
+1. Clicking the install button in supported browsers
+2. Using the "Add to Home Screen" option
+3. Selecting the install prompt when available
+
+### Update Management
+
+The PWA automatically:
+- Checks for updates in the background
+- Shows notifications when new content is available
+- Allows users to refresh to get updates
+- Maintains offline functionality during updates
+
+### Lighthouse Testing
+
+To test PWA quality, run Lighthouse:
+
+```bash
+# Install Lighthouse CLI
+npm install -g lighthouse
+
+# Run audit
+lighthouse http://localhost:4200 --output=html --output-path=./lighthouse-report.html
+```
+
+### Deployment Considerations
+
+#### HTTPS Required
+- PWAs require HTTPS in production
+- Ensure your deployment supports HTTPS
+- Service workers won't register on HTTP localhost
+
+#### Cache Strategy
+- Critical assets are prefetched
+- Large assets are lazy-loaded
+- API responses are cached for 1 day
+- Cache is updated on application updates
+
+#### Icons
+- Multiple icon sizes are included (72x72 to 512x512)
+- Icons should be provided in `/src/assets/icons/`
+- Missing icons will fallback to generic placeholders
+
+### Troubleshooting
+
+#### Service Worker Not Registering
+- Check that the site is served over HTTPS
+- Verify the service worker file exists
+- Check browser console for errors
+
+#### Offline Not Working
+- Ensure service worker is properly installed
+- Check cache configuration in ngsw-config.json
+- Verify network requests are being cached
+
+#### Update Issues
+- Clear browser cache and try again
+- Check service worker version updates
+- Verify the manifest file has the latest version
+
+### Browsers Support
+
+| Feature | Chrome | Firefox | Safari | Edge |
+|---------|--------|---------|--------|------|
+| Service Workers | ✅ | ✅ | ✅ | ✅ |
+| Installable PWA | ✅ | ✅ | ✅ | ✅ |
+| Background Sync | ✅ | ❌ | ❌ | ✅ |
+| Push Notifications | ✅ | ✅ | ❌ | ✅ |
+
+### Future Enhancements
+
+Additional PWA features that can be implemented:
+- Push notifications
+- Background sync
+- Payment processing
+- Camera access
+- Geolocation services
+
+For more information on PWAs, visit the [Google Developers PWA Guide](https://developers.google.com/web/fundamentals/progressive-web-apps/).
 
 ## Further Help
 
@@ -4137,6 +4459,441 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+`;
+  }
+
+  private generateManifest() {
+    const { name, description } = this.context;
+    return `{
+  "name": "${name}",
+  "short_name": "${name.replace(/\s+/g, '')}",
+  "description": "${description || 'Angular CLI application'}",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshots/desktop-screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "assets/screenshots/mobile-screenshot.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}`;
+  }
+
+  private generateNgswConfig() {
+    return `{
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(eot|svg|cur|jpg|jpeg|png|gif|webp|ico|woff2?|ttf|otf)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api",
+      "urls": ["/api/**"],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1d",
+        "strategy": "freshness"
+      }
+    }
+  ],
+  "hsts": {
+    "max-age": 31536000,
+    "includeSubdomains": true,
+    "preload": true
+  },
+  "navigationUrls": [
+    "/",
+    "/home",
+    "/about"
+  ],
+  "customHeaders": [
+    {
+      "source": "**/*.?(eot|otf|ttf|woff|woff2)",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    }
+  ]
+}`;
+  }
+
+  private generateAppShell() {
+    return `import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCardModule } from '@angular/material/card';
+import { OfflineService } from '../services/offline.service';
+
+@Component({
+  selector: 'app-app-shell',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatCardModule
+  ],
+  template: \`
+    <div class="app-shell-container">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <mat-progress-spinner
+          [diameter]="100"
+          [strokeWidth]="4"
+          mode="indeterminate"
+        ></mat-progress-spinner>
+        <p class="loading-text">Loading application...</p>
+      </div>
+
+      <!-- Skeleton Screens -->
+      <div *ngIf="!loading && !isOnline" class="skeleton-container">
+        <mat-card class="skeleton-card">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <div class="skeleton-content">
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text"></div>
+          </div>
+        </mat-card>
+
+        <div class="offline-banner">
+          <mat-icon>wifi_off</mat-icon>
+          <span>You're offline. Some features may not be available.</span>
+          <button mat-raised-button color="primary" (click)="retry()">
+            Retry
+          </button>
+        </div>
+      </div>
+
+      <!-- Actual Content -->
+      <div *ngIf="!loading" class="app-content">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  \`,
+  styles: [\`
+    .app-shell-container {
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+    }
+
+    .loading-text {
+      margin-top: 16px;
+      color: #666;
+      font-size: 16px;
+    }
+
+    .skeleton-container {
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+
+    .skeleton-card {
+      margin-bottom: 20px;
+    }
+
+    .skeleton-content {
+      padding: 16px;
+    }
+
+    .skeleton-text {
+      height: 16px;
+      background-color: #e0e0e0;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      animation: skeleton-loading 1s infinite ease-in-out;
+    }
+
+    .skeleton-text:nth-child(1) {
+      width: 60%;
+    }
+
+    .skeleton-text:nth-child(2) {
+      width: 80%;
+    }
+
+    .skeleton-text:nth-child(3) {
+      width: 40%;
+    }
+
+    @keyframes skeleton-loading {
+      0% {
+        background-color: #e0e0e0;
+      }
+      50% {
+        background-color: #f0f0f0;
+      }
+      100% {
+        background-color: #e0e0e0;
+      }
+    }
+
+    .offline-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .offline-banner mat-icon {
+      color: #e67e22;
+    }
+
+    .offline-banner span {
+      flex: 1;
+      color: #856404;
+    }
+
+    .app-content {
+      min-height: 100vh;
+    }
+  \`]
+})
+export class AppShellComponent implements OnInit {
+  loading = true;
+  isOnline = true;
+
+  constructor(private offlineService: OfflineService) {}
+
+  ngOnInit(): void {
+    // Simulate loading
+    setTimeout(() => {
+      this.loading = false;
+    }, 1500);
+
+    // Listen to online/offline status
+    this.offlineService.online$.subscribe(status => {
+      this.isOnline = status;
+    });
+  }
+
+  retry(): void {
+    this.loading = true;
+    window.location.reload();
+  }
+}
+`;
+  }
+
+  private generateOfflineService() {
+    return `import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class OfflineService {
+  private onlineSubject = new BehaviorSubject<boolean>(navigator.onLine);
+  private requestsQueue: Array<{
+    url: string;
+    options: RequestInit;
+    resolve: (value: Response | PromiseLike<Response>) => void;
+    reject: (reason?: any) => void;
+  }> = [];
+
+  online$: Observable<boolean> = this.onlineSubject.asObservable();
+  offline$: Observable<boolean> = this.online$.pipe(map(isOnline => !isOnline));
+
+  constructor() {
+    // Listen to online/offline events
+    window.addEventListener('online', () => {
+      this.handleOnline();
+    });
+
+    window.addEventListener('offline', () => {
+      this.handleOffline();
+    });
+
+    // Check initial status
+    this.checkConnection();
+  }
+
+  private checkConnection(): void {
+    if (!navigator.onLine) {
+      this.handleOffline();
+    } else {
+      this.handleOnline();
+    }
+  }
+
+  private handleOnline(): void {
+    this.onlineSubject.next(true);
+    console.log('App is online');
+
+    // Process queued requests
+    this.processQueue();
+  }
+
+  private handleOffline(): void {
+    this.onlineSubject.next(false);
+    console.log('App is offline');
+
+    // Show offline notification if implemented
+    this.showOfflineNotification();
+  }
+
+  isOnline(): boolean {
+    return this.onlineSubject.value;
+  }
+
+  isOffline(): boolean {
+    return !this.onlineSubject.value;
+  }
+
+  showOfflineNotification(): void {
+    // Create and show offline notification
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('You\'re offline', {
+        body: 'Some features may not be available until you reconnect.',
+        icon: '/assets/icons/icon-192x192.png'
+      });
+    }
+  }
+
+  requestWithRetry(url: string, options: RequestInit = {}): Promise<Response> {
+    if (this.isOnline()) {
+      return this.fetchWithTimeout(url, options);
+    } else {
+      return new Promise((resolve, reject) => {
+        this.requestsQueue.push({
+          url,
+          options,
+          resolve,
+          reject
+        });
+      });
+    }
+  }
+
+  private fetchWithTimeout(url: string, options: RequestInit, timeout = 5000): Promise<Response> {
+    return Promise.race([
+      fetch(url, options),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), timeout);
+      })
+    ]);
+  }
+
+  private async processQueue(): Promise<void> {
+    const queue = [...this.requestsQueue];
+    this.requestsQueue = [];
+
+    for (const request of queue) {
+      try {
+        const response = await this.fetchWithTimeout(request.url, request.options);
+        request.resolve(response);
+      } catch (error) {
+        request.reject(error);
+
+        // If request fails, re-queue it
+        if (this.isOffline()) {
+          this.requestsQueue.push(request);
+        }
+      }
+    }
+  }
+
+  getQueuedRequestsCount(): number {
+    return this.requestsQueue.length;
+  }
+
+  clearQueue(): void {
+    this.requestsQueue = [];
+  }
+}
 `;
   }
 }
