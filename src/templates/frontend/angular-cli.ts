@@ -448,6 +448,79 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateOfflineService()
     });
 
+    // Custom Validators
+    files.push({
+      path: 'src/app/validators/custom.validators.ts',
+      content: this.generateCustomValidators()
+    });
+
+    // Form Utilities
+    files.push({
+      path: 'src/app/utils/form-utils.ts',
+      content: this.generateFormUtils()
+    });
+
+    // Dynamic Form Service
+    files.push({
+      path: 'src/app/services/dynamic-form.service.ts',
+      content: this.generateDynamicFormService()
+    });
+
+    // User Form Component
+    files.push({
+      path: 'src/app/components/user-form/user-form.component.ts',
+      content: this.generateUserFormComponent()
+    });
+
+    // Login Form Component
+    files.push({
+      path: 'src/app/components/login-form/login-form.component.ts',
+      content: this.generateLoginFormComponent()
+    });
+
+    // Search Form Component
+    files.push({
+      path: 'src/app/components/search-form/search-form.component.ts',
+      content: this.generateSearchFormComponent()
+    });
+
+    // Form Components HTML Templates
+    files.push({
+      path: 'src/app/components/user-form/user-form.component.html',
+      content: this.generateUserFormTemplate()
+    });
+
+    files.push({
+      path: 'src/app/components/user-form/user-form.component.scss',
+      content: this.generateUserFormStyles()
+    });
+
+    files.push({
+      path: 'src/app/components/login-form/login-form.component.html',
+      content: this.generateLoginFormTemplate()
+    });
+
+    files.push({
+      path: 'src/app/components/login-form/login-form.component.scss',
+      content: this.generateLoginFormStyles()
+    });
+
+    files.push({
+      path: 'src/app/components/search-form/search-form.component.html',
+      content: this.generateSearchFormTemplate()
+    });
+
+    files.push({
+      path: 'src/app/components/search-form/search-form.component.scss',
+      content: this.generateSearchFormStyles()
+    });
+
+    // Form Examples Module
+    files.push({
+      path: 'src/app/form-examples.module.ts',
+      content: this.generateFormExamplesModule()
+    });
+
     // README
     files.push({
       path: 'README.md',
@@ -2722,6 +2795,30 @@ export const appRoutes: Routes = [
     ]
   },
   {
+    path: 'forms',
+    title: 'Form Examples',
+    children: [
+      {
+        path: 'user-form',
+        loadComponent: () =>
+          import('./components/user-form/user-form.component').then((m) => m.UserFormComponent),
+        title: 'User Registration Form'
+      },
+      {
+        path: 'login-form',
+        loadComponent: () =>
+          import('./components/login-form/login-form.component').then((m) => m.LoginFormComponent),
+        title: 'Login Form'
+      },
+      {
+        path: 'search-form',
+        loadComponent: () =>
+          import('./components/search-form/search-form.component').then((m) => m.SearchFormComponent),
+        title: 'Search Form'
+      }
+    ]
+  },
+  {
     path: '**',
     loadComponent: () =>
       import('./not-found/not-found.component').then((m) => m.NotFoundComponent),
@@ -3125,6 +3222,11 @@ ${description || 'Angular CLI application with Angular Material and NgRx state m
 - 🧪 Testing with Jasmine and Karma
 - 🎨 SCSS for styling
 - 🐳 Docker support
+- 📝 Angular Forms with reactive forms and custom validators
+- 🔐 Form validation with async validation support
+- 🎯 Dynamic form generation from JSON configuration
+- 💾 Auto-save functionality with debouncing
+- 📊 Search forms with pagination and debouncing
 
 ## Quick Start
 
@@ -3386,6 +3488,119 @@ Uses \`@if\`, \`@for\`, and \`@switch\` instead of structural directives.
 
 ### Functional Guards
 Router guards use functional approach with \`CanActivateFn\` instead of classes.
+
+## Angular Forms
+
+This application includes comprehensive Angular Forms with reactive forms, custom validators, and form utilities.
+
+### Form Features
+
+#### 1. Reactive Forms
+Uses Angular's reactive forms with:
+- FormGroup, FormControl, and FormArray for form structure
+- Synchronous and asynchronous validation
+- Dynamic form controls
+- Form state management
+
+#### 2. Custom Validators
+Located in \`src/app/validators/custom.validators.ts\`:
+
+- **Password Strength Validator** - Ensures strong passwords with uppercase, lowercase, numbers, and special characters
+- **Email Domain Validator** - Validates email addresses against allowed domains
+- **Username Availability Validator** - Async validator to check username availability
+- **File Type Validator** - Validates file extensions for uploads
+- **Phone Number Validator** - Validates phone number format
+- **Date Range Validator** - Validates that end date is after start date
+
+#### 3. Form Components
+
+##### User Form Component (\`/user-form\`)
+- Complete user registration form
+- Password strength indicator
+- Async username validation
+- Email domain restriction
+- Form utilities integration
+
+##### Login Form Component (\`/login-form\`)
+- Authentication with login attempts tracking
+- Account lockout after 3 failed attempts
+- Remember me functionality
+- Loading states and error handling
+
+##### Search Form Component (\`/search-form\`)
+- Real-time search with debouncing
+- Recent searches tracking
+- Pagination support
+- Export search results to CSV
+- Category and sorting filters
+
+#### 4. Form Utilities
+Located in \`src/app/utils/form-utils.ts\`:
+
+- **FormStateHelper** - Mark forms as touched/pristine, reset forms, check form state
+- **FormValidationHelper** - Validate on submit, get invalid fields, manage field errors
+- **AutoSaveService** - Auto-save form data with configurable debounce
+
+#### 5. Dynamic Form Service
+The \`DynamicFormService\` allows creating forms from JSON configuration:
+
+\`\`\`typescript
+const formConfig: FormConfig = {
+  title: 'Contact Form',
+  fields: [
+    {
+      key: 'name',
+      type: 'input',
+      label: 'Full Name',
+      required: true,
+      minLength: 2,
+      maxLength: 50
+    },
+    {
+      key: 'email',
+      type: 'email',
+      label: 'Email Address',
+      required: true,
+      validators: [Validators.email]
+    }
+  ]
+};
+\`\`\`
+
+### Best Practices
+
+#### Form Validation
+- Use both synchronous and asynchronous validators
+- Provide clear error messages
+- Validate on blur for better UX
+- Show loading states during async validation
+
+#### Form State Management
+- Track form state (dirty, pristine, touched, valid)
+- Use signals for reactive form state
+- Implement form reset confirmation
+- Handle form submission states properly
+
+#### Performance Optimization
+- Use debouncing for search inputs
+- Implement lazy loading for forms
+- Cache form data when appropriate
+- Use memoization for expensive operations
+
+### Form Testing
+
+The forms are designed to be easily testable:
+
+\`\`\`typescript
+describe('UserFormComponent', () => {
+  it('should create form with validators', () => {
+    const form = component.userForm;
+    expect(form.get('username')?.valid).toBeFalsy();
+    form.get('username')?.setValue('testuser');
+    expect(form.get('username')?.valid).toBeTruthy();
+  });
+});
+\`\`\`
 
 ## Docker
 
@@ -4895,5 +5110,2717 @@ export class OfflineService {
   }
 }
 `;
+
+  private generateCustomValidators() {
+    return `import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { map, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+
+/**
+ * Password strength validator
+ * Checks for at least 8 characters, one uppercase, one lowercase, one number, and one special character
+ */
+export function passwordStrengthValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+
+    const hasUpperCase = /[A-Z]/.test(control.value);
+    const hasLowerCase = /[a-z]/.test(control.value);
+    const hasNumber = /[0-9]/.test(control.value);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(control.value);
+    const isValidLength = control.value.length >= 8;
+
+    const passwordValid = hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar && isValidLength;
+
+    return passwordValid ? null : {
+      passwordStrength: {
+        hasUpperCase,
+        hasLowerCase,
+        hasNumber,
+        hasSpecialChar,
+        isValidLength
+      }
+    };
+  };
+}
+
+/**
+ * Email domain validator
+ * Validates that email is from a specific domain
+ */
+export function emailDomainValidator(allowedDomains: string[]): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+
+    const email = control.value;
+    const domain = email.split('@')[1];
+
+    if (!domain) return null;
+
+    const isValidDomain = allowedDomains.some(allowed =>
+      domain.toLowerCase() === allowed.toLowerCase()
+    );
+
+    return isValidDomain ? null : {
+      emailDomain: {
+        allowedDomains,
+        actualDomain: domain
+      }
+    };
+  };
+}
+
+/**
+ * Username availability async validator
+ * Checks if username is available (mock implementation)
+ */
+export function usernameAvailabilityValidator(): (control: AbstractControl) => Observable<ValidationErrors | null> {
+  return (control: AbstractControl): Observable<ValidationErrors | null> => {
+    if (!control.value) return of(null);
+
+    // Simulate API call with debounce
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap(username => {
+        // Mock API check - replace with actual API call
+        const isAvailable = username !== 'admin' && username !== 'user' && username.length >= 3;
+        return of(isAvailable ? null : { usernameTaken: true });
+      })
+    );
+  };
+}
+
+/**
+ * Confirm password validator
+ * Ensures password and confirm password match
+ */
+export function confirmPasswordValidator(passwordControl: AbstractControl): ValidatorFn {
+  return (confirmControl: AbstractControl): ValidationErrors | null => {
+    if (!confirmControl.value) return null;
+
+    const password = passwordControl.value;
+    const confirmPassword = confirmControl.value;
+
+    return password === confirmPassword ? null : { passwordMismatch: true };
+  };
+}
+
+/**
+ * File type validator
+ * Validates file type based on allowed extensions
+ */
+export function fileTypeValidator(allowedTypes: string[]): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+
+    if (control.value instanceof File) {
+      const file = control.value as File;
+      const extension = file.name.split('.').pop()?.toLowerCase();
+
+      if (!extension || !allowedTypes.includes(extension)) {
+        return { invalidFileType: { allowedTypes, actualType: extension } };
+      }
+    }
+
+    return null;
+  };
+}
+
+/**
+ * Phone number format validator
+ * Validates phone number format (supports various formats)
+ */
+export function phoneNumberValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+
+    // Remove all non-digit characters
+    const phoneNumber = control.value.replace(/\\D/g, '');
+
+    // Basic validation: must be 10 digits (US format)
+    const isValidLength = phoneNumber.length === 10;
+    const isValidPattern = /^\\d{10}$/.test(phoneNumber);
+
+    return isValidLength && isValidPattern ? null : { invalidPhoneNumber: true };
+  };
+}
+
+/**
+ * Date range validator
+ * Validates that end date is after start date
+ */
+export function dateRangeValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const startDate = control.get('startDate')?.value;
+    const endDate = control.get('endDate')?.value;
+
+    if (!startDate || !endDate) return null;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    return end > start ? null : { invalidDateRange: true };
+  };
+}
+
+/**
+ * Custom async validator that combines multiple validators
+ */
+export function composeAsyncValidators(validators: ValidatorFn[]): ValidatorFn {
+  return (control: AbstractControl): Observable<ValidationErrors | null> => {
+    if (!validators.length) return of(null);
+
+    const observables = validators.map(validator => {
+      const result = validator(control);
+      return result instanceof Observable ? result : of(result);
+    });
+
+    // Combine all async validator results
+    return of(observables).pipe(
+      switchMap(validatorObs => {
+        // This is a simplified implementation
+        // In a real app, you might want to use forkJoin or combineLatest
+        return of(null);
+      })
+    );
+  };
+}
+
+/**
+ * Required field validator with custom message
+ */
+export function requiredValidator(message: string = 'This field is required'): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    return control.value ? null : { required: message };
+  };
+}
+
+/**
+ * Minimum length validator
+ */
+export function minLengthValidator(min: number, message?: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    return control.value && control.value.length >= min
+      ? null
+      : {
+          minLength: {
+            requiredLength: min,
+            actualLength: control.value?.length || 0,
+            message: message || \`Minimum length is \${min} characters\`
+          }
+        };
+  };
+}
+
+/**
+ * Maximum length validator
+ */
+export function maxLengthValidator(max: number, message?: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    return control.value && control.value.length <= max
+      ? null
+      : {
+          maxLength: {
+            requiredLength: max,
+            actualLength: control.value?.length || 0,
+            message: message || \`Maximum length is \${max} characters\`
+          }
+        };
+  };
+}
+
+/**
+ * Pattern validator
+ */
+export function patternValidator(pattern: RegExp, message?: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+
+    return pattern.test(control.value)
+      ? null
+      : {
+          pattern: {
+            requiredPattern: pattern.toString(),
+            actualValue: control.value,
+            message: message || 'Invalid format'
+          }
+        };
+  };
+}`;
+  }
+
+  private generateFormUtils() {
+    return `import { AbstractControl, FormGroup, FormControl, FormArray } from '@angular/forms';
+import { Observable, Subscription } from 'rxjs';
+
+/**
+ * Form state helper functions
+ */
+export class FormStateHelper {
+  static markFormGroupTouched(formGroup: FormGroup): void {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+
+      if (control instanceof FormArray) {
+        control.controls.forEach(arrayControl => {
+          if (arrayControl instanceof FormGroup) {
+            this.markFormGroupTouched(arrayControl);
+          } else {
+            arrayControl.markAsTouched();
+          }
+        });
+      }
+    });
+  }
+
+  static markFormGroupPristine(formGroup: FormGroup): void {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsPristine();
+
+      if (control instanceof FormGroup) {
+        this.markFormGroupPristine(control);
+      }
+
+      if (control instanceof FormArray) {
+        control.controls.forEach(arrayControl => {
+          if (arrayControl instanceof FormGroup) {
+            this.markFormGroupPristine(arrayControl);
+          } else {
+            arrayControl.markAsPristine();
+          }
+        });
+      }
+    });
+  }
+
+  static resetForm(formGroup: FormGroup, confirmCallback?: () => void): void {
+    if (confirmCallback) {
+      confirmCallback();
+    }
+    formGroup.reset();
+    this.markFormGroupPristine(formGroup);
+  }
+
+  static hasError(formControl: AbstractControl, errorType: string): boolean {
+    return formControl.invalid && formControl.errors && formControl.errors[errorType];
+  }
+
+  static isDirtyAndValid(formControl: AbstractControl): boolean {
+    return formControl.dirty && formControl.valid;
+  }
+
+  static isDirtyAndInvalid(formControl: AbstractControl): boolean {
+    return formControl.dirty && formControl.invalid;
+  }
+
+  static isTouchedAndInvalid(formControl: AbstractControl): boolean {
+    return formControl.touched && formControl.invalid;
+  }
+
+  static getErrorMessage(formControl: AbstractControl, customMessages?: { [key: string]: string }): string {
+    if (!formControl.errors || formControl.pristine) return '';
+
+    const errors = formControl.errors;
+    const firstErrorKey = Object.keys(errors)[0];
+
+    // Custom messages take precedence
+    if (customMessages && customMessages[firstErrorKey]) {
+      return customMessages[firstErrorKey];
+    }
+
+    // Default error messages
+    switch (firstErrorKey) {
+      case 'required':
+        return 'This field is required';
+      case 'email':
+        return 'Please enter a valid email address';
+      case 'minlength':
+        return \`Minimum length is \${errors['minlength'].requiredLength} characters\`;
+      case 'maxlength':
+        return \`Maximum length is \${errors['maxlength'].requiredLength} characters\`;
+      case 'pattern':
+        return 'Invalid format';
+      case 'passwordStrength':
+        const strength = errors['passwordStrength'];
+        const messages = [];
+        if (!strength.hasUpperCase) messages.push('one uppercase letter');
+        if (!strength.hasLowerCase) messages.push('one lowercase letter');
+        if (!strength.hasNumber) messages.push('one number');
+        if (!strength.hasSpecialChar) messages.push('one special character');
+        if (!strength.isValidLength) messages.push('at least 8 characters');
+        return \`Password must contain: \${messages.join(', ')}\`;
+      case 'emailDomain':
+        return \`Email domain must be one of: \${errors['emailDomain'].allowedDomains.join(', ')}\`;
+      case 'usernameTaken':
+        return 'This username is already taken';
+      case 'passwordMismatch':
+        return 'Passwords do not match';
+      case 'invalidFileType':
+        return \`Invalid file type. Allowed types: \${errors['invalidFileType'].allowedTypes.join(', ')}\`;
+      case 'invalidPhoneNumber':
+        return 'Please enter a valid phone number';
+      case 'invalidDateRange':
+        return 'End date must be after start date';
+      default:
+        return 'Invalid value';
+    }
   }
 }
+
+/**
+ * Auto-save functionality
+ */
+export class AutoSaveService {
+  private subscription: Subscription | null = null;
+  private debounceTime = 2000; // 2 seconds
+
+  constructor(private saveCallback: (formValue: any) => void) {}
+
+  setupAutoSave(formGroup: FormGroup): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+
+    this.subscription = formGroup.valueChanges
+      .pipe(
+        debounceTime(this.debounceTime),
+        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
+      )
+      .subscribe(value => {
+        if (formGroup.valid) {
+          this.saveCallback(value);
+        }
+      });
+  }
+
+  updateDebounceTime(time: number): void {
+    this.debounceTime = time;
+  }
+
+  cleanup(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
+  }
+}
+
+/**
+ * Form validation helper
+ */
+export class FormValidationHelper {
+  static validateOnSubmit(formGroup: FormGroup): boolean {
+    FormStateHelper.markFormGroupTouched(formGroup);
+    return formGroup.valid;
+  }
+
+  static validateField(control: AbstractControl): void {
+    control.markAsTouched();
+    control.updateValueAndValidity();
+  }
+
+  static getInvalidFields(formGroup: FormGroup): string[] {
+    const invalidFields: string[] = [];
+
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      if (control instanceof FormControl) {
+        if (control.invalid && control.touched) {
+          invalidFields.push(key);
+        }
+      } else if (control instanceof FormGroup) {
+        const nestedInvalidFields = this.getInvalidFields(control);
+        nestedInvalidFields.forEach(field => invalidFields.push(\`\${key}.\${field}\`));
+      }
+    });
+
+    return invalidFields;
+  }
+
+  static getFieldControl(formGroup: FormGroup, path: string): AbstractControl | null {
+    try {
+      return formGroup.get(path);
+    } catch (e) {
+      console.warn(\`Invalid form path: \${path}\`);
+      return null;
+    }
+  }
+
+  static setFieldError(control: AbstractControl, errorType: string, errorValue: any = true): void {
+    control.setErrors({ ...control.errors, [errorType]: errorValue });
+    control.markAsDirty();
+    control.markAsTouched();
+  }
+
+  static clearFieldError(control: AbstractControl, errorType: string): void {
+    if (control.errors && control.errors[errorType]) {
+      const errors = { ...control.errors };
+      delete errors[errorType];
+
+      if (Object.keys(errors).length === 0) {
+        control.setErrors(null);
+      } else {
+        control.setErrors(errors);
+      }
+    }
+  }
+}
+
+/**
+ * Form utilities export
+ */
+export const FormUtils = {
+  ...FormStateHelper,
+  ...FormValidationHelper,
+  AutoSaveService
+};`;
+  }
+
+  private generateDynamicFormService() {
+    return `import { Injectable, inject } from '@angular/core';
+import { FormBuilder, FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+export interface FormField {
+  key: string;
+  type: 'input' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date' | 'file' | 'password';
+  label: string;
+  placeholder?: string;
+  required?: boolean;
+  validators?: any[];
+  asyncValidators?: any[];
+  options?: { value: any; label: string }[];
+  defaultValue?: any;
+  hidden?: boolean;
+  disabled?: boolean;
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  helpText?: string;
+  order?: number;
+}
+
+export interface FormConfig {
+  title: string;
+  description?: string;
+  fields: FormField[];
+  submitText?: string;
+  cancelText?: string;
+  layout?: 'vertical' | 'horizontal' | 'grid';
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DynamicFormService {
+  private fb = inject(FormBuilder);
+
+  /**
+   * Create form group from JSON configuration
+   */
+  createForm(config: FormConfig): FormGroup {
+    const group: { [key: string]: AbstractControl } = {};
+
+    config.fields
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .forEach(field => {
+        if (!field.hidden) {
+          const validators = this.buildValidators(field);
+          const asyncValidators = this.buildAsyncValidators(field);
+
+          group[field.key] = new FormControl(
+            field.defaultValue || '',
+            { validators, asyncValidators }
+          );
+        }
+      });
+
+    return this.fb.group(group);
+  }
+
+  /**
+   * Build validators for a field
+   */
+  private buildValidators(field: FormField): any[] {
+    const validators: any[] = [];
+
+    if (field.required) {
+      validators.push(Validators.required);
+    }
+
+    if (field.minLength) {
+      validators.push(Validators.minLength(field.minLength));
+    }
+
+    if (field.maxLength) {
+      validators.push(Validators.maxLength(field.maxLength));
+    }
+
+    if (field.min !== undefined) {
+      validators.push(Validators.min(field.min));
+    }
+
+    if (field.max !== undefined) {
+      validators.push(Validators.max(field.max));
+    }
+
+    if (field.pattern) {
+      validators.push(Validators.pattern(field.pattern));
+    }
+
+    // Add custom validators
+    if (field.validators) {
+      validators.push(...field.validators);
+    }
+
+    return validators;
+  }
+
+  /**
+   * Build async validators for a field
+   */
+  private buildAsyncValidators(field: FormField): any[] {
+    if (!field.asyncValidators) return [];
+
+    return field.asyncValidators.map(validator => {
+      if (typeof validator === 'function') {
+        return validator;
+      }
+      return validator;
+    });
+  }
+
+  /**
+   * Get form field configuration
+   */
+  getFieldConfig(field: FormField, control: AbstractControl): any {
+    const hasError = control.invalid && control.touched;
+    const errors = control.errors || {};
+
+    return {
+      ...field,
+      control,
+      hasError,
+      errors,
+      value: control.value
+    };
+  }
+
+  /**
+   * Update form fields dynamically
+   */
+  updateFields(formGroup: FormGroup, fields: FormField[]): void {
+    // Remove fields that are no longer in the config
+    Object.keys(formGroup.controls).forEach(key => {
+      if (!fields.find(f => f.key === key && !f.hidden)) {
+        formGroup.removeControl(key);
+      }
+    });
+
+    // Add or update fields
+    fields.forEach(field => {
+      if (!field.hidden) {
+        if (!formGroup.get(field.key)) {
+          const validators = this.buildValidators(field);
+          const asyncValidators = this.buildAsyncValidators(field);
+
+          formGroup.addControl(field.key, new FormControl(
+            field.defaultValue || '',
+            { validators, asyncValidators }
+          ));
+        } else {
+          // Update existing field
+          const control = formGroup.get(field.key) as FormControl;
+          control.setValue(field.defaultValue || '');
+
+          // Update validators
+          this.updateValidators(control, field);
+        }
+      } else {
+        // Hide field by removing it
+        formGroup.removeControl(field.key);
+      }
+    });
+  }
+
+  /**
+   * Update field validators
+   */
+  private updateValidators(control: FormControl, field: FormField): void {
+    const validators = this.buildValidators(field);
+    const asyncValidators = this.buildAsyncValidators(field);
+
+    control.setValidators(validators);
+    control.setAsyncValidators(asyncValidators);
+    control.updateValueAndValidity();
+  }
+
+  /**
+   * Validate form
+   */
+  validateForm(formGroup: FormGroup): boolean {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      control.updateValueAndValidity();
+    });
+    return formGroup.valid;
+  }
+
+  /**
+   * Reset form
+   */
+  resetForm(formGroup: FormGroup, config?: FormConfig): void {
+    if (config) {
+      config.fields.forEach(field => {
+        const control = formGroup.get(field.key);
+        if (control) {
+          control.setValue(field.defaultValue || '');
+        }
+      });
+    } else {
+      formGroup.reset();
+    }
+
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsPristine();
+      control.markAsUntouched();
+    });
+  }
+
+  /**
+   * Get form data as object
+   */
+  getFormData(formGroup: FormGroup): any {
+    return formGroup.value;
+  }
+
+  /**
+   * Set form data
+   */
+  setFormData(formGroup: FormGroup, data: any): void {
+    formGroup.patchValue(data);
+    formGroup.markAsPristine();
+  }
+
+  /**
+   * Create form template configuration
+   */
+  createFormTemplate(config: FormConfig): { [key: string]: any } {
+    const template: { [key: string]: any } = {
+      title: config.title,
+      description: config.description,
+      layout: config.layout || 'vertical',
+      fields: [],
+      submitText: config.submitText || 'Submit',
+      cancelText: config.cancelText || 'Cancel'
+    };
+
+    config.fields
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+      .forEach(field => {
+        if (!field.hidden) {
+          template.fields.push({
+            ...field,
+            type: field.type,
+            label: field.label,
+            placeholder: field.placeholder,
+            required: field.required,
+            options: field.options,
+            helpText: field.helpText
+          });
+        }
+      });
+
+    return template;
+  }
+
+  /**
+   * Transform form data before submission
+   */
+  transformFormData(formGroup: FormGroup, transformers?: { [key: string]: (value: any) => any }): any {
+    const formData = this.getFormData(formGroup);
+
+    if (transformers) {
+      Object.keys(transformers).forEach(key => {
+        if (formData.hasOwnProperty(key)) {
+          formData[key] = transformers[key](formData[key]);
+        }
+      });
+    }
+
+    return formData;
+  }
+
+  /**
+   * Validate conditional fields
+   */
+  validateConditionalFields(formGroup: FormGroup, conditions: { [key: string]: (value: any) => boolean }): void {
+    Object.keys(conditions).forEach(fieldKey => {
+      const condition = conditions[fieldKey];
+      const control = formGroup.get(fieldKey);
+
+      if (control) {
+        // Update visibility based on condition
+        const shouldShow = condition(control.value);
+
+        if (shouldShow && !formGroup.get(fieldKey)) {
+          // Add field if it doesn't exist
+          formGroup.addControl(fieldKey, new FormControl(''));
+        } else if (!shouldShow && formGroup.get(fieldKey)) {
+          // Remove field if it exists
+          formGroup.removeControl(fieldKey);
+        }
+      }
+    });
+  }
+
+  /**
+   * Create validation schema from form config
+   */
+  createValidationSchema(config: FormConfig): { [key: string]: any } {
+    const schema: { [key: string]: any } = {};
+
+    config.fields.forEach(field => {
+      if (!field.hidden) {
+        schema[field.key] = {};
+
+        if (field.required) {
+          schema[field.key].required = true;
+        }
+
+        if (field.minLength) {
+          schema[field.key].minLength = field.minLength;
+        }
+
+        if (field.maxLength) {
+          schema[field.key].maxLength = field.maxLength;
+        }
+
+        if (field.pattern) {
+          schema[field.key].pattern = field.pattern;
+        }
+
+        if (field.validators) {
+          schema[field.key].custom = field.validators;
+        }
+      }
+    });
+
+    return schema;
+  }
+}`;
+  }
+
+  private generateUserFormComponent() {
+    return `import { Component, OnInit, signal } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { PasswordStrengthValidator } from '../../validators/custom.validators';
+import { FormUtils } from '../../utils/form-utils';
+
+@Component({
+  selector: 'app-user-form',
+  templateUrl: './user-form.component.html',
+  styleUrls: ['./user-form.component.scss']
+})
+export class UserFormComponent implements OnInit {
+  userForm: FormGroup;
+  isSubmitting = signal(false);
+  showPassword = signal(false);
+  showConfirmPassword = signal(false);
+  passwordStrength = signal(0);
+  supportedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'company.com'];
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) {
+    this.userForm = this.fb.group({
+      username: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(20),
+        Validators.pattern('^[a-zA-Z0-9_]+$')
+      ], [
+        // Async validator for username availability
+        this.usernameAvailabilityValidator.bind(this)
+      ]],
+      email: ['', [
+        Validators.required,
+        Validators.email,
+        Validators.pattern('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$')
+      ]],
+      emailDomain: ['', [
+        Validators.required,
+        this.emailDomainValidator(this.supportedDomains)
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        PasswordStrengthValidator()
+      ]],
+      confirmPassword: ['', Validators.required],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      phone: ['', [
+        Validators.required,
+        this.phoneNumberValidator()
+      ]],
+      birthDate: ['', Validators.required],
+      acceptTerms: [false, Validators.requiredTrue]
+    }, { validators: this.passwordMatchValidator });
+
+    // Subscribe to password changes for strength indicator
+    this.userForm.get('password')?.valueChanges.subscribe(() => {
+      this.updatePasswordStrength();
+    });
+  }
+
+  ngOnInit(): void {
+    // Initialize with default values if needed
+    this.resetForm();
+  }
+
+  /**
+   * Username availability async validator
+   */
+  usernameAvailabilityValidator(control: AbstractControl) {
+    if (!control.value) return of(null);
+
+    // Simulate API call
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      map(username => {
+        const isAvailable = username !== 'admin' && username !== 'user';
+        return isAvailable ? null : { usernameTaken: true };
+      })
+    );
+  }
+
+  /**
+   * Email domain validator
+   */
+  emailDomainValidator(allowedDomains: string[]) {
+    return (control: AbstractControl) => {
+      if (!control.value) return null;
+
+      const email = control.value;
+      const domain = email.split('@')[1];
+
+      if (!domain) return null;
+
+      const isValid = allowedDomains.some(allowed =>
+        domain.toLowerCase() === allowed.toLowerCase()
+      );
+
+      return isValid ? null : { emailDomain: { allowedDomains, actualDomain: domain } };
+    };
+  }
+
+  /**
+   * Phone number validator
+   */
+  phoneNumberValidator() {
+    return (control: AbstractControl) => {
+      if (!control.value) return null;
+
+      const phone = control.value.replace(/\\\\D/g, '');
+      const isValid = /^\\\\d{10}$/.test(phone);
+
+      return isValid ? null : { invalidPhone: true };
+    };
+  }
+
+  /**
+   * Password match validator
+   */
+  passwordMatchValidator(group: FormGroup) {
+    const password = group.get('password')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+
+    return password === confirmPassword ? null : { passwordMismatch: true };
+  }
+
+  /**
+   * Update password strength
+   */
+  updatePasswordStrength(): void {
+    const password = this.userForm.get('password')?.value || '';
+    let strength = 0;
+
+    if (password.length >= 8) strength += 20;
+    if (/[A-Z]/.test(password)) strength += 20;
+    if (/[a-z]/.test(password)) strength += 20;
+    if (/[0-9]/.test(password)) strength += 20;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+
+    this.passwordStrength.set(strength);
+  }
+
+  /**
+   * Submit form
+   */
+  onSubmit(): void {
+    if (!FormUtils.validateOnSubmit(this.userForm)) {
+      return;
+    }
+
+    this.isSubmitting.set(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      const formData = this.userForm.value;
+
+      // Process form data
+      const userData = {
+        ...formData,
+        fullName: \`\${formData.firstName} \${formData.lastName}\`,
+        registeredAt: new Date().toISOString()
+      };
+
+      console.log('User submitted data:', userData);
+
+      // Show success message
+      this.snackBar.open('User created successfully!', 'Close', {
+        duration: 3000,
+        panelClass: ['success-snackbar']
+      });
+
+      // Redirect or navigate
+      this.router.navigate(['/dashboard']);
+
+      this.isSubmitting.set(false);
+    }, 2000);
+  }
+
+  /**
+   * Reset form
+   */
+  resetForm(): void {
+    const confirmed = window.confirm('Are you sure you want to reset all form data?');
+    if (confirmed) {
+      FormUtils.resetForm(this.userForm);
+      this.passwordStrength.set(0);
+    }
+  }
+
+  /**
+   * Cancel form
+   */
+  cancel(): void {
+    this.router.navigate(['/']);
+  }
+
+  /**
+   * Get field error message
+   */
+  getFieldError(fieldName: string): string {
+    const control = this.userForm.get(fieldName);
+    return FormUtils.getErrorMessage(control);
+  }
+
+  /**
+   * Check if field has specific error
+   */
+  hasFieldError(fieldName: string, errorType: string): boolean {
+    const control = this.userForm.get(fieldName);
+    return FormUtils.hasError(control, errorType);
+  }
+
+  /**
+   * Check if form field is dirty and valid
+   */
+  isFieldValid(fieldName: string): boolean {
+    const control = this.userForm.get(fieldName);
+    return control?.valid && control?.dirty;
+  }
+
+  /**
+   * Get password strength text
+   */
+  getPasswordStrengthText(): string {
+    const strength = this.passwordStrength();
+    if (strength <= 20) return 'Very Weak';
+    if (strength <= 40) return 'Weak';
+    if (strength <= 60) return 'Fair';
+    if (strength <= 80) return 'Good';
+    return 'Strong';
+  }
+
+  /**
+   * Get password strength color
+   */
+  getPasswordStrengthColor(): string {
+    const strength = this.passwordStrength();
+    if (strength <= 20) return '#f44336';
+    if (strength <= 40) return '#ff9800';
+    if (strength <= 60) return '#ffc107';
+    if (strength <= 80) return '#4caf50';
+    return '#4caf50';
+  }
+
+  /**
+   * Toggle password visibility
+   */
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
+  }
+
+  /**
+   * Toggle confirm password visibility
+   */
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword.set(!this.showConfirmPassword());
+  }
+}`;
+  }
+
+  private generateLoginFormComponent() {
+    return `import { Component, OnInit, signal } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable, timer, of } from 'rxjs';
+import { switchMap, catchError, map, tap } from 'rxjs/operators';
+import { FormUtils } from '../../utils/form-utils';
+
+@Component({
+  selector: 'app-login-form',
+  templateUrl: './login-form.component.html',
+  styleUrls: ['./login-form.component.scss']
+})
+export class LoginFormComponent implements OnInit {
+  loginForm: FormGroup;
+  isSubmitting = signal(false);
+  isLoading = signal(false);
+  loginFailed = signal(false);
+  errorMessage = signal('');
+  rememberMe = signal(false);
+  showPassword = signal(false);
+  loginAttempts = signal(0);
+  lockoutTime = signal(0);
+  isLockedOut = signal(false);
+
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) {
+    this.loginForm = this.fb.group({
+      username: ['', [
+        Validators.required,
+        Validators.minLength(3)
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(6)
+      ]],
+      rememberMe: [false]
+    });
+  }
+
+  ngOnInit(): void {
+    // Check if user is already logged in
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      this.router.navigate(['/dashboard']);
+    }
+
+    // Load saved credentials if remember me is checked
+    const savedUsername = localStorage.getItem('remembered_username');
+    if (savedUsername) {
+      this.loginForm.patchValue({
+        username: savedUsername,
+        rememberMe: true
+      });
+      this.rememberMe.set(true);
+    }
+
+    // Set up login attempts counter
+    this.loginForm.valueChanges.subscribe(() => {
+      if (this.loginFailed()) {
+        this.loginFailed.set(false);
+        this.errorMessage.set('');
+      }
+    });
+  }
+
+  /**
+   * Submit login form
+   */
+  onSubmit(): void {
+    if (!FormUtils.validateOnSubmit(this.loginForm)) {
+      return;
+    }
+
+    // Check if account is locked out
+    if (this.isLockedOut()) {
+      const remainingTime = Math.ceil(this.lockoutTime() / 1000);
+      this.errorMessage.set(\`Account locked. Try again in \${remainingTime} seconds.\`);
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.isLoading.set(true);
+
+    // Simulate API call with loading state
+    timer(1000).pipe(
+      switchMap(() => this.authenticateUser(this.loginForm.value)),
+      catchError(error => {
+        this.isSubmitting.set(false);
+        this.isLoading.set(false);
+        return of(null);
+      })
+    ).subscribe(result => {
+      this.isSubmitting.set(false);
+      this.isLoading.set(false);
+
+      if (result) {
+        // Authentication successful
+        this.handleSuccessfulLogin(result);
+      } else {
+        // Authentication failed
+        this.handleFailedLogin();
+      }
+    });
+  }
+
+  /**
+   * Simulate user authentication
+   */
+  private authenticateUser(credentials: any): Observable<any> {
+    return timer(1500).pipe(
+      switchMap(() => {
+        // Mock authentication logic
+        const { username, password } = credentials;
+
+        // Mock valid credentials
+        const validCredentials = [
+          { username: 'admin', password: 'admin123' },
+          { username: 'user', password: 'user123' },
+          { username: 'demo', password: 'demo123' }
+        ];
+
+        const isValid = validCredentials.some(cred =>
+          cred.username === username && cred.password === password
+        );
+
+        if (isValid) {
+          return of({
+            username,
+            token: 'mock-jwt-token-' + Date.now(),
+            expiresIn: 3600, // 1 hour
+            role: username === 'admin' ? 'admin' : 'user'
+          });
+        } else {
+          throw new Error('Invalid credentials');
+        }
+      }),
+      catchError(error => {
+        this.handleFailedLogin();
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Handle successful login
+   */
+  private handleSuccessfulLogin(authResult: any): void {
+    // Store token
+    localStorage.setItem('auth_token', authResult.token);
+    localStorage.setItem('user_role', authResult.role);
+
+    // Handle remember me
+    if (this.rememberMe()) {
+      localStorage.setItem('remembered_username', this.loginForm.get('username')?.value);
+    } else {
+      localStorage.removeItem('remembered_username');
+    }
+
+    // Reset login attempts
+    this.loginAttempts.set(0);
+    this.isLockedOut.set(false);
+    this.lockoutTime.set(0);
+
+    // Show success message
+    this.snackBar.open('Login successful!', 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
+
+    // Redirect to dashboard
+    this.router.navigate(['/dashboard']);
+  }
+
+  /**
+   * Handle failed login
+   */
+  private handleFailedLogin(): void {
+    this.loginAttempts.update(attempts => attempts + 1);
+
+    if (this.loginAttempts() >= 3) {
+      // Lock account for 30 seconds
+      this.isLockedOut.set(true);
+      this.lockoutTime.set(Date.now() + 30000);
+
+      // Start countdown
+      this.startLockoutCountdown();
+
+      this.errorMessage.set('Too many failed attempts. Account locked for 30 seconds.');
+    } else {
+      this.errorMessage.set(\`Invalid credentials. \${3 - this.loginAttempts()} attempts remaining.\`);
+      this.loginFailed.set(true);
+    }
+  }
+
+  /**
+   * Start lockout countdown
+   */
+  private startLockoutCountdown(): void {
+    const checkLockout = () => {
+      const remaining = 30000 - (Date.now() - this.lockoutTime());
+
+      if (remaining <= 0) {
+        this.isLockedOut.set(false);
+        this.lockoutTime.set(0);
+        this.loginAttempts.set(0);
+      } else {
+        setTimeout(checkLockout, 1000);
+      }
+    };
+
+    checkLockout();
+  }
+
+  /**
+   * Check if form is ready for submission
+   */
+  canSubmit(): boolean {
+    return this.loginForm.valid &&
+           !this.isSubmitting() &&
+           !this.isLockedOut() &&
+           !this.isLoading();
+  }
+
+  /**
+   * Get form field control
+   */
+  getField(fieldName: string): AbstractControl | null {
+    return this.loginForm.get(fieldName);
+  }
+
+  /**
+   * Get field error message
+   */
+  getFieldError(fieldName: string): string {
+    const control = this.getField(fieldName);
+    return FormUtils.getErrorMessage(control);
+  }
+
+  /**
+   * Check if field has specific error
+   */
+  hasFieldError(fieldName: string, errorType: string): boolean {
+    const control = this.getField(fieldName);
+    return FormUtils.hasError(control, errorType);
+  }
+
+  /**
+   * Toggle password visibility
+   */
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
+  }
+
+  /**
+   * Navigate to forgot password
+   */
+  forgotPassword(): void {
+    this.router.navigate(['/forgot-password']);
+  }
+
+  /**
+   * Navigate to register
+   */
+  goToRegister(): void {
+    this.router.navigate(['/register']);
+  }
+
+  /**
+   * Reset form
+   */
+  resetForm(): void {
+    this.loginForm.reset();
+    this.rememberMe.set(false);
+    this.loginFailed.set(false);
+    this.errorMessage.set('');
+  }
+}`;
+  }
+
+  private generateSearchFormComponent() {
+    return `import { Component, OnInit, signal } from '@angular/core';
+import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { FormUtils } from '../../utils/form-utils';
+
+@Component({
+  selector: 'app-search-form',
+  templateUrl: './search-form.component.html',
+  styleUrls: ['./search-form.component.scss']
+})
+export class SearchFormComponent implements OnInit {
+  searchForm: FormGroup;
+  searchResults = signal<any[]>([]);
+  isLoading = signal(false);
+  searchQuery = signal('');
+  selectedCategory = signal('all');
+  sortBy = signal('relevance');
+  currentPage = signal(1);
+  totalPages = signal(0);
+  totalResults = signal(0);
+  recentSearches = signal<string[]>([]);
+
+  categories = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'articles', label: 'Articles' },
+    { value: 'videos', label: 'Videos' },
+    { value: 'products', label: 'Products' },
+    { value: 'users', label: 'Users' }
+  ];
+
+  sortOptions = [
+    { value: 'relevance', label: 'Most Relevant' },
+    { value: 'date', label: 'Date (Newest First)' },
+    { value: 'date-asc', label: 'Date (Oldest First)' },
+    { value: 'name', label: 'Name (A-Z)' },
+    { value: 'name-desc', label: 'Name (Z-A)' }
+  ];
+
+  searchResults$ = new Observable<any>();
+
+  constructor(
+    private fb: FormBuilder
+  ) {
+    this.searchForm = this.fb.group({
+      query: ['', [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(100)
+      ]],
+      category: ['all'],
+      sortBy: ['relevance'],
+      useFilters: [true],
+      dateRange: [null],
+      priceRange: [null]
+    });
+
+    // Initialize with recent searches
+    this.loadRecentSearches();
+  }
+
+  ngOnInit(): void {
+    // Set up search subscription with debouncing
+    this.searchResults$ = this.searchForm.get('query')?.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      tap(query => {
+        this.searchQuery.set(query);
+        this.currentPage.set(1);
+
+        // Add to recent searches if query is not empty
+        if (query && query.length >= 2) {
+          this.addToRecentSearches(query);
+        }
+      }),
+      switchMap(query => {
+        if (!query || query.length < 2) {
+          this.searchResults.set([]);
+          this.totalResults.set(0);
+          return of([]);
+        }
+
+        this.isLoading.set(true);
+        return this.performSearch(query, this.currentPage(), this.selectedCategory(), this.sortBy());
+      })
+    ) as Observable<any>;
+  }
+
+  /**
+   * Perform search with API call
+   */
+  performSearch(query: string, page: number = 1, category: string = 'all', sort: string = 'relevance'): Observable<any[]> {
+    // Simulate API call
+    return of(query).pipe(
+      tap(() => this.isLoading.set(true)),
+      switchMap(() => {
+        // Mock search results
+        return timer(500).pipe(
+          map(() => {
+            const mockResults = this.generateMockResults(query, page, category);
+            return {
+              results: mockResults,
+              total: this.calculateTotalResults(query, category),
+              page,
+              totalPages: Math.ceil(this.calculateTotalResults(query, category) / 10)
+            };
+          })
+        );
+      }),
+      tap(result => {
+        this.isLoading.set(false);
+        this.searchResults.set(result.results);
+        this.totalResults.set(result.total);
+        this.totalPages.set(result.totalPages);
+        this.currentPage.set(page);
+      })
+    );
+  }
+
+  /**
+   * Generate mock search results
+   */
+  private generateMockResults(query: string, page: number, category: string): any[] {
+    const results = [];
+    const startIndex = (page - 1) * 10;
+    const endIndex = startIndex + 10;
+
+    for (let i = startIndex; i < endIndex; i++) {
+      results.push({
+        id: i + 1,
+        title: \`\${query} Result #\${i + 1}\`,
+        description: \`This is a mock result for search query "\${query}". It demonstrates how search results would appear in a real application.\`,
+        category: category !== 'all' ? category : 'article',
+        date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
+        relevance: Math.random() * 100,
+        thumbnail: \`https://picsum.photos/200/150?random=\${i}\`,
+        url: \`/result/\${i + 1}\`,
+        author: \`Author \${i % 5 + 1}\`,
+        tags: [query, 'mock', 'search', 'angular']
+      });
+    }
+
+    return results;
+  }
+
+  /**
+   * Calculate total results (mock)
+   */
+  private calculateTotalResults(query: string, category: string): number {
+    const baseCount = Math.floor(Math.random() * 1000) + 100;
+    const categoryMultiplier = category !== 'all' ? 0.7 : 1;
+    return Math.floor(baseCount * categoryMultiplier);
+  }
+
+  /**
+   * Handle search form submission
+   */
+  onSearchSubmit(): void {
+    if (!FormUtils.validateOnSubmit(this.searchForm)) {
+      return;
+    }
+
+    const query = this.searchForm.get('query')?.value;
+    const category = this.searchForm.get('category')?.value;
+    const sort = this.searchForm.get('sortBy')?.value;
+
+    this.performSearch(query, 1, category, sort).subscribe();
+  }
+
+  /**
+   * Handle pagination
+   */
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages() || page === this.currentPage()) {
+      return;
+    }
+
+    this.currentPage.set(page);
+    const query = this.searchQuery();
+    const category = this.selectedCategory();
+    const sort = this.sortBy();
+
+    this.performSearch(query, page, category, sort).subscribe();
+  }
+
+  /**
+   * Change category
+   */
+  onCategoryChange(category: string): void {
+    this.selectedCategory.set(category);
+
+    // Re-search with new category
+    if (this.searchQuery()) {
+      this.performSearch(this.searchQuery(), 1, category, this.sortBy()).subscribe();
+    }
+  }
+
+  /**
+   * Change sort option
+   */
+  onSortChange(sort: string): void {
+    this.sortBy.set(sort);
+
+    // Re-search with new sort option
+    if (this.searchQuery()) {
+      this.performSearch(this.searchQuery(), this.currentPage(), this.selectedCategory(), sort).subscribe();
+    }
+  }
+
+  /**
+   * Load recent searches from localStorage
+   */
+  private loadRecentSearches(): void {
+    const searches = localStorage.getItem('recent_searches');
+    if (searches) {
+      this.recentSearches.set(JSON.parse(searches));
+    }
+  }
+
+  /**
+   * Add to recent searches
+   */
+  private addToRecentSearches(query: string): void {
+    const searches = [...this.recentSearches()];
+
+    // Remove if already exists
+    const index = searches.indexOf(query);
+    if (index > -1) {
+      searches.splice(index, 1);
+    }
+
+    // Add to beginning
+    searches.unshift(query);
+
+    // Keep only last 10 searches
+    if (searches.length > 10) {
+      searches.pop();
+    }
+
+    this.recentSearches.set(searches);
+    localStorage.setItem('recent_searches', JSON.stringify(searches));
+  }
+
+  /**
+   * Clear recent searches
+   */
+  clearRecentSearches(): void {
+    this.recentSearches.set([]);
+    localStorage.removeItem('recent_searches');
+  }
+
+  /**
+   * Use recent search
+   */
+  useRecentSearch(query: string): void {
+    this.searchForm.patchValue({
+      query
+    });
+
+    // Trigger search
+    this.onSearchSubmit();
+  }
+
+  /**
+   * Clear search
+   */
+  clearSearch(): void {
+    this.searchForm.patchValue({
+      query: '',
+      category: 'all',
+      sortBy: 'relevance'
+    });
+
+    this.searchResults.set([]);
+    this.totalResults.set(0);
+    this.currentPage.set(1);
+  }
+
+  /**
+   * Export search results
+   */
+  exportResults(): void {
+    const results = this.searchResults();
+
+    // Create CSV content
+    const headers = ['ID', 'Title', 'Category', 'Date', 'Author'];
+    const csvContent = [
+      headers.join(','),
+      ...results.map(result => [
+        result.id,
+        \`"\${result.title}"\`,
+        result.category,
+        result.date.toISOString().split('T')[0],
+        \`"\${result.author}"\`
+      ].join(','))
+    ].join('\\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', \`search-results-\${new Date().toISOString().split('T')[0]}.csv\`);
+    link.style.visibility = 'hidden';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  /**
+   * Share search results
+   */
+  shareResults(): void {
+    const results = this.searchResults();
+    const query = this.searchQuery();
+
+    if (navigator.share) {
+      navigator.share({
+        title: \`Search Results for "\${query}"\`,
+        text: \`Found \${results.length} results for "\${query}"\`,
+        url: window.location.href
+      });
+    } else {
+      // Fallback - copy to clipboard
+      const shareText = \`Search Results for "\${query}": \${window.location.href}\`;
+      navigator.clipboard.writeText(shareText).then(() => {
+        alert('Search results link copied to clipboard!');
+      });
+    }
+  }
+
+  /**
+   * Get field control
+   */
+  getField(fieldName: string): FormControl | null {
+    return this.searchForm.get(fieldName) as FormControl;
+  }
+
+  /**
+   * Check if field is valid
+   */
+  isFieldValid(fieldName: string): boolean {
+    const control = this.getField(fieldName);
+    return control?.valid && control?.dirty;
+  }
+
+  /**
+   * Get field error message
+   */
+  getFieldError(fieldName: string): string {
+    const control = this.getField(fieldName);
+    return FormUtils.getErrorMessage(control);
+  }
+}`;
+  }
+
+  private generateFormExamplesModule() {
+    return `import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+import { UserFormComponent } from '../components/user-form/user-form.component';
+import { LoginFormComponent } from '../components/login-form/login-form.component';
+import { SearchFormComponent } from '../components/search-form/search-form.component';
+
+const ROUTES = [
+  {
+    path: 'user-form',
+    component: UserFormComponent,
+    data: {
+      title: 'User Registration Form',
+      description: 'Comprehensive form with validation, async validation, and password strength indicator'
+    }
+  },
+  {
+    path: 'login-form',
+    component: LoginFormComponent,
+    data: {
+      title: 'Login Form',
+      description: 'Login form with authentication, error handling, and account lockout protection'
+    }
+  },
+  {
+    path: 'search-form',
+    component: SearchFormComponent,
+    data: {
+      title: 'Search Form',
+      description: 'Search form with debouncing, pagination, and recent searches'
+    }
+  }
+];
+
+@NgModule({
+  declarations: [
+    UserFormComponent,
+    LoginFormComponent,
+    SearchFormComponent
+  ],
+  imports: [
+    CommonModule,
+    RouterModule.forChild(ROUTES),
+    ReactiveFormsModule,
+    FormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatRadioModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatSnackBarModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    BrowserAnimationsModule
+  ],
+  exports: [
+    UserFormComponent,
+    LoginFormComponent,
+    SearchFormComponent
+  ]
+})
+export class FormExamplesModule { }
+`;
+  }
+
+  private generateUserFormTemplate() {
+    return `<div class="user-form-container">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>User Registration</mat-card-title>
+      <mat-card-subtitle>Create a new account</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+
+        <!-- Username Field -->
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" placeholder="Enter username">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="hasFieldError('username', 'required')">Username is required</mat-error>
+          <mat-error *ngIf="hasFieldError('username', 'minlength')">Username must be at least 3 characters</mat-error>
+          <mat-error *ngIf="hasFieldError('username', 'maxlength')">Username must be no more than 20 characters</mat-error>
+          <mat-error *ngIf="hasFieldError('username', 'pattern')">Username can only contain letters, numbers, and underscores</mat-error>
+          <mat-error *ngIf="hasFieldError('username', 'usernameTaken')">This username is already taken</mat-error>
+        </mat-form-field>
+
+        <!-- Email Fields -->
+        <div class="email-fields">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Email Address</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="Enter email">
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error *ngIf="hasFieldError('email', 'required')">Email is required</mat-error>
+            <mat-error *ngIf="hasFieldError('email', 'email')">Please enter a valid email address</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Email Domain (Work)</mat-label>
+            <input matInput formControlName="emailDomain" placeholder="@company.com">
+            <mat-icon matSuffix>business</mat-icon>
+            <mat-error *ngIf="hasFieldError('emailDomain', 'required')">Work email is required</mat-error>
+            <mat-error *ngIf="hasFieldError('emailDomain', 'emailDomain')">
+              Email domain must be one of: {{ supportedDomains.join(', ') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Password Fields -->
+        <div class="password-fields">
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" [type]="showPassword() ? 'text' : 'password'"
+                   (keyup)="updatePasswordStrength()">
+            <mat-icon matSuffix (click)="togglePasswordVisibility()" class="password-toggle">
+              {{ showPassword() ? 'visibility_off' : 'visibility' }}
+            </mat-icon>
+            <mat-hint align="end">
+              <mat-progress-bar mode="determinate" [value]="passwordStrength()"
+                               [color]="passwordStrength() > 80 ? 'primary' : 'warn'"
+                               [class.weak]="passwordStrength() <= 40"
+                               [class.medium]="passwordStrength() > 40 && passwordStrength() <= 80">
+              </mat-progress-bar>
+              <span class="password-strength-text" [ngStyle]="{ color: getPasswordStrengthColor() }">
+                {{ getPasswordStrengthText() }}
+              </span>
+            </mat-hint>
+            <mat-error *ngIf="hasFieldError('password', 'required')">Password is required</mat-error>
+            <mat-error *ngIf="hasFieldError('password', 'minlength')">Password must be at least 8 characters</mat-error>
+            <mat-error *ngIf="hasFieldError('password', 'passwordStrength')">
+              Password must contain: uppercase, lowercase, number, special character
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput formControlName="confirmPassword" [type]="showConfirmPassword() ? 'text' : 'password'">
+            <mat-icon matSuffix (click)="toggleConfirmPasswordVisibility()" class="password-toggle">
+              {{ showConfirmPassword() ? 'visibility_off' : 'visibility' }}
+            </mat-icon>
+            <mat-error *ngIf="hasFieldError('confirmPassword', 'required')">Please confirm your password</mat-error>
+            <mat-error *ngIf="hasFieldError('confirmPassword', 'passwordMismatch')">
+              Passwords do not match
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="personal-info">
+          <h3>Personal Information</h3>
+
+          <div class="name-fields">
+            <mat-form-field appearance="fill" class="half-width">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName">
+              <mat-error *ngIf="hasFieldError('firstName', 'required')">First name is required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="half-width">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName">
+              <mat-error *ngIf="hasFieldError('lastName', 'required')">Last name is required</mat-error>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Phone Number</mat-label>
+            <input matInput formControlName="phone" placeholder="(555) 123-4567">
+            <mat-icon matSuffix>phone</mat-icon>
+            <mat-error *ngIf="hasFieldError('phone', 'required')">Phone number is required</mat-error>
+            <mat-error *ngIf="hasFieldError('phone', 'invalidPhone')">
+              Please enter a valid 10-digit phone number
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Birth Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="birthDate">
+            <mat-icon matSuffix matDatepickerToggle [for]="picker">event</mat-icon>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="hasFieldError('birthDate', 'required')">Birth date is required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <mat-checkbox formControlName="acceptTerms" class="terms-checkbox">
+          I agree to the terms and conditions
+        </mat-checkbox>
+        <mat-error *ngIf="hasFieldError('acceptTerms', 'requiredTrue')">
+          You must accept the terms and conditions
+        </mat-error>
+
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="onSubmit()"
+              [disabled]="userForm.invalid || isSubmitting()">
+        <mat-icon class="button-icon">person_add</mat-icon>
+        Register
+      </button>
+
+      <button mat-raised-button color="warn" (click)="resetForm()"
+              [disabled]="isSubmitting()">
+        <mat-icon class="button-icon">refresh</mat-icon>
+        Reset
+      </button>
+
+      <button mat-raised-button (click)="cancel()">
+        <mat-icon class="button-icon">close</mat-icon>
+        Cancel
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isSubmitting()" class="loading-overlay">
+    <mat-spinner diameter="50" class="loading-spinner"></mat-spinner>
+  </div>
+</div>`;
+  }
+
+  private generateUserFormStyles() {
+    return `.user-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: var(--background-color);
+}
+
+.form-card {
+  max-width: 600px;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  width: 50%;
+}
+
+.email-fields,
+.password-fields {
+  margin-bottom: 20px;
+}
+
+.name-fields {
+  display: flex;
+  gap: 16px;
+}
+
+.name-fields .half-width:first-child {
+  margin-right: 16px;
+}
+
+.personal-info {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.personal-info h3 {
+  margin-bottom: 16px;
+  color: var(--text-color);
+}
+
+.password-toggle {
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+  color: var(--accent-color);
+}
+
+.mat-progress-bar {
+  margin-top: 8px;
+}
+
+.password-strength-text {
+  margin-left: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.terms-checkbox {
+  margin: 16px 0;
+}
+
+.button-icon {
+  margin-right: 8px;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  background-color: white;
+  padding: 20px;
+  border-radius: 50%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .name-fields {
+    flex-direction: column;
+  }
+
+  .half-width {
+    width: 100%;
+  }
+
+  .name-fields .half-width:first-child {
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+}`;
+  }
+
+  private generateLoginFormTemplate() {
+    return `<div class="login-form-container">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>Login</mat-card-title>
+      <mat-card-subtitle>Sign in to your account</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+
+        <!-- Username Field -->
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" placeholder="Enter username">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="hasFieldError('username', 'required')">Username is required</mat-error>
+          <mat-error *ngIf="hasFieldError('username', 'minlength')">Username must be at least 3 characters</mat-error>
+        </mat-form-field>
+
+        <!-- Password Field -->
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput formControlName="password" [type]="showPassword() ? 'text' : 'password'">
+          <mat-icon matSuffix (click)="togglePasswordVisibility()" class="password-toggle">
+            {{ showPassword() ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+          <mat-error *ngIf="hasFieldError('password', 'required')">Password is required</mat-error>
+          <mat-error *ngIf="hasFieldError('password', 'minlength')">Password must be at least 6 characters</mat-error>
+        </mat-form-field>
+
+        <!-- Remember Me -->
+        <div class="form-options">
+          <mat-checkbox formControlName="rememberMe">
+            Remember me
+          </mat-checkbox>
+
+          <a mat-button color="primary" (click)="forgotPassword()" class="forgot-password">
+            Forgot Password?
+          </a>
+        </div>
+
+        <!-- Login Button -->
+        <button mat-raised-button color="primary" type="submit"
+                [disabled]="!canSubmit()"
+                class="login-button">
+          <mat-icon *ngIf="!isLoading()">login</mat-icon>
+          <mat-spinner *ngIf="isLoading()" diameter="20" class="button-spinner"></mat-spinner>
+          {{ isSubmitting() ? 'Logging in...' : 'Login' }}
+        </button>
+
+        <!-- Error Message -->
+        <div *ngIf="loginFailed()" class="error-message">
+          <mat-error-icon class="error-icon">error</mat-error-icon>
+          {{ errorMessage() }}
+        </div>
+
+        <!-- Account Locked Message -->
+        <div *ngIf="isLockedOut()" class="lockout-message">
+          <mat-icon class="lockout-icon">lock</mat-icon>
+          <p>{{ errorMessage() }}</p>
+        </div>
+
+        <!-- Register Link -->
+        <div class="register-link">
+          Don't have an account?
+          <a mat-button color="primary" (click)="goToRegister()">Register</a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Demo Credentials -->
+  <mat-card class="demo-credentials">
+    <mat-card-header>
+      <mat-card-title>Demo Accounts</mat-card-title>
+      <mat-card-subtitle>Try these credentials to see the login in action</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="demo-list">
+        <div class="demo-item">
+          <strong>Admin:</strong> admin / admin123
+        </div>
+        <div class="demo-item">
+          <strong>User:</strong> user / user123
+        </div>
+        <div class="demo-item">
+          <strong>Demo:</strong> demo / demo123
+        </div>
+      </div>
+
+      <p class="demo-note">
+        After 3 failed attempts, your account will be locked for 30 seconds.
+      </p>
+    </mat-card-content>
+  </mat-card>
+</div>`;
+  }
+
+  private generateLoginFormStyles() {
+    return `.login-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: var(--background-color);
+}
+
+.form-card {
+  max-width: 400px;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.demo-credentials {
+  max-width: 400px;
+  width: 100%;
+  margin-top: 20px;
+  border-radius: 12px;
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.forgot-password {
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.login-button {
+  width: 100%;
+  height: 48px;
+  font-size: 1rem;
+  margin-top: 16px;
+}
+
+.button-spinner {
+  margin-right: 8px;
+}
+
+.error-message {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: rgba(244, 67, 54, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-icon {
+  color: #f44336;
+}
+
+.lockout-message {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 4px;
+  background-color: rgba(255, 152, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lockout-icon {
+  color: #ff9800;
+  font-size: 24px;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.register-link a {
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+.demo-list {
+  margin-bottom: 16px;
+}
+
+.demo-item {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.demo-item:last-child {
+  border-bottom: none;
+}
+
+.demo-note {
+  color: #666;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .demo-credentials {
+    margin-top: 40px;
+  }
+}`;
+  }
+
+  private generateSearchFormTemplate() {
+    return `<div class="search-form-container">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>Search</mat-card-title>
+      <mat-card-subtitle>Find what you're looking for</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Search Form -->
+      <form [formGroup]="searchForm" (ngSubmit)="onSearchSubmit()" class="search-form">
+
+        <!-- Search Input -->
+        <mat-form-field appearance="fill" class="search-input-field">
+          <mat-label>Search</mat-label>
+          <input matInput formControlName="query" placeholder="Enter search term...">
+          <mat-icon matSuffix>search</mat-icon>
+          <mat-hint align="start">
+            Press Enter or type to search
+          </mat-hint>
+          <mat-error *ngIf="hasFieldError('query', 'required')">Search term is required</mat-error>
+          <mat-error *ngIf="hasFieldError('query', 'minlength')">Search term must be at least 2 characters</mat-error>
+        </mat-form-field>
+
+        <!-- Filters -->
+        <div class="filters-row">
+          <mat-form-field appearance="fill" class="filter-field">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="category" (selectionChange)="onCategoryChange($event.value)">
+              <mat-option *ngFor="let category of categories" [value]="category.value">
+                {{ category.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="filter-field">
+            <mat-label>Sort By</mat-label>
+            <mat-select formControlName="sortBy" (selectionChange)="onSortChange($event.value)">
+              <mat-option *ngFor="let option of sortOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-icon-button (click)="clearSearch()" class="clear-button"
+                  *ngIf="searchQuery()">
+            <mat-icon>clear</mat-icon>
+          </button>
+        </div>
+
+        <!-- Advanced Filters (Toggle) -->
+        <div *ngIf="searchForm.get('useFilters')?.value" class="advanced-filters">
+          <mat-form-field appearance="fill" class="filter-field">
+            <mat-label>Date Range</mat-label>
+            <input matInput [matDatepicker]="datePicker" formControlName="dateRange">
+            <mat-icon matSuffix matDatepickerToggle [for]="datePicker">event</mat-icon>
+            <mat-datepicker #datePicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+      </form>
+
+      <!-- Recent Searches -->
+      <div *ngIf="recentSearches().length > 0" class="recent-searches">
+        <h3>Recent Searches</h3>
+        <div class="recent-search-tags">
+          <mat-chip *ngFor="let search of recentSearches(); let i = index"
+                    (click)="useRecentSearch(search)"
+                    [removable]="true"
+                    (removed)="removeRecentSearch(i)">
+            {{ search }}
+            <mat-icon matChipRemove>close</mat-icon>
+          </mat-chip>
+        </div>
+        <button mat-button color="warn" (click)="clearRecentSearches()">
+          <mat-icon>delete</mat-icon>
+          Clear All
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Search Results -->
+  <div *ngIf="searchResults().length > 0" class="search-results-container">
+    <div class="results-header">
+      <h2>Search Results</h2>
+      <div class="results-meta">
+        Found {{ totalResults() }} results for "{{ searchQuery() }}"
+        <span *ngIf="totalPages() > 1">- Page {{ currentPage() }} of {{ totalPages() }}</span>
+      </div>
+
+      <!-- Export and Share Buttons -->
+      <div class="result-actions">
+        <button mat-raised-button color="primary" (click)="exportResults()">
+          <mat-icon class="button-icon">download</mat-icon>
+          Export CSV
+        </button>
+
+        <button mat-raised-button color="accent" (click)="shareResults()">
+          <mat-icon class="button-icon">share</mat-icon>
+          Share
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Grid -->
+    <div class="results-grid">
+      <div *ngFor="let result of searchResults()" class="result-card">
+        <img [src]="result.thumbnail" alt="{{ result.title }}" class="result-thumbnail">
+        <div class="result-content">
+          <h3 class="result-title">
+            <a [href]="result.url">{{ result.title }}</a>
+          </h3>
+          <p class="result-description">{{ result.description }}</p>
+          <div class="result-meta">
+            <span class="result-category">{{ result.category }}</span>
+            <span class="result-date">{{ result.date | date: 'shortDate' }}</span>
+            <span class="result-author">by {{ result.author }}</span>
+          </div>
+          <div class="result-tags">
+            <mat-chip *ngFor="let tag of result.tags" color="secondary" size="small">
+              {{ tag }}
+            </mat-chip>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <mat-paginator [length]="totalResults()"
+                  [pageSize]="10"
+                  [pageSizeOptions]="[5, 10, 25, 50]"
+                  (page)="onPageChange($event.pageIndex + 1)"
+                  showFirstLastButtons>
+    </mat-paginator>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading()" class="loading-overlay">
+    <mat-spinner diameter="50" class="loading-spinner"></mat-spinner>
+    <p>Searching...</p>
+  </div>
+
+  <!-- No Results -->
+  <div *ngIf="searchResults().length === 0 && searchQuery() && !isLoading()" class="no-results">
+    <mat-icon class="no-results-icon">search_off</mat-icon>
+    <h3>No Results Found</h3>
+    <p>Try adjusting your search terms or filters.</p>
+  </div>
+</div>`;
+  }
+
+  private generateSearchFormStyles() {
+    return `.search-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background-color: var(--background-color);
+  min-height: 100vh;
+}
+
+.form-card {
+  max-width: 800px;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.search-input-field {
+  font-size: 1.2rem;
+}
+
+.filters-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.filter-field {
+  flex: 1;
+}
+
+.clear-button {
+  margin-left: auto;
+}
+
+.advanced-filters {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.recent-searches {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.recent-searches h3 {
+  margin-bottom: 12px;
+  color: var(--text-color);
+}
+
+.recent-search-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mat-chip {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.mat-chip:hover {
+  transform: scale(1.05);
+}
+
+.search-results-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.results-header h2 {
+  margin: 0;
+  color: var(--text-color);
+}
+
+.results-meta {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.button-icon {
+  margin-right: 8px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.result-card {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.result-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.result-thumbnail {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.result-content {
+  padding: 16px;
+}
+
+.result-title {
+  margin: 0 0 8px 0;
+}
+
+.result-title a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.result-title a:hover {
+  text-decoration: underline;
+}
+
+.result-description {
+  color: #666;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.result-meta {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+}
+
+.result-category {
+  color: #2196f3;
+  font-weight: 500;
+}
+
+.result-date {
+  color: #999;
+}
+
+.result-author {
+  color: #666;
+  font-style: italic;
+}
+
+.result-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mat-chip {
+  font-size: 0.75rem;
+  height: 24px;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  color: white;
+}
+
+.loading-spinner {
+  margin-bottom: 16px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 48px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.no-results-icon {
+  font-size: 64px;
+  color: #999;
+  margin-bottom: 16px;
+}
+
+.no-results h3 {
+  margin: 0 0 8px 0;
+  color: var(--text-color);
+}
+
+.no-results p {
+  color: #666;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-input-field {
+    font-size: 1rem;
+  }
+
+  .filters-row {
+    flex-direction: column;
+  }
+
+  .filter-field {
+    width: 100%;
+  }
+
+  .results-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .result-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .result-actions button {
+    flex: 1;
+  }
+
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+}`;
+  }
