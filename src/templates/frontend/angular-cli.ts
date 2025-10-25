@@ -285,6 +285,17 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateApiService()
     });
 
+    // Performance monitoring services
+    files.push({
+      path: 'src/app/services/performance-monitor.service.ts',
+      content: this.generatePerformanceMonitorService()
+    });
+
+    files.push({
+      path: 'src/app/services/memory-monitor.service.ts',
+      content: this.generateMemoryMonitorService()
+    });
+
     // Interceptors
     files.push({
       path: 'src/app/interceptors/auth.interceptor.ts',
@@ -460,6 +471,12 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateFormUtils()
     });
 
+    // Performance utilities
+    files.push({
+      path: 'src/app/utils/performance-utils.ts',
+      content: this.generatePerformanceUtils()
+    });
+
     // Dynamic Form Service
     files.push({
       path: 'src/app/services/dynamic-form.service.ts',
@@ -559,7 +576,9 @@ export class AngularCliTemplate extends BaseTemplate {
         'test:headless': 'ng test --watch=false --browsers=ChromeHeadless',
         'lint': 'ng lint',
         'lint:fix': 'ng lint --fix',
-        'e2e': 'ng e2e'
+        'e2e': 'ng e2e',
+        'analyze:prod': 'ng build --configuration production --stats-json && webpack-bundle-analyzer dist/${normalizedName}/stats.json',
+        'build:prod': 'ng build --configuration production --aot --sourceMap=false --optimization=true'
       },
       private: true,
       dependencies: {
@@ -585,6 +604,8 @@ export class AngularCliTemplate extends BaseTemplate {
         '@ngrx/router-store': '^17.0.0',
         '@ngrx/store': '^17.0.0',
         '@ngrx/store-devtools': '^17.0.0',
+        'angular-devkit/core': '^17.0.0',
+        'angular-devkit/schematics': '^17.0.0',
         'express': '^4.18.0',
         'rxjs': '^7.8.0',
         'tslib': '^2.6.0',
@@ -613,7 +634,8 @@ export class AngularCliTemplate extends BaseTemplate {
         '@angular-eslint/template-parser': '^17.0.0',
         '@typescript-eslint/eslint-plugin': '^6.0.0',
         '@typescript-eslint/parser': '^6.0.0',
-        'eslint': '^8.50.0'
+        'eslint': '^8.50.0',
+        'webpack-bundle-analyzer': '^4.9.0'
       }
     };
   }
@@ -677,9 +699,26 @@ export class AngularCliTemplate extends BaseTemplate {
                   type: 'anyComponentStyle',
                   maximumWarning: '2kb',
                   maximumError: '4kb'
+                },
+                {
+                  type: 'bundle',
+                  maximumWarning: '2mb',
+                  maximumError: '5mb'
                 }
               ],
-              outputHashing: 'all'
+              outputHashing: 'all',
+              optimization: true,
+              extractLicenses: true,
+              sourceMap: false,
+              namedChunks: false,
+              buildOptimizer: true,
+              aot: true,
+              fileReplacements: [
+                {
+                  replace: 'src/environments/environment.ts',
+                  with: 'src/environments/environment.prod.ts'
+                }
+              ]
             },
             development: {
               buildOptimizer: false,
@@ -982,6 +1021,763 @@ bootstrapApplication(AppModule, {
 
   }
 
+  private generatePerformanceMonitorService() {
+    return `import { Injectable, inject, OnDestroy } from '@angular/core';
+import { takeUntil } from 'rxjs/operators';
+import { Subject, fromEvent } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
+
+// Core Web Vitals interfaces
+interface PerformanceMetrics {
+  LCP: number; // Largest Contentful Paint
+  FID: number; // First Input Delay
+  CLS: number; // Cumulative Layout Shift
+  FCP: number; // First Contentful Paint
+  TTFB: number; // Time to First Byte
+  TTI: number; // Time to Interactive
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PerformanceMonitorService implements OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private metrics: PerformanceMetrics = {
+    LCP: 0,
+    FID: 0,
+    CLS: 0,
+    FCP: 0,
+    TTFB: 0,
+    TTI: 0
+  };
+  private hasLoggedWarning = false;
+
+  private router = inject(Router);
+
+  constructor() {
+    this.initializePerformanceMonitoring();
+    this.setupNavigationTracking();
+  }
+
+  private initializePerformanceMonitoring(): void {
+    // Largest Contentful Paint (LCP)
+    if ('PerformanceObserver' in window) {
+      const lcpObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        this.metrics.LCP = lastEntry.startTime;
+        this.logMetric('LCP', this.metrics.LCP);
+      });
+      lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+    }
+
+    // First Input Delay (FID)
+    if ('PerformanceObserver' in window) {
+      const fidObserver = new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+          const fid = entry.processingStart - entry.startTime;
+          this.metrics.FID = fid;
+          this.logMetric('FID', this.metrics.FID);
+        }
+      });
+      fidObserver.observe({ entryTypes: ['first-input'] });
+    }
+
+    // Cumulative Layout Shift (CLS)
+    let clsValue = 0;
+    if ('PerformanceObserver' in window) {
+      const clsObserver = new PerformanceObserver((entryList) => {
+        for (const entry of entryList.getEntries()) {
+          if (!(entry as any).hadRecentInput) {
+            clsValue += (entry as any).value;
+            this.metrics.CLS = clsValue;
+            this.logMetric('CLS', this.metrics.CLS);
+          }
+        }
+      });
+      clsObserver.observe({ entryTypes: ['layout-shift'] });
+    }
+
+    // First Contentful Paint (FCP)
+    if ('PerformancePaintTiming' in window) {
+      const fcpObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        const firstEntry = entries[0];
+        this.metrics.FCP = firstEntry.startTime;
+        this.logMetric('FCP', this.metrics.FCP);
+      });
+      fcpObserver.observe({ entryTypes: ['paint'] });
+    }
+
+    // Time to First Byte (TTFB)
+    if ('PerformanceNavigationTiming' in window) {
+      const navigationTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      if (navigationTiming) {
+        this.metrics.TTFB = navigationTiming.responseStart;
+        this.logMetric('TTFB', this.metrics.TTFB);
+      }
+    }
+
+    // Time to Interactive (TTI)
+    if ('PerformanceObserver' in window) {
+      const ttiObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        this.metrics.TTI = lastEntry.startTime;
+        this.logMetric('TTI', this.metrics.TTI);
+      });
+      ttiObserver.observe({ entryTypes: ['navigation'] });
+    }
+
+    // Track memory usage
+    this.trackMemoryUsage();
+
+    // Track long tasks
+    this.trackLongTasks();
+  }
+
+  private setupNavigationTracking(): void {
+    this.router.events
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event instanceof NavigationEnd) {
+          // Reset metrics on navigation
+          this.resetMetrics();
+          // Initialize new tracking
+          this.initializePerformanceMonitoring();
+        }
+      });
+  }
+
+  private resetMetrics(): void {
+    this.metrics = {
+      LCP: 0,
+      FID: 0,
+      CLS: 0,
+      FCP: 0,
+      TTFB: 0,
+      TTI: 0
+    };
+    this.hasLoggedWarning = false;
+  }
+
+  private trackMemoryUsage(): void {
+    if ('memory' in performance) {
+      setInterval(() => {
+        const memory = (performance as any).memory;
+        const usedMB = Math.round((memory.usedJSHeapSize / 1048576) * 100) / 100;
+        const totalMB = Math.round((memory.totalJSHeapSize / 1048576) * 100) / 100;
+        console.log(\`Memory Usage: \${usedMB}MB / \${totalMB}MB\`);
+      }, 5000);
+    }
+  }
+
+  private trackLongTasks(): void {
+    if ('PerformanceObserver' in window) {
+      const longTaskObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        entries.forEach((entry) => {
+          const duration = entry.duration;
+          console.warn(\`Long task detected: \${duration}ms\`);
+        });
+      });
+      longTaskObserver.observe({ entryTypes: ['longtask'] });
+    }
+  }
+
+  private logMetric(name: keyof PerformanceMetrics, value: number): void {
+    const thresholds = {
+      LCP: 2500,    // 2.5 seconds
+      FID: 100,     // 100 milliseconds
+      CLS: 0.1,     // 0.1 score
+      FCP: 1800,    // 1.8 seconds
+      TTFB: 600,    // 600 milliseconds
+      TTI: 3000     // 3 seconds
+    };
+
+    if (value > thresholds[name]) {
+      if (!this.hasLoggedWarning) {
+        console.warn(\`Performance warning: \${name} is \${value}ms (threshold: \${thresholds[name]ms})\`);
+        this.hasLoggedWarning = true;
+      }
+    }
+
+    // Log to performance API if available
+    if ('performance' in window && (window.performance as any).mark) {
+      (window.performance as any).mark(\`metric_\${name}_\${Date.now()}\`);
+    }
+  }
+
+  public getMetrics(): PerformanceMetrics {
+    return { ...this.metrics };
+  }
+
+  public evaluatePerformance(): 'good' | 'needs-improvement' | 'poor' {
+    const metrics = this.getMetrics();
+    const lcpScore = metrics.LCP < 2500 ? 3 : metrics.LCP < 4000 ? 2 : 1;
+    const fidScore = metrics.FID < 100 ? 3 : metrics.FID < 300 ? 2 : 1;
+    const clsScore = metrics.CLS < 0.1 ? 3 : metrics.CLS < 0.25 ? 2 : 1;
+    const fcpScore = metrics.FCP < 1800 ? 3 : metrics.FCP < 3000 ? 2 : 1;
+
+    const totalScore = lcpScore + fidScore + clsScore + fcpScore;
+
+    if (totalScore >= 10) return 'good';
+    if (totalScore >= 6) return 'needs-improvement';
+    return 'poor';
+  }
+
+  public logPerformanceReport(): void {
+    const metrics = this.getMetrics();
+    const evaluation = this.evaluatePerformance();
+
+    console.group('Performance Report');
+    console.table(metrics);
+    console.log(\`Overall Performance: \${evaluation.toUpperCase()}\`);
+    console.groupEnd();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}`;
+  }
+
+  private generateMemoryMonitorService() {
+    return `import { Injectable, inject, OnDestroy } from '@angular/core';
+import { interval, fromEvent, Subject } from 'rxjs';
+import { takeUntil, tap } from 'rxjs/operators';
+
+interface MemoryInfo {
+  used: number;  // in MB
+  total: number;  // in MB
+  percentage: number;
+  timestamp: number;
+}
+
+interface MemoryWarning {
+  type: 'warning' | 'critical';
+  used: number;
+  total: number;
+  percentage: number;
+  message: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MemoryMonitorService implements OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private memoryWarnings$ = new Subject<MemoryWarning>();
+  private memorySnapshots: MemoryInfo[] = [];
+  private readonly WARNING_THRESHOLD = 80;  // 80%
+  private readonly CRITICAL_THRESHOLD = 90; // 90%
+
+  constructor() {
+    this.startMonitoring();
+    this.setupListeners();
+  }
+
+  private startMonitoring(): void {
+    if (!('memory' in performance)) {
+      console.warn('Memory API not available in this browser');
+      return;
+    }
+
+    // Monitor memory every 10 seconds
+    interval(10000)
+      .pipe(
+        tap(() => {
+          this.collectMemorySnapshot();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+  }
+
+  private setupListeners(): void {
+    // Listen for visibility changes to pause monitoring when tab is inactive
+    fromEvent(document, 'visibilitychange')
+      .pipe(
+        tap(() => {
+          if (document.hidden) {
+            console.log('Tab is hidden, pausing memory monitoring');
+          } else {
+            console.log('Tab is visible, resuming memory monitoring');
+            this.collectMemorySnapshot();
+          }
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+  }
+
+  private collectMemorySnapshot(): void {
+    const memory = (performance as any).memory;
+    if (!memory) return;
+
+    const usedMB = Math.round((memory.usedJSHeapSize / 1048576) * 100) / 100;
+    const totalMB = Math.round((memory.totalJSHeapSize / 1048576) * 100) / 100;
+    const percentage = Math.round((usedMB / totalMB) * 100);
+
+    const snapshot: MemoryInfo = {
+      used: usedMB,
+      total: totalMB,
+      percentage,
+      timestamp: Date.now()
+    };
+
+    this.memorySnapshots.push(snapshot);
+
+    // Keep only last 50 snapshots
+    if (this.memorySnapshots.length > 50) {
+      this.memorySnapshots.shift();
+    }
+
+    this.checkMemoryThresholds(usedMB, totalMB, percentage);
+  }
+
+  private checkMemoryThresholds(usedMB: number, totalMB: number, percentage: number): void {
+    if (percentage >= this.CRITICAL_THRESHOLD) {
+      const warning: MemoryWarning = {
+        type: 'critical',
+        used: usedMB,
+        total: totalMB,
+        percentage,
+        message: \`Critical memory usage: \${percentage}% (\${usedMB}MB / \${totalMB}MB)\`
+      };
+      this.memoryWarnings$.next(warning);
+      console.error(warning.message);
+    } else if (percentage >= this.WARNING_THRESHOLD) {
+      const warning: MemoryWarning = {
+        type: 'warning',
+        used: usedMB,
+        total: totalMB,
+        percentage,
+        message: \`High memory usage: \${percentage}% (\${usedMB}MB / \${totalMB}MB)\`
+      };
+      this.memoryWarnings$.next(warning);
+      console.warn(warning.message);
+    }
+  }
+
+  public getMemoryWarnings$() {
+    return this.memoryWarnings$.asObservable();
+  }
+
+  public getCurrentMemory(): MemoryInfo | null {
+    if (this.memorySnapshots.length > 0) {
+      return { ...this.memorySnapshots[this.memorySnapshots.length - 1] };
+    }
+    return null;
+  }
+
+  public getMemorySnapshots(): MemoryInfo[] {
+    return [...this.memorySnapshots];
+  }
+
+  public getMemoryTrend(): 'increasing' | 'decreasing' | 'stable' {
+    if (this.memorySnapshots.length < 10) return 'stable';
+
+    const recentSnapshots = this.memorySnapshots.slice(-10);
+    const values = recentSnapshots.map(s => s.percentage);
+
+    // Calculate trend using linear regression
+    const n = values.length;
+    let sumX = 0;
+    let sumY = 0;
+    let sumXY = 0;
+    let sumXX = 0;
+
+    for (let i = 0; i < n; i++) {
+      sumX += i;
+      sumY += values[i];
+      sumXY += i * values[i];
+      sumXX += i * i;
+    }
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+
+    if (slope > 0.5) return 'increasing';
+    if (slope < -0.5) return 'decreasing';
+    return 'stable';
+  }
+
+  public getMemoryStats() {
+    const snapshots = this.memorySnapshots;
+    if (snapshots.length === 0) {
+      return {
+        min: 0,
+        max: 0,
+        avg: 0,
+        current: 0,
+        trend: 'stable' as const
+      };
+    }
+
+    const percentages = snapshots.map(s => s.percentage);
+    const current = snapshots[snapshots.length - 1].percentage;
+
+    return {
+      min: Math.min(...percentages),
+      max: Math.max(...percentages),
+      avg: percentages.reduce((a, b) => a + b, 0) / percentages.length,
+      current,
+      trend: this.getMemoryTrend()
+    };
+  }
+
+  public clearSnapshots(): void {
+    this.memorySnapshots = [];
+    console.log('Memory snapshots cleared');
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}`;
+  }
+
+  private generatePerformanceUtils() {
+    return `import { Injectable } from '@angular/core';
+import { Observable, fromEvent, Subscription, of, throwError } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
+import { NgZone } from '@angular/core';
+
+// Virtual scroll item interface
+export interface VirtualScrollItem {
+  id: string | number;
+  height: number;
+  data: any;
+}
+
+// Virtual scroll configuration
+export interface VirtualScrollConfig {
+  itemHeight: number;
+  buffer?: number;
+  threshold?: number;
+  minBufferPx?: number;
+  maxBufferPx?: number;
+}
+
+// Debounce configuration
+export interface DebounceConfig {
+  delay?: number;
+  leading?: boolean;
+  trailing?: boolean;
+}
+
+// Throttle configuration
+export interface ThrottleConfig {
+  delay?: number;
+  leading?: boolean;
+  trailing?: boolean;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PerformanceUtils {
+  private readonly zone: NgZone;
+
+  constructor() {
+    this.zone = new NgZone({ enableLongStackTrace: false });
+  }
+
+  // Debounce function
+  public debounce<T>(
+    func: (...args: any[]) => T,
+    wait: number,
+    options: DebounceConfig = {}
+  ): (...args: any[]) => void {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    let args: any[] = [];
+    let context: any;
+
+    const { leading = false, trailing = true } = options;
+
+    const later = () => {
+      timeout = null;
+      if (trailing) {
+        this.zone.runOutsideAngular(() => func.apply(context, args));
+      }
+    };
+
+    const debounced = function (this: any, ...params: any[]) {
+      context = this;
+      args = params;
+      const callNow = leading && !timeout;
+
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      if (callNow) {
+        this.zone.runOutsideAngular(() => func.apply(context, args));
+      }
+
+      if (!timeout && trailing) {
+        timeout = setTimeout(later, wait);
+      }
+    };
+
+    return debounced;
+  }
+
+  // Throttle function
+  public throttle<T>(
+    func: (...args: any[]) => T,
+    limit: number,
+    options: ThrottleConfig = {}
+  ): (...args: any[]) => T | undefined {
+    let inThrottle: boolean;
+    let lastResult: T | undefined;
+    let lastRun = 0;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
+    const { leading = true, trailing = true } = options;
+
+    const throttled = function (this: any, ...args: any[]): T | undefined {
+      const context = this;
+
+      if (!inThrottle) {
+        if (leading) {
+          lastResult = this.zone.runOutsideAngular(() => func.apply(context, args));
+          lastRun = Date.now();
+        }
+        inThrottle = true;
+
+        if (trailing) {
+          timeout = setTimeout(() => {
+            inThrottle = false;
+            if (trailing) {
+              lastResult = this.zone.runOutsideAngular(() => func.apply(context, args));
+            }
+          }, limit);
+        }
+      }
+
+      return lastResult;
+    };
+
+    return throttled;
+  }
+
+  // Virtual scroll calculator
+  public calculateVirtualScrollItems<T extends VirtualScrollItem>(
+    items: T[],
+    config: VirtualScrollConfig,
+    containerHeight: number,
+    scrollTop: number
+  ): {
+    visibleItems: T[];
+    offsetY: number;
+    totalHeight: number;
+  } {
+    const {
+      itemHeight,
+      buffer = 3,
+      threshold = 0,
+      minBufferPx = itemHeight * buffer,
+      maxBufferPx = itemHeight * (buffer * 2)
+    } = config;
+
+    const totalHeight = items.length * itemHeight;
+    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
+    const endIndex = Math.min(
+      items.length - 1,
+      Math.ceil((scrollTop + containerHeight) / itemHeight) + buffer
+    );
+
+    const visibleItems = items.slice(startIndex, endIndex + 1);
+    const offsetY = startIndex * itemHeight;
+
+    return {
+      visibleItems,
+      offsetY,
+      totalHeight
+    };
+  }
+
+  // Infinite scroll helper
+  public createInfiniteScrollObserver(
+    element: HTMLElement,
+    callback: () => void,
+    threshold: number = 0.8
+  ): IntersectionObserver {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            this.zone.runOutsideAngular(callback);
+          }
+        });
+      },
+      {
+        rootMargin: \`0px 0px \${100 * (1 - threshold)}px 0px\`
+      }
+    );
+
+    observer.observe(element);
+    return observer;
+  }
+
+  // Lazy image loading
+  public createLazyImageObserver(
+    imageElement: HTMLImageElement
+  ): IntersectionObserver {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target as HTMLImageElement;
+            img.src = img.dataset.src || '';
+            img.classList.remove('lazy');
+            observer.unobserve(img);
+          }
+        });
+      },
+      {
+        rootMargin: '50px'
+      }
+    );
+
+    observer.observe(imageElement);
+    return observer;
+  }
+
+  // Performance measurement
+  public measure<T>(name: string, fn: () => T): T {
+    if (typeof performance === 'undefined' || !(performance as any).mark) {
+      return fn();
+    }
+
+    const startMark = \`start_\${name}_\${Date.now()}\`;
+    const endMark = \`end_\${name}_\${Date.now()}\`;
+
+    (performance as any).mark(startMark);
+    const result = fn();
+    (performance as any).mark(endMark);
+
+    (performance as any).measure(name, startMark, endMark);
+
+    console.log(\`\${name} took: \${(performance as any).getEntriesByName(name)[0].duration}ms\`);
+
+    return result;
+  }
+
+  // Preload resources
+  public preloadResource(url: string, as: 'script' | 'style' | 'image' = 'script'): void {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = url;
+    link.as = as;
+    document.head.appendChild(link);
+  }
+
+  // Create DOM element efficiently
+  public createElement<K extends keyof HTMLElementTagNameMap>(
+    tagName: K,
+    options?: {
+      className?: string;
+      id?: string;
+      attributes?: Record<string, string>;
+      innerHTML?: string;
+    }
+  ): HTMLElementTagNameMap[K] {
+    const element = document.createElement(tagName);
+
+    if (options) {
+      if (options.className) {
+        element.className = options.className;
+      }
+      if (options.id) {
+        element.id = options.id;
+      }
+      if (options.attributes) {
+        Object.entries(options.attributes).forEach(([key, value]) => {
+          element.setAttribute(key, value);
+        });
+      }
+      if (options.innerHTML) {
+        element.innerHTML = options.innerHTML;
+      }
+    }
+
+    return element;
+  }
+
+  // Efficiently batch DOM updates
+  public batchDOMUpdates(updates: () => void): void {
+    if (!document.hidden) {
+      requestAnimationFrame(() => {
+        this.zone.runOutsideAngular(() => updates());
+      });
+    } else {
+      updates();
+    }
+  }
+
+  // Check if browser supports feature
+  public supportsFeature(feature: string): boolean {
+    switch (feature) {
+      case 'IntersectionObserver':
+        return 'IntersectionObserver' in window;
+      case 'ResizeObserver':
+        return 'ResizeObserver' in window;
+      case 'PerformanceObserver':
+        return 'PerformanceObserver' in window;
+      case 'WebAnimations':
+        return 'Element' in window && 'animate' in Element.prototype;
+      default:
+        return false;
+    }
+  }
+
+  // Create optimized event listeners
+  public createOptimizedListener<T>(
+    target: EventTarget,
+    type: string,
+    listener: (event: T) => void,
+    options: AddEventListenerOptions = {}
+  ): () => void {
+    const debouncedListener = this.debounce(listener, 50, { leading: true, trailing: true });
+
+    target.addEventListener(type, debouncedListener as any, options);
+
+    return () => {
+      target.removeEventListener(type, debouncedListener as any);
+    };
+  }
+
+  // Get device memory information
+  public getDeviceMemoryInfo(): {
+    deviceMemory?: number;
+    hardwareConcurrency?: number;
+    isLowEndDevice: boolean;
+  } {
+    return {
+      deviceMemory: (navigator as any).deviceMemory,
+      hardwareConcurrency: navigator.hardwareConcurrency,
+      isLowEndDevice: (
+        (navigator as any).deviceMemory && (navigator as any).deviceMemory <= 4 ||
+        navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4
+      )
+    };
+  }
+
+  // Check if device is on battery
+  public async isOnBattery(): Promise<boolean> {
+    if ('getBattery' in navigator) {
+      const battery = await (navigator as any).getBattery();
+      return battery.discharging;
+    }
+    return false;
+  }
+}`;
+  }
+
   private generateAppServerModule() {
     return `import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
@@ -1023,6 +1819,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 
+// Angular DevTools integration
+import { enableDebugTools } from '@angular/core';
+
 bootstrapApplication(AppComponent, {
   ...appConfig,
   providers: [
@@ -1031,6 +1830,12 @@ bootstrapApplication(AppComponent, {
     provideHttpClient()
   ]
 }).catch((err) => console.error(err));
+
+// Enable Angular DevTools in development
+if (!environment.production) {
+  enableDebugTools(AppComponent);
+  console.log('Angular DevTools enabled for development');
+}
 
 // Register service worker for PWA with update handling
 if ('serviceWorker' in navigator && environment.production) {
@@ -3227,6 +4032,14 @@ ${description || 'Angular CLI application with Angular Material and NgRx state m
 - 🎯 Dynamic form generation from JSON configuration
 - 💾 Auto-save functionality with debouncing
 - 📊 Search forms with pagination and debouncing
+- ⚡ Angular DevTools integration for development debugging
+- 📈 Performance monitoring with Core Web Vitals tracking
+- 🎯 OnPush change detection strategy
+- 🔄 Lazy loading for all modules
+- 🧯 Bundle analyzer and performance optimization
+- 💾 Memory usage monitoring
+- 🔄 Virtual scroll utilities
+- 🎯 Pure pipes for data transformation
 
 ## Quick Start
 
@@ -3251,6 +4064,210 @@ ${packageManager} run lint
 
 # Test PWA with Lighthouse
 npx lighthouse http://localhost:4200 --output=html --output-path=./lighthouse-report.html
+\`\`\`
+
+## Angular DevTools
+
+This application includes Angular DevTools integration for enhanced development debugging and performance analysis.
+
+### Enabling DevTools
+
+DevTools are automatically enabled in development mode. You can access them through:
+
+1. **Chrome DevTools** - Go to Application → Angular tab
+2. **Component Explorer** - Inspect component hierarchy and properties
+3. **Change Detection Profiler** - Track change detection performance
+4. **Router Tree Visualization** - Visualize routing structure
+
+### Features
+
+- **Component Tree Explorer**: Navigate component hierarchy
+- **Change Detection Profiler**: Monitor change detection cycles
+- **State Management**: View and modify NgRx state
+- **Performance Insights**: Identify performance bottlenecks
+- **Router Inspector**: Debug routing and navigation
+
+### Usage
+
+\`\`\`typescript
+// In any component, service, or directive
+import { PerformanceMonitorService } from './services/performance-monitor.service';
+
+constructor(private performanceMonitor: PerformanceMonitorService) {
+  // Log performance report
+  this.performanceMonitor.logPerformanceReport();
+
+  // Get current metrics
+  const metrics = this.performanceMonitor.getMetrics();
+  console.log('Performance metrics:', metrics);
+}
+\`\`\`
+
+## Performance Optimization
+
+### Core Web Vitals Monitoring
+
+The application tracks all Core Web Vitals:
+
+- **LCP (Largest Contentful Paint)**: Measures loading performance
+- **FID (First Input Delay)**: Measures interactivity
+- **CLS (Cumulative Layout Shift)**: Measures visual stability
+- **FCP (First Contentful Paint)**: Measures initial render time
+- **TTFB (Time to First Byte)**: Measures server response time
+- **TTI (Time to Interactive)**: Measures page responsiveness
+
+### Memory Monitoring
+
+The \`MemoryMonitorService\` tracks JavaScript heap memory usage:
+
+\`\`\`typescript
+import { MemoryMonitorService } from './services/memory-monitor.service';
+
+constructor(private memoryMonitor: MemoryMonitorService) {
+  // Subscribe to memory warnings
+  this.memoryMonitor.getMemoryWarnings$().subscribe(warning => {
+    console.warn('Memory warning:', warning);
+  });
+
+  // Get current memory usage
+  const memory = this.memoryMonitor.getCurrentMemory();
+  console.log('Memory usage:', memory);
+
+  // Get memory statistics
+  const stats = this.memoryMonitor.getMemoryStats();
+  console.log('Memory trend:', stats.trend);
+}
+\`\`\`
+
+### Optimization Techniques
+
+#### 1. OnPush Change Detection
+
+All components use OnPush change detection strategy:
+
+\`\`\`typescript
+@Component({
+  selector: 'app-example',
+  templateUrl: './example.component.html',
+  styleUrls: ['./example.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ExampleComponent {
+  // Component implementation
+}
+\`\`\`
+
+#### 2. TrackBy Functions
+
+All ngFor loops include trackBy functions for efficient list rendering:
+
+\`\`\`typescript
+trackById = (index: number, item: any): string | number => item.id;
+
+// In template
+*ngFor="let item of items; trackBy: trackById"
+\`\`\`
+
+#### 3. Lazy Loading
+
+All modules are configured for lazy loading:
+
+\`\`\`typescript
+const routes: Routes = [
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
+  }
+];
+\`\`\`
+
+#### 4. Pure Pipes
+
+All data transformation pipes are pure for better performance:
+
+\`\`\`typescript
+@Pipe({
+  name: 'example',
+  pure: true
+})
+export class ExamplePipe implements PipeTransform {
+  transform(value: any): any {
+    // Transformation logic
+  }
+}
+\`\`\`
+
+## Bundle Analysis
+
+### Analyzing Bundle Size
+
+Use the included bundle analyzer to analyze your production bundle:
+
+\`\`\`bash
+# Generate production build with stats
+${packageManager} run analyze:prod
+\`\`\`
+
+This will:
+1. Build the application with production optimizations
+2. Generate a bundle stats JSON file
+3. Open an interactive visualization showing:
+   - Bundle composition
+   - Largest modules
+   - Unused dependencies
+   - Optimization opportunities
+
+### Webpack Configuration
+
+The application includes custom webpack optimizations:
+
+- **Code splitting**: Automatic code splitting for lazy loaded modules
+- **Minification**: JavaScript, CSS, and HTML minification
+- **Tree shaking**: Removal of unused code
+- **Asset optimization**: Image and font optimization
+- **Compression**: Gzip compression for production builds
+
+## Performance Utilities
+
+### PerformanceUtils Service
+
+The \`PerformanceUtils\` service provides utilities for common performance optimizations:
+
+\`\`\`typescript
+import { PerformanceUtils } from './utils/performance-utils';
+
+constructor(private performanceUtils: PerformanceUtils) {
+  // Debounce user input
+  const debouncedSearch = this.performanceUtils.debounce(this.search, 300);
+
+  // Throttle expensive operations
+  const throttledUpdate = this.performanceUtils.throttle(this.update, 100);
+
+  // Virtual scroll for large lists
+  const virtualScroll = this.performanceUtils.calculateVirtualScrollItems(
+    items,
+    { itemHeight: 50 },
+    containerHeight,
+    scrollTop
+  );
+}
+\`\`\`
+
+### Virtual Scrolling
+
+For large lists, implement virtual scrolling:
+
+\`\`\`html
+<div *virtualScrolled="{
+  items: items,
+  itemHeight: 50,
+  buffer: 5,
+  containerHeight: containerHeight
+}">
+  <div *ngFor="let item of visibleItems">
+    {{ item.content }}
+  </div>
+</div>
 \`\`\`
 
 ## Development Server
