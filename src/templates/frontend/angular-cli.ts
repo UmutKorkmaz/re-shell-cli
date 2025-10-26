@@ -71,6 +71,60 @@ export class AngularCliTemplate extends BaseTemplate {
       content: this.generateIndexHtml()
     });
 
+    // i18n Translation Files
+    files.push({
+      path: 'src/locales/messages.en.xlf',
+      content: this.generateTranslationEn()
+    });
+
+    files.push({
+      path: 'src/locales/messages.es.xlf',
+      content: this.generateTranslationEs()
+    });
+
+    files.push({
+      path: 'src/locales/messages.fr.xlf',
+      content: this.generateTranslationFr()
+    });
+
+    files.push({
+      path: 'src/locales/messages.de.xlf',
+      content: this.generateTranslationDe()
+    });
+
+    // i18n Language Service
+    files.push({
+      path: 'src/app/services/language.service.ts',
+      content: this.generateLanguageService()
+    });
+
+    // i18n Pipes
+    files.push({
+      path: 'src/app/pipes/currency.pipe.ts',
+      content: this.generateCurrencyPipe()
+    });
+
+    files.push({
+      path: 'src/app/pipes/date.pipe.ts',
+      content: this.generateDatePipe()
+    });
+
+    // i18n Language Switcher Component
+    files.push({
+      path: 'src/app/components/language-switcher/language-switcher.component.ts',
+      content: this.generateLanguageSwitcherComponent()
+    });
+
+    files.push({
+      path: 'src/app/components/language-switcher/language-switcher.component.html',
+      content: this.generateLanguageSwitcherTemplate()
+    });
+
+    files.push({
+      path: 'src/app/components/language-switcher/language-switcher.component.scss',
+      content: this.generateLanguageSwitcherStyles()
+    });
+
     files.push({
       path: 'src/styles.scss',
       content: this.generateStyles()
@@ -578,7 +632,16 @@ export class AngularCliTemplate extends BaseTemplate {
         'lint:fix': 'ng lint --fix',
         'e2e': 'ng e2e',
         'analyze:prod': 'ng build --configuration production --stats-json && webpack-bundle-analyzer dist/${normalizedName}/stats.json',
-        'build:prod': 'ng build --configuration production --aot --sourceMap=false --optimization=true'
+        'build:prod': 'ng build --configuration production --aot --sourceMap=false --optimization=true',
+        'extract-i18n': 'ng extract-i18n --output-path src/locales',
+        'build:en': 'ng build --configuration production --localize',
+        'build:es': 'ng build --configuration production --localize --locale=es',
+        'build:fr': 'ng build --configuration production --localize --locale=fr',
+        'build:de': 'ng build --configuration production --localize --locale=de',
+        'serve:en': 'ng serve --configuration=development --locale=en',
+        'serve:es': 'ng serve --configuration=development --locale=es',
+        'serve:fr': 'ng serve --configuration=development --locale=fr',
+        'serve:de': 'ng serve --configuration=development --locale=de'
       },
       private: true,
       dependencies: {
@@ -609,7 +672,9 @@ export class AngularCliTemplate extends BaseTemplate {
         'express': '^4.18.0',
         'rxjs': '^7.8.0',
         'tslib': '^2.6.0',
-        'zone.js': '^0.14.0'
+        'zone.js': '^0.14.0',
+        '@angular/localize': '^17.0.0',
+        '@ngx-translate/core': '^15.0.0'
       },
       devDependencies: {
         '@angular-devkit/build-angular': '^17.0.0',
@@ -685,7 +750,16 @@ export class AngularCliTemplate extends BaseTemplate {
             ],
             styles: ['src/styles.scss'],
             scripts: [],
-            serviceWorker: 'src/ngsw-config.json'
+            serviceWorker: 'src/ngsw-config.json',
+            i18n: {
+              sourceLocale: 'en-US',
+              locales: {
+                'es': 'src/locales/messages.es.xlf',
+                'fr': 'src/locales/messages.fr.xlf',
+                'de': 'src/locales/messages.de.xlf'
+              }
+            },
+            baseHref: '/'
           },
           configurations: {
             production: {
@@ -713,6 +787,7 @@ export class AngularCliTemplate extends BaseTemplate {
               namedChunks: false,
               buildOptimizer: true,
               aot: true,
+              localize: true,
               fileReplacements: [
                 {
                   replace: 'src/environments/environment.ts',
@@ -727,58 +802,18 @@ export class AngularCliTemplate extends BaseTemplate {
               extractLicenses: false,
               sourceMap: true,
               namedChunks: true
+            },
+            'localize-es': {
+              localize: ['es']
+            },
+            'localize-fr': {
+              localize: ['fr']
+            },
+            'localize-de': {
+              localize: ['de']
             }
           },
           defaultConfiguration: 'production'
-        },
-        serve: {
-          builder: '@angular-devkit/build-angular:dev-server',
-          configurations: {
-            production: {
-              buildTarget: `${normalizedName}:build:production`
-            },
-            development: {
-              buildTarget: `${normalizedName}:build:development`
-            }
-          },
-          defaultConfiguration: 'development'
-        },
-        extracti18n: {
-          builder: '@angular-devkit/build-angular:extract-i18n',
-          options: {
-            buildTarget: `${normalizedName}:build`
-          }
-        },
-        server: {
-          builder: '@angular-devkit/build-angular:server',
-          options: {
-            outputPath: `dist/${normalizedName}/server`,
-            main: 'src/main.server.ts',
-            tsConfig: 'tsconfig.server.json',
-            inlineStyleLanguage: 'scss'
-          },
-          configurations: {
-            development: {
-              outputHashing: 'none',
-              sourceMap: true,
-            },
-            production: {
-              outputHashing: 'all',
-              sourceMap: false,
-            }
-          }
-        },
-        serve: {
-          builder: '@angular-devkit/build-angular:dev-server',
-          configurations: {
-            production: {
-              buildTarget: `${normalizedName}:build:production`
-            },
-            development: {
-              buildTarget: `${normalizedName}:build:development`
-            }
-          },
-          defaultConfiguration: 'development'
         },
         test: {
           builder: '@angular-devkit/build-angular:karma',
@@ -807,6 +842,12 @@ export class AngularCliTemplate extends BaseTemplate {
           builder: '@angular-eslint/builder:lint',
           options: {
             lintFilePatterns: ['src/**/*.ts', 'src/**/*.html']
+          }
+        },
+        extracti18n: {
+          builder: '@angular-devkit/build-angular:extract-i18n',
+          options: {
+            buildTarget: `${normalizedName}:build`
           }
         }
       }
@@ -1899,7 +1940,7 @@ import { environment } from './environments/environment';
   private generateIndexHtml() {
     const { name } = this.context;
     return `<!doctype html>
-<html lang="en">
+<html lang="en" i18n="[dir][lang]">
 <head>
   <meta charset="utf-8">
   <title>${name}</title>
@@ -4024,6 +4065,8 @@ ${description || 'Angular CLI application with Angular Material and NgRx state m
 - 🚀 Angular Universal for Server-Side Rendering (SSR)
 - ♿ Accessibility-first design (WCAG 2.1 AA)
 - 📱 Progressive Web App (PWA) support with service workers and offline capabilities
+- 🌍 Internationalization (i18n) with AOT compilation and tree-shaking
+- 💬 Multi-language support (English, Spanish, French, German)
 - 🧪 Testing with Jasmine and Karma
 - 🎨 SCSS for styling
 - 🐳 Docker support
@@ -4053,8 +4096,13 @@ ${packageManager} run pwainit
 # Serve with hot reload
 ${packageManager} start
 
-# Build for production (with PWA)
-${packageManager} run build
+# Build for production (with PWA and i18n)
+${packageManager} run build:en
+
+# Build specific language versions
+${packageManager} run build:es
+${packageManager} run build:fr
+${packageManager} run build:de
 
 # Run tests
 ${packageManager} test
@@ -4618,6 +4666,180 @@ describe('UserFormComponent', () => {
   });
 });
 \`\`\`
+
+## Internationalization (i18n)
+
+This application includes comprehensive internationalization support with AOT compilation and tree-shaking optimizations.
+
+### Features
+
+- **Multi-language Support**: English (default), Spanish, French, and German
+- **AOT Compilation**: Ahead-of-Time compilation for optimal performance
+- **Tree-shaking**: Automatic removal of unused translations
+- **RTL Support**: Right-to-left language capability
+- **Currency Formatting**: Localized currency display based on language
+- **Date Formatting**: Localized date and time display
+- **Language Persistence**: User's language preference saved in localStorage
+- **Dynamic Language Switching**: Switch languages without page reload
+
+### Supported Languages
+
+- 🇺🇸 **English** (en-US) - Default language
+- 🇪🇸 **Spanish** (es-ES)
+- 🇫🇷 **French** (fr-FR)
+- 🇩🇪 **German** (de-DE)
+
+### Translation Files
+
+Translation files are stored in XLIFF 2.0 format:
+
+\`\`\`
+src/locales/
+├── messages.en.xlf    # English translations
+├── messages.es.xlf    # Spanish translations
+├── messages.fr.xlf    # French translations
+└── messages.de.xlf    # German translations
+\`\`\`
+
+### Language Service
+
+The \`LanguageService\` provides internationalization utilities:
+
+\`\`\`typescript
+import { LanguageService } from './services/language.service';
+
+constructor(private languageService: LanguageService) {}
+
+// Get current language
+const currentLang = this.languageService.getCurrentLanguage();
+
+// Format currency
+const price = this.languageService.formatCurrency(99.99, 'USD');
+
+// Format date
+const date = this.languageService.formatDate(new Date(), 'long');
+
+// Check RTL support
+const isRTL = this.languageService.isRTL();
+\`\`\`
+
+### Language Switcher Component
+
+Use the built-in language switcher to change languages:
+
+\`\`\`html
+<app-language-switcher></app-language-switcher>
+\`\`\`
+
+### Custom Pipes
+
+The application includes pipes for formatted output:
+
+\`\`\`html
+<!-- Currency formatting -->
+{{ price | appCurrency }}
+
+<!-- Date formatting -->
+{{ date | appDate:'long' }}
+\`\`\`
+
+### i18n Attributes
+
+Add \`i18n\` attributes to translatable elements:
+
+\`\`\`html
+<h1 i18n>Welcome</h1>
+<button i18n>Login</button>
+<span i18n aria-label="Loading">Loading...</span>
+\`\`\`
+
+### Building for Different Languages
+
+Build the application for specific languages:
+
+\`\`\`bash
+# Build English version (default)
+npm run build:en
+
+# Build Spanish version
+npm run build:es
+
+# Build French version
+npm run build:fr
+
+# Build German version
+npm run build:de
+\`\`\`
+
+### Serving Different Languages
+
+Serve the application in development mode for specific languages:
+
+\`\`\`bash
+# Serve English version
+npm run serve:en
+
+# Serve Spanish version
+npm run serve:es
+
+# Serve French version
+npm run serve:fr
+
+# Serve German version
+npm run serve:de
+\`\`\`
+
+### Extracting Translations
+
+Extract translatable content from your application:
+
+\`\`\`bash
+# Extract translations to XLIFF files
+npm run extract-i18n
+\`\`\`
+
+This will generate/update the translation files with all translatable strings found in your templates.
+
+### Adding New Languages
+
+To add a new language:
+
+1. Add the language to \`angular.json\`:
+   \`\`\`json
+   i18n: {
+     sourceLocale: 'en-US',
+     locales: {
+       'new-lang': 'src/locales/messages.new-lang.xlf'
+     }
+   }
+   \`\`\`
+
+2. Create the translation file:
+   \`\`\`bash
+   cp src/locales/messages.en.xlf src/locales/messages.new-lang.xlf
+   \`\`\`
+
+3. Update the translation content
+
+4. Add the language to \`LanguageService\`
+
+5. Build for the new language:
+   \`\`\`bash
+   npm run build:new-lang
+   \`\`\`
+
+### AOT Compilation Benefits
+
+- **Faster rendering**: Templates are compiled at build time
+- **Smaller bundle size**: Only included translations are bundled
+- **Better error detection**: i18n errors caught at build time
+- **Improved SEO**: Proper meta tags for different languages
+
+### Tree-shaking Advantages
+
+- **Reduced bundle size**: Only used translations are included
+- **Faster load times**: Less JavaScript to download and parse
+- **Better caching**: Smaller files cache more effectively
 
 ## Docker
 
@@ -8840,4 +9062,521 @@ export class FormExamplesModule { }
     grid-template-columns: 1fr;
   }
 }`;
+
+  /**
+   * Generate English translation file
+   */
+  private generateTranslationEn() {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="ng2.template" source-language="en-US" target-language="en-US" datatype="plaintext">
+    <body>
+      <trans-unit id="app-title" resname="app.title">
+        <source>My Angular App</source>
+      </trans-unit>
+      <trans-unit id="app-welcome" resname="app.welcome">
+        <source>Welcome to my Angular application with internationalization!</source>
+      </trans-unit>
+      <trans-unit id="app-description" resname="app.description">
+        <source>This is a fully-featured Angular application with i18n support, AOT compilation, and tree-shaking optimizations.</source>
+      </trans-unit>
+      <trans-unit id="language-switcher-label" resname="languageSwitcher.label">
+        <source>Language</source>
+      </trans-unit>
+      <trans-unit id="language-en" resname="language.en">
+        <source>English</source>
+      </trans-unit>
+      <trans-unit id="language-es" resname="language.es">
+        <source>Spanish</source>
+      </trans-unit>
+      <trans-unit id="language-fr" resname="language.fr">
+        <source>French</source>
+      </trans-unit>
+      <trans-unit id="language-de" resname="language.de">
+        <source>German</source>
+      </trans-unit>
+      <trans-unit id="currency-format" resname="currency.format">
+        <source>{amount} {currency}</source>
+      </trans-unit>
+      <trans-unit id="date-format" resname="date.format">
+        <source>{day} {month} {year}</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>`;
   }
+
+  /**
+   * Generate Spanish translation file
+   */
+  private generateTranslationEs() {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="ng2.template" source-language="en-US" target-language="es-ES" datatype="plaintext">
+    <body>
+      <trans-unit id="app-title" resname="app.title">
+        <source>My Angular App</source>
+        <target>Mi Aplicación Angular</target>
+      </trans-unit>
+      <trans-unit id="app-welcome" resname="app.welcome">
+        <source>Welcome to my Angular application with internationalization!</source>
+        <target>¡Bienvenido a mi aplicación Angular con internacionalización!</target>
+      </trans-unit>
+      <trans-unit id="app-description" resname="app.description">
+        <source>This is a fully-featured Angular application with i18n support, AOT compilation, and tree-shaking optimizations.</source>
+        <target>Esta es una aplicación Angular completamente equipada con soporte i18n, compilación AOT y optimizaciones de tree-shaking.</target>
+      </trans-unit>
+      <trans-unit id="language-switcher-label" resname="languageSwitcher.label">
+        <source>Language</source>
+        <target>Idioma</target>
+      </trans-unit>
+      <trans-unit id="language-en" resname="language.en">
+        <source>English</source>
+        <target>Inglés</target>
+      </trans-unit>
+      <trans-unit id="language-es" resname="language.es">
+        <source>Spanish</source>
+        <target>Español</target>
+      </trans-unit>
+      <trans-unit id="language-fr" resname="language.fr">
+        <source>French</source>
+        <target>Francés</target>
+      </trans-unit>
+      <trans-unit id="language-de" resname="language.de">
+        <source>German</source>
+        <target>Alemán</target>
+      </trans-unit>
+      <trans-unit id="currency-format" resname="currency.format">
+        <source>{amount} {currency}</source>
+        <target>{cantidad} {moneda}</target>
+      </trans-unit>
+      <trans-unit id="date-format" resname="date.format">
+        <source>{day} {month} {year}</source>
+        <target>{día} {mes} {año}</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>`;
+  }
+
+  /**
+   * Generate French translation file
+   */
+  private generateTranslationFr() {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="ng2.template" source-language="en-US" target-language="fr-FR" datatype="plaintext">
+    <body>
+      <trans-unit id="app-title" resname="app.title">
+        <source>My Angular App</source>
+        <target>Mon Application Angular</target>
+      </trans-unit>
+      <trans-unit id="app-welcome" resname="app.welcome">
+        <source>Welcome to my Angular application with internationalization!</source>
+        <target>Bienvenue dans mon application Angular avec internationalisation !</target>
+      </trans-unit>
+      <trans-unit id="app-description" resname="app.description">
+        <source>This is a fully-featured Angular application with i18n support, AOT compilation, and tree-shaking optimizations.</source>
+        <target>Ceci est une application Angular entièrement équipée avec support i18n, compilation AOT et optimisations de tree-shaking.</target>
+      </trans-unit>
+      <trans-unit id="language-switcher-label" resname="languageSwitcher.label">
+        <source>Language</source>
+        <target>Langue</target>
+      </trans-unit>
+      <trans-unit id="language-en" resname="language.en">
+        <source>English</source>
+        <target>Anglais</target>
+      </trans-unit>
+      <trans-unit id="language-es" resname="language.es">
+        <source>Spanish</source>
+        <target>Espagnol</target>
+      </trans-unit>
+      <trans-unit id="language-fr" resname="language.fr">
+        <source>French</source>
+        <target>Français</target>
+      </trans-unit>
+      <trans-unit id="language-de" resname="language.de">
+        <source>German</source>
+        <target>Allemand</target>
+      </trans-unit>
+      <trans-unit id="currency-format" resname="currency.format">
+        <source>{amount} {currency}</source>
+        <target>{montant} {devise}</target>
+      </trans-unit>
+      <trans-unit id="date-format" resname="date.format">
+        <source>{day} {month} {year}</source>
+        <target>{jour} {mois} {année}</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>`;
+  }
+
+  /**
+   * Generate German translation file
+   */
+  private generateTranslationDe() {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="ng2.template" source-language="en-US" target-language="de-DE" datatype="plaintext">
+    <body>
+      <trans-unit id="app-title" resname="app.title">
+        <source>My Angular App</source>
+        <target>Meine Angular App</target>
+      </trans-unit>
+      <trans-unit id="app-welcome" resname="app.welcome">
+        <source>Welcome to my Angular application with internationalization!</source>
+        <target>Willkommen zu meiner Angular-Anwendung mit Internationalisierung!</target>
+      </trans-unit>
+      <trans-unit id="app-description" resname="app.description">
+        <source>This is a fully-featured Angular application with i18n support, AOT compilation, and tree-shaking optimizations.</source>
+        <target>Dies ist eine voll ausgestattete Angular-Anwendung mit i18n-Unterstützung, AOT-Kompilierung und Tree-Shaking-Optimierungen.</target>
+      </trans-unit>
+      <trans-unit id="language-switcher-label" resname="languageSwitcher.label">
+        <source>Language</source>
+        <target>Sprache</target>
+      </trans-unit>
+      <trans-unit id="language-en" resname="language.en">
+        <source>English</source>
+        <target>Englisch</target>
+      </trans-unit>
+      <trans-unit id="language-es" resname="language.es">
+        <source>Spanish</source>
+        <target>Spanisch</target>
+      </trans-unit>
+      <trans-unit id="language-fr" resname="language.fr">
+        <source>French</source>
+        <target>Französisch</target>
+      </trans-unit>
+      <trans-unit id="language-de" resname="language.de">
+        <source>German</source>
+        <target>Deutsch</target>
+      </trans-unit>
+      <trans-unit id="currency-format" resname="currency.format">
+        <source>{amount} {currency}</source>
+        <target>{Betrag} {Währung}</target>
+      </trans-unit>
+      <trans-unit id="date-format" resname="date.format">
+        <source>{day} {month} {year}</source>
+        <target>{Tag} {Monat} {Jahr}</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>`;
+  }
+
+  /**
+   * Generate Language Service
+   */
+  private generateLanguageService() {
+    return `import { Injectable, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+
+export interface Language {
+  code: string;
+  name: string;
+  flag: string;
+  rtl?: boolean;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LanguageService {
+  private currentLanguageSubject = new BehaviorSubject('en');
+  currentLanguage$ = this.currentLanguageSubject.asObservable();
+
+  private availableLanguages: Language[] = [
+    { code: 'en', name: 'English', flag: '🇺🇸', rtl: false },
+    { code: 'es', name: 'Español', flag: '🇪🇸', rtl: false },
+    { code: 'fr', name: 'Français', flag: '🇫🇷', rtl: false },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪', rtl: false }
+  ];
+
+  constructor(
+    private translate: TranslateService,
+    @Inject(DOCUMENT) private document: Document
+  ) {
+    this.initializeLanguage();
+  }
+
+  private initializeLanguage(): void {
+    // Try to get language from localStorage
+    const savedLanguage = localStorage.getItem('language');
+
+    // Try to get language from browser
+    const browserLang = navigator.language.split('-')[0];
+
+    // Set default language
+    const defaultLang = savedLanguage || browserLang || 'en';
+
+    // Set available languages
+    this.translate.addLangs(this.availableLanguages.map(lang => lang.code));
+
+    // Set current language
+    this.setLanguage(defaultLang);
+  }
+
+  setLanguage(language: string): void {
+    if (this.availableLanguages.some(lang => lang.code === language)) {
+      this.translate.use(language).subscribe({
+        next: () => {
+          this.currentLanguageSubject.next(language);
+          localStorage.setItem('language', language);
+
+          // Update document direction for RTL languages
+          const html = this.document.documentElement;
+          const langData = this.availableLanguages.find(l => l.code === language);
+
+          if (langData?.rtl) {
+            html.setAttribute('dir', 'rtl');
+          } else {
+            html.setAttribute('dir', 'ltr');
+          }
+
+          // Update lang attribute
+          html.setAttribute('lang', language);
+        },
+        error: (error) => {
+          console.error('Error setting language:', error);
+        }
+      });
+    }
+  }
+
+  getCurrentLanguage(): string {
+    return this.currentLanguageSubject.value;
+  }
+
+  getAvailableLanguages(): Language[] {
+    return this.availableLanguages;
+  }
+
+  formatCurrency(amount: number, currency: string = 'USD'): string {
+    const lang = this.getCurrentLanguage();
+    const locale = this.getLocaleCode(lang);
+
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency
+    }).format(amount);
+  }
+
+  formatDate(date: Date | string, format: 'short' | 'medium' | 'long' | 'full' = 'medium'): string {
+    const lang = this.getCurrentLanguage();
+    const locale = this.getLocaleCode(lang);
+
+    return new Intl.DateTimeFormat(locale, {
+      dateStyle: format
+    }).format(date instanceof Date ? date : new Date(date));
+  }
+
+  private getLocaleCode(languageCode: string): string {
+    const localeMap: Record<string, string> = {
+      'en': 'en-US',
+      'es': 'es-ES',
+      'fr': 'fr-FR',
+      'de': 'de-DE'
+    };
+
+    return localeMap[languageCode] || languageCode;
+  }
+
+  isRTL(language?: string): boolean {
+    const lang = language || this.getCurrentLanguage();
+    return this.availableLanguages.find(l => l.code === lang)?.rtl || false;
+  }
+}`;
+  }
+
+  /**
+   * Generate Currency Pipe
+   */
+  private generateCurrencyPipe() {
+    return `import { Pipe, PipeTransform } from '@angular/core';
+import { LanguageService } from '../services/language.service';
+
+@Pipe({
+  name: 'appCurrency',
+  standalone: true,
+  pure: true
+})
+export class CurrencyPipe implements PipeTransform {
+  constructor(private languageService: LanguageService) {}
+
+  transform(
+    value: number,
+    currency: string = 'USD',
+    display: 'code' | 'symbol' | 'narrowSymbol' | 'name' | 'boolean' = 'symbol',
+    digitsInfo?: string
+  ): string {
+    if (value == null) return '';
+
+    return this.languageService.formatCurrency(value, currency);
+  }
+}`;
+  }
+
+  /**
+   * Generate Date Pipe
+   */
+  private generateDatePipe() {
+    return `import { Pipe, PipeTransform } from '@angular/core';
+import { LanguageService } from '../services/language.service';
+
+@Pipe({
+  name: 'appDate',
+  standalone: true,
+  pure: true
+})
+export class DatePipe implements PipeTransform {
+  constructor(private languageService: LanguageService) {}
+
+  transform(
+    value: Date | string | number,
+    format: 'short' | 'medium' | 'long' | 'full' = 'medium',
+    timezone?: string,
+    locale?: string
+  ): string {
+    if (!value) return '';
+
+    return this.languageService.formatDate(value, format);
+  }
+}`;
+  }
+
+  /**
+   * Generate Language Switcher Component
+   */
+  private generateLanguageSwitcherComponent() {
+    return `import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { LanguageService, Language } from '../../services/language.service';
+
+@Component({
+  selector: 'app-language-switcher',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule
+  ],
+  templateUrl: './language-switcher.component.html',
+  styleUrls: ['./language-switcher.component.scss']
+})
+export class LanguageSwitcherComponent {
+  private languageService = inject(LanguageService);
+
+  currentLanguage$ = this.languageService.currentLanguage$;
+  availableLanguages = this.languageService.getAvailableLanguages();
+
+  onLanguageChange(language: string): void {
+    this.languageService.setLanguage(language);
+  }
+}`;
+  }
+
+  /**
+   * Generate Language Switcher Template
+   */
+  private generateLanguageSwitcherTemplate() {
+    return `<div class="language-switcher">
+  <mat-form-field appearance="outline" class="language-select">
+    <mat-label i18n>Language</mat-label>
+    <mat-select
+      [value]="currentLanguage$ | async"
+      (selectionChange)="onLanguageChange($event.value)"
+      class="language-select-input">
+
+      <mat-option *ngFor="let lang of availableLanguages" [value]="lang.code">
+        <span class="language-option">
+          <span class="language-flag">{{ lang.flag }}</span>
+          <span>{{ lang.name }}</span>
+        </span>
+      </mat-option>
+    </mat-select>
+
+    <mat-icon class="language-icon">language</mat-icon>
+  </mat-form-field>
+</div>`;
+  }
+
+  /**
+   * Generate Language Switcher Styles
+   */
+  private generateLanguageSwitcherStyles() {
+    return `.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+}
+
+.language-select {
+  min-width: 180px;
+}
+
+.language-select.mat-form-field-appearance-outline .mat-form-field-outline {
+  border-radius: 8px;
+}
+
+.language-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(0, 0, 0, 0.54);
+  pointer-events: none;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-flag {
+  font-size: 18px;
+}
+
+.language-select-input {
+  font-size: 14px;
+}
+
+/* RTL support */
+[dir='rtl'] .language-icon {
+  right: auto;
+  left: 12px;
+}
+
+[dir='rtl'] .language-option {
+  flex-direction: row-reverse;
+}
+
+/* Hover effects */
+.language-option:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .language-icon {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .language-option:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}`;
+  }
+}
