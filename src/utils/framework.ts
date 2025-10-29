@@ -132,7 +132,9 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     displayName: 'Svelte',
     buildTool: 'vite',
     packageManager: ['npm', 'yarn', 'pnpm'],
-    dependencies: {},
+    dependencies: {
+      'svelte-navigator': '^4.0.0'
+    },
     devDependencies: {
       'svelte': '^4.0.0',
       'vite': '^4.4.0',
@@ -156,7 +158,9 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     displayName: 'Svelte with TypeScript',
     buildTool: 'vite',
     packageManager: ['npm', 'yarn', 'pnpm'],
-    dependencies: {},
+    dependencies: {
+      'svelte-navigator': '^4.0.0'
+    },
     devDependencies: {
       'svelte': '^4.0.0',
       'vite': '^4.4.0',

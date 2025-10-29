@@ -93,9 +93,30 @@ export class SvelteTemplate extends BaseTemplate {
       content: this.generateCustomStores()
     });
 
+    // Layouts directory
+    files.push({
+      path: 'src/layouts',
+      content: '',
+      isDirectory: true
+    });
+
     // Components directory
     files.push({
       path: 'src/components',
+      content: '',
+      isDirectory: true
+    });
+
+    // Pages directory
+    files.push({
+      path: 'src/pages',
+      content: '',
+      isDirectory: true
+    });
+
+    // Transitions directory
+    files.push({
+      path: 'src/transitions',
       content: '',
       isDirectory: true
     });
@@ -119,6 +140,75 @@ export class SvelteTemplate extends BaseTemplate {
     files.push({
       path: 'src/components/TimeDisplay.svelte',
       content: this.generateTimeDisplayComponent()
+    });
+
+    // Layout components
+    files.push({
+      path: 'src/layouts/MainLayout.svelte',
+      content: this.generateMainLayout()
+    });
+
+    files.push({
+      path: 'src/layouts/DashboardLayout.svelte',
+      content: this.generateDashboardLayout()
+    });
+
+    files.push({
+      path: 'src/layouts/AuthLayout.svelte',
+      content: this.generateAuthLayout()
+    });
+
+    files.push({
+      path: 'src/layouts/EmptyLayout.svelte',
+      content: this.generateEmptyLayout()
+    });
+
+    // Navigation components
+    files.push({
+      path: 'src/components/Navbar.svelte',
+      content: this.generateNavbar()
+    });
+
+    files.push({
+      path: 'src/components/Sidebar.svelte',
+      content: this.generateSidebar()
+    });
+
+    files.push({
+      path: 'src/components/Breadcrumbs.svelte',
+      content: this.generateBreadcrumbs()
+    });
+
+    // Page components
+    files.push({
+      path: 'src/pages/Home.svelte',
+      content: this.generateHomePage()
+    });
+
+    files.push({
+      path: 'src/pages/About.svelte',
+      content: this.generateAboutPage()
+    });
+
+    files.push({
+      path: 'src/pages/Dashboard.svelte',
+      content: this.generateDashboardPage()
+    });
+
+    files.push({
+      path: 'src/pages/Profile.svelte',
+      content: this.generateProfilePage()
+    });
+
+    files.push({
+      path: 'src/pages/NotFound.svelte',
+      content: this.generateNotFoundPage()
+    });
+
+    // Transition utilities
+    files.push({
+      path: `src/transitions/route-transitions.${ext}`,
+      content: this.generateRouteTransitions()
     });
 
     // HTML file for development
@@ -1658,6 +1748,2227 @@ export function validationStore(initialValues: Record<string, any>) {
 `;
   }
 
+  private generateMainLayout(): string {
+    const { normalizedName, name, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import Navbar from '../components/Navbar.svelte';
+
+  export let children;
+</script>
+
+<Router>
+  <div class="${normalizedName}-main-layout">
+    <Navbar />
+
+    <main class="${normalizedName}-main-content">
+      {#if $location.pathname !== '/'}
+        <nav class="${normalizedName}-breadcrumbs">
+          <Link to="/" class="breadcrumb-link">Home</Link>
+          {#each $location.pathname.split('/').slice(1) as segment, i}
+            {#if i < $location.pathname.split('/').length - 2}
+              <span class="breadcrumb-separator">/</span>
+              {#if i < $location.pathname.split('/').length - 3}
+                <Link to={\`/\${$location.pathname.split('/').slice(0, i + 2).join('/')}\`} class="breadcrumb-link">
+                  {segment}
+                </Link>
+              {:else}
+                <span class="breadcrumb-current">{segment}</span>
+              {/if}
+            {/if}
+          {/each}
+        </nav>
+      {/if}
+
+      <slot />
+    </main>
+  </div>
+</Router>
+
+<style>
+  .${normalizedName}-main-layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .${normalizedName}-main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .${normalizedName}-breadcrumbs {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  .breadcrumb-link {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .breadcrumb-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 0.5rem;
+    color: #6c757d;
+  }
+
+  .breadcrumb-current {
+    color: #495057;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .${normalizedName}-main-content {
+      padding: 1rem;
+    }
+  }
+</style>`;
+  }
+
+  private generateDashboardLayout(): string {
+    const { normalizedName, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import Navbar from '../components/Navbar.svelte';
+  import Sidebar from '../components/Sidebar.svelte';
+
+  export let children;
+  export let activeRoute = '';
+</script>
+
+<Router>
+  <div class="${normalizedName}-dashboard-layout">
+    <div class="${normalizedName}-dashboard-sidebar">
+      <Sidebar />
+    </div>
+
+    <div class="${normalizedName}-dashboard-main">
+      <Navbar />
+
+      <main class="${normalizedName}-dashboard-content">
+        {#if $location.pathname !== '/'}
+          <nav class="${normalizedName}-breadcrumbs">
+            <Link to="/" class="breadcrumb-link">Dashboard</Link>
+            {#each $location.pathname.split('/').slice(1) as segment, i}
+              {#if i > 0 && i < $location.pathname.split('/').length - 1}
+                <span class="breadcrumb-separator">/</span>
+                {#if i < $location.pathname.split('/').length - 2}
+                  <Link to={\`/\${$location.pathname.split('/').slice(0, i + 2).join('/')}\`} class="breadcrumb-link">
+                    {segment}
+                  </Link>
+                {:else}
+                  <span class="breadcrumb-current">{segment}</span>
+                {/if}
+              {/if}
+            {/each}
+          </nav>
+        {/if}
+
+        <slot />
+      </main>
+    </div>
+  </div>
+</Router>
+
+<style>
+  .${normalizedName}-dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .${normalizedName}-dashboard-sidebar {
+    width: 250px;
+    background: #2c3e50;
+    color: white;
+    padding: 2rem 0;
+    flex-shrink: 0;
+  }
+
+  .${normalizedName}-dashboard-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .${normalizedName}-dashboard-content {
+    flex: 1;
+    padding: 2rem;
+    background: #f8f9fa;
+  }
+
+  .${normalizedName}-breadcrumbs {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .breadcrumb-link {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .breadcrumb-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 0.5rem;
+    color: #6c757d;
+  }
+
+  .breadcrumb-current {
+    color: #495057;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .${normalizedName}-dashboard-layout {
+      flex-direction: column;
+    }
+
+    .${normalizedName}-dashboard-sidebar {
+      width: 100%;
+      padding: 1rem 0;
+    }
+
+    .${normalizedName}-dashboard-content {
+      padding: 1rem;
+    }
+  }
+</style>`;
+  }
+
+  private generateAuthLayout(): string {
+    const { normalizedName, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  export let children;
+</script>
+
+<div class="${normalizedName}-auth-layout">
+  <div class="${normalizedName}-auth-container">
+    <div class="${normalizedName}-auth-card">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .${normalizedName}-auth-layout {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+  }
+
+  .${normalizedName}-auth-container {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .${normalizedName}-auth-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 480px) {
+    .${normalizedName}-auth-layout {
+      padding: 1rem;
+    }
+
+    .${normalizedName}-auth-card {
+      padding: 2rem;
+    }
+  }
+</style>`;
+  }
+
+  private generateEmptyLayout(): string {
+    const { hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  export let children;
+</script>
+
+<div class="empty-layout">
+  <slot />
+</div>
+
+<style>
+  .empty-layout {
+    min-height: 100vh;
+    width: 100%;
+  }
+</style>`;
+  }
+
+  private generateNavbar(): string {
+    const { normalizedName, name, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import { onMount } from 'svelte';
+
+  export let transparent = false;
+</script>
+
+<header class="{normalizedName}-navbar {transparent ? '${normalizedName}-navbar-transparent' : ''}">
+  <div class="${normalizedName}-navbar-container">
+    <div class="${normalizedName}-navbar-brand">
+      <Link to="/" class="${normalizedName}-navbar-brand-link">
+        <strong>{name}</strong>
+      </Link>
+    </div>
+
+    <nav class="${normalizedName}-navbar-nav">
+      <Link
+        to="/"
+        class="{normalizedName}-navbar-link {($location.pathname === '/' || $location.pathname === '') ? '${normalizedName}-navbar-link-active' : ''}"
+      >
+        Home
+      </Link>
+
+      <Link
+        to="/dashboard"
+        class="{normalizedName}-navbar-link {($location.pathname === '/dashboard' || $location.pathname.startsWith('/dashboard/')) ? '${normalizedName}-navbar-link-active' : ''}"
+      >
+        Dashboard
+      </Link>
+
+      <Link
+        to="/about"
+        class="{normalizedName}-navbar-link {($location.pathname === '/about') ? '${normalizedName}-navbar-link-active' : ''}"
+      >
+        About
+      </Link>
+    </nav>
+
+    <div class="${normalizedName}-navbar-actions">
+      <button class="${normalizedName}-navbar-toggle" aria-label="Toggle navigation">
+        <span class="${normalizedName}-navbar-toggle-icon"></span>
+        <span class="${normalizedName}-navbar-toggle-icon"></span>
+        <span class="${normalizedName}-navbar-toggle-icon"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<style>
+  .${normalizedName}-navbar {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: all 0.3s ease;
+  }
+
+  .${normalizedName}-navbar-transparent {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .${normalizedName}-navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 4rem;
+  }
+
+  .${normalizedName}-navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .${normalizedName}-navbar-brand-link {
+    color: #2c3e50;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .${normalizedName}-navbar-brand-link:hover {
+    color: #3498db;
+  }
+
+  .${normalizedName}-navbar-nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .${normalizedName}-navbar-link {
+    color: #495057;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 0;
+    position: relative;
+    transition: color 0.2s;
+  }
+
+  .${normalizedName}-navbar-link:hover {
+    color: #3498db;
+  }
+
+  .${normalizedName}-navbar-link-active {
+    color: #3498db;
+  }
+
+  .${normalizedName}-navbar-link-active::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #3498db;
+  }
+
+  .${normalizedName}-navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .${normalizedName}-navbar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+
+  .${normalizedName}-navbar-toggle-icon {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #495057;
+    margin: 4px 0;
+    transition: all 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    .${normalizedName}-navbar-container {
+      padding: 0 1rem;
+    }
+
+    .${normalizedName}-navbar-nav {
+      position: fixed;
+      top: 4rem;
+      left: 0;
+      right: 0;
+      background: white;
+      flex-direction: column;
+      padding: 1rem;
+      gap: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: translateY(-100%);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .${normalizedName}-navbar-nav.active {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .${normalizedName}-navbar-toggle {
+      display: block;
+    }
+
+    .${normalizedName}-navbar-toggle.active .${normalizedName}-navbar-toggle-icon:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .${normalizedName}-navbar-toggle.active .${normalizedName}-navbar-toggle-icon:nth-child(2) {
+      opacity: 0;
+    }
+
+    .${normalizedName}-navbar-toggle.active .${normalizedName}-navbar-toggle-icon:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+  }
+</style>`;
+  }
+
+  private generateSidebar(): string {
+    const { normalizedName, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+
+  let menuItems = [
+    { path: '/dashboard', label: 'Overview', icon: '📊' },
+    { path: '/dashboard/analytics', label: 'Analytics', icon: '📈' },
+    { path: '/dashboard/users', label: 'Users', icon: '👥' },
+    { path: '/dashboard/settings', label: 'Settings', icon: '⚙️' }
+  ];
+</script>
+
+<nav class="{normalizedName}-sidebar">
+  <div class="{normalizedName}-sidebar-header">
+    <h3>Dashboard</h3>
+  </div>
+
+  <ul class="{normalizedName}-sidebar-menu">
+    {#each menuItems as item}
+      <li class="{normalizedName}-sidebar-item">
+        <Link
+          to={item.path}
+          class="{normalizedName}-sidebar-link {($location.pathname === item.path || $location.pathname.startsWith(item.path + '/')) ? '${normalizedName}-sidebar-link-active' : ''}"
+        >
+          <span class="{normalizedName}-sidebar-icon">{item.icon}</span>
+          <span class="{normalizedName}-sidebar-label">{item.label}</span>
+        </Link>
+      </li>
+    {/each}
+  </ul>
+
+  <div class="{normalizedName}-sidebar-footer">
+    <p>v1.0.0</p>
+  </div>
+</nav>
+
+<style>
+  .${normalizedName}-sidebar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .${normalizedName}-sidebar-header {
+    padding: 0 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .${normalizedName}-sidebar-header h3 {
+    color: white;
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .${normalizedName}-sidebar-menu {
+    flex: 1;
+    padding: 1rem 0;
+    list-style: none;
+    margin: 0;
+  }
+
+  .${normalizedName}-sidebar-item {
+    margin-bottom: 0.25rem;
+  }
+
+  .${normalizedName}-sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .${normalizedName}-sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  .${normalizedName}-sidebar-link-active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  .${normalizedName}-sidebar-link-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: white;
+  }
+
+  .${normalizedName}-sidebar-icon {
+    margin-right: 1rem;
+    font-size: 1.1rem;
+  }
+
+  .${normalizedName}-sidebar-label {
+    font-weight: 500;
+  }
+
+  .${normalizedName}-sidebar-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+  }
+
+  .${normalizedName}-sidebar-footer p {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    font-size: 0.875rem;
+  }
+</style>`;
+  }
+
+  private generateBreadcrumbs(): string {
+    const { normalizedName, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+
+  export let currentPath = '';
+</script>
+
+<nav class="{normalizedName}-breadcrumbs">
+  <ol>
+    <li>
+      <Link to="/" class="{normalizedName}-breadcrumb-home">
+        Home
+      </Link>
+    </li>
+    {#each currentPath.split('/').slice(1).filter(Boolean) as segment, i}
+      <li>
+        {#if i < currentPath.split('/').length - 2}
+          <Link to={\`/\${currentPath.split('/').slice(0, i + 2).join('/')}\\`} class="{normalizedName}-breadcrumb-link">
+            {segment}
+          </Link>
+        {:else}
+          <span class="{normalizedName}-breadcrumb-current">{segment}</span>
+        {/if}
+      </li>
+    {/each}
+  </ol>
+</nav>
+
+<style>
+  .${normalizedName}-breadcrumbs {
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  .${normalizedName}-breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .${normalizedName}-breadcrumbs li {
+    display: flex;
+    align-items: center;
+  }
+
+  .${normalizedName}-breadcrumbs li:not(:last-child)::after {
+    content: '/';
+    margin: 0 0.5rem;
+    color: #dee2e6;
+  }
+
+  .${normalizedName}-breadcrumb-home,
+  .${normalizedName}-breadcrumb-link {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .${normalizedName}-breadcrumb-home:hover,
+  .${normalizedName}-breadcrumb-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+  }
+
+  .${normalizedName}-breadcrumb-current {
+    color: #495057;
+    font-weight: 500;
+  }
+</style>`;
+  }
+
+  private generateHomePage(): string {
+    const { name, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import { fade } from '../transitions/route-transitions.${hasTypeScript ? 'ts' : 'js'}';
+</script>
+
+<svelte:window on:keydown={handleKeyPress} />
+
+<svelte:head>
+  <title>Home - {name}</title>
+</svelte:head>
+
+<div class="home-page" in:fade={{ duration: 300 }}>
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Welcome to {name}</h1>
+      <p>A modern Svelte application with routing and layouts</p>
+      <div class="hero-actions">
+        <Link to="/dashboard" class="btn btn-primary">
+          Get Started
+        </Link>
+        <Link to="/about" class="btn btn-secondary">
+          Learn More
+        </Link>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <h2>Features</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🚀</div>
+        <h3>Fast Development</h3>
+        <p>Hot module replacement and instant updates</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Responsive Design</h3>
+        <p>Works beautifully on all devices</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3>Modern Styling</h3>
+        <p>Clean, maintainable CSS with responsive grids</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Performance</h3>
+        <p>Optimized for speed and efficiency</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo">
+    <h2>Quick Start</h2>
+    <div class="demo-steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Navigate to Dashboard</h3>
+        <p>Click the button below to explore the dashboard layout</p>
+        <Link to="/dashboard" class="btn btn-outline">Go to Dashboard</Link>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Explore Features</h3>
+        <p>Discover the built-in components and layouts</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Start Building</h3>
+        <p>Begin your own project with our template</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .home-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+    margin-bottom: 4rem;
+  }
+
+  .hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .hero-content p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .features {
+    margin-bottom: 4rem;
+  }
+
+  .features h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #2c3e50;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+
+  .feature-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.2s ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card h3 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+
+  .feature-card p {
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .demo {
+    margin-bottom: 4rem;
+  }
+
+  .demo h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #2c3e50;
+  }
+
+  .demo-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .step {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    background: #3498db;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  .step h3 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+
+  .step p {
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: #3498db;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #2980b9;
+  }
+
+  .btn-secondary {
+    background: #95a5a6;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: #7f8c8d;
+  }
+
+  .btn-outline {
+    background: white;
+    color: #3498db;
+    border: 2px solid #3498db;
+  }
+
+  .btn-outline:hover {
+    background: #3498db;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .home-page {
+      padding: 1rem;
+    }
+
+    .hero {
+      padding: 2rem 1rem;
+    }
+
+    .hero-content h1 {
+      font-size: 2rem;
+    }
+
+    .hero-content p {
+      font-size: 1rem;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .features h2,
+    .demo h2 {
+      font-size: 2rem;
+    }
+
+    .feature-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .demo-steps {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>`;
+  }
+
+  private generateAboutPage(): string {
+    const { name, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import { slide } from '../transitions/route-transitions.${hasTypeScript ? 'ts' : 'js'}';
+</script>
+
+<svelte:head>
+  <title>About - {name}</title>
+</svelte:head>
+
+<div class="about-page" in:slide={{ duration: 300 }}>
+  <div class="about-container">
+    <section class="about-header">
+      <h1>About {name}</h1>
+      <p>A modern Svelte microfrontend template with routing, layouts, and transitions</p>
+    </section>
+
+    <section class="about-content">
+      <div class="info-grid">
+        <div class="info-card">
+          <h2>🚀 Built for Performance</h2>
+          <p>This template leverages Svelte's compiler to generate highly optimized code that loads quickly and runs efficiently.</p>
+        </div>
+        <div class="info-card">
+          <h2>🎨 Modern Design</h2>
+          <p>Clean, responsive layouts with customizable components that follow modern UI/UX principles.</p>
+        </div>
+        <div class="info-card">
+          <h2>⚡ Developer Experience</h2>
+          <p>Hot module replacement, TypeScript support, and a component-based architecture for rapid development.</p>
+        </div>
+        <div class="info-card">
+          <h2>🔧 Feature Rich</h2>
+          <p>Includes routing, state management, transitions, and pre-built components to accelerate your project.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tech-stack">
+      <h2>Technology Stack</h2>
+      <div class="tech-grid">
+        <div class="tech-item">
+          <div class="tech-icon">⚛️</div>
+          <h3>Svelte</h3>
+          <p>Component framework that compiles to small, efficient vanilla JavaScript</p>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">🛣️</div>
+          <h3>svelte-navigator</h3>
+          <p>Client-side routing for Svelte applications</p>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">🎯</div>
+          <h3>Vite</h3>
+          <p>Next generation frontend tooling</p>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon">📦</div>
+          <h3>Re-Shell</h3>
+          <p>Microfrontend platform for modular applications</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="getting-started">
+      <h2>Getting Started</h2>
+      <div class="steps-list">
+        <div class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Installation</h3>
+            <p>Install the dependencies using npm or pnpm:</p>
+            <pre><code>npm install
+# or
+pnpm install</code></pre>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Development</h3>
+            <p>Start the development server:</p>
+            <pre><code>npm run dev</code></pre>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Build</h3>
+            <p>Create a production build:</p>
+            <pre><code>npm run build</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<style>
+  .about-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .about-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .about-header h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+
+  .about-header p {
+    font-size: 1.25rem;
+    color: #666;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .info-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
+
+  .info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .info-card h2 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+  }
+
+  .info-card p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .tech-stack {
+    margin-bottom: 4rem;
+  }
+
+  .tech-stack h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #2c3e50;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+
+  .tech-item {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .tech-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+  }
+
+  .tech-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .tech-item h3 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+
+  .tech-item p {
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .getting-started {
+    margin-bottom: 4rem;
+  }
+
+  .getting-started h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #2c3e50;
+  }
+
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .step-item {
+    display: flex;
+    gap: 2rem;
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    align-items: center;
+  }
+
+  .step-number {
+    width: 50px;
+    height: 50px;
+    background: #3498db;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .step-content h3 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+  }
+
+  .step-content p {
+    margin: 0 0 1rem 0;
+    color: #666;
+  }
+
+  pre {
+    background: #2c3e50;
+    color: white;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+
+  code {
+    font-family: 'Courier New', monospace;
+  }
+
+  @media (max-width: 768px) {
+    .about-page {
+      padding: 1rem;
+    }
+
+    .about-header h1 {
+      font-size: 2rem;
+    }
+
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tech-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .step-item {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+</style>`;
+  }
+
+  private generateDashboardPage(): string {
+    const { name, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import { scale } from '../transitions/route-transitions.${hasTypeScript ? 'ts' : 'js'}';
+
+  // Mock data for dashboard
+  let stats = [
+    { title: 'Total Users', value: '12,345', change: '+12%', icon: '👥' },
+    { title: 'Revenue', value: '$45,678', change: '+23%', icon: '💰' },
+    { title: 'Active Sessions', value: '1,234', change: '+5%', icon: '📊' },
+    { title: 'Conversion Rate', value: '3.4%', change: '+0.8%', icon: '📈' }
+  ];
+
+  let recentActivity = [
+    { user: 'John Doe', action: 'created a new post', time: '2 minutes ago' },
+    { user: 'Jane Smith', action: 'updated profile', time: '5 minutes ago' },
+    { user: 'Bob Johnson', action: 'commented on post', time: '10 minutes ago' },
+    { user: 'Alice Brown', action: 'created a new project', time: '15 minutes ago' }
+  ];
+</script>
+
+<svelte:head>
+  <title>Dashboard - {name}</title>
+</svelte:head>
+
+<div class="dashboard-page" in:scale={{ duration: 300 }}>
+  <div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p>Welcome back! Here's what's happening today.</p>
+  </div>
+
+  <div class="dashboard-content">
+    <section class="stats-section">
+      <div class="stats-grid">
+        {#each stats as stat}
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-icon">{stat.icon}</span>
+              <span class="stat-change positive">{stat.change}</span>
+            </div>
+            <div class="stat-value">{stat.value}</div>
+            <div class="stat-title">{stat.title}</div>
+          </div>
+        {/each}
+      </div>
+    </section>
+
+    <section class="activity-section">
+      <h2>Recent Activity</h2>
+      <div class="activity-list">
+        {#each recentActivity as activity}
+          <div class="activity-item">
+            <div class="activity-icon">👤</div>
+            <div class="activity-content">
+              <p><strong>{activity.user}</strong> {activity.action}</p>
+              <span class="activity-time">{activity.time}</span>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </section>
+
+    <section class="quick-actions">
+      <h2>Quick Actions</h2>
+      <div class="actions-grid">
+        <Link to="/dashboard/analytics" class="action-card">
+          <div class="action-icon">📊</div>
+          <h3>Analytics</h3>
+          <p>View detailed analytics and reports</p>
+        </Link>
+        <Link to="/dashboard/users" class="action-card">
+          <div class="action-icon">👥</div>
+          <h3>Users</h3>
+          <p>Manage user accounts and permissions</p>
+        </Link>
+        <Link to="/dashboard/settings" class="action-card">
+          <div class="action-icon">⚙️</div>
+          <h3>Settings</h3>
+          <p>Configure application settings</p>
+        </Link>
+        <Link to="/profile" class="action-card">
+          <div class="action-icon">👤</div>
+          <h3>Profile</h3>
+          <p>Update your personal information</p>
+        </Link>
+      </div>
+    </section>
+  </div>
+</div>
+
+<style>
+  .dashboard-page {
+    padding: 2rem;
+  }
+
+  .dashboard-header {
+    margin-bottom: 2rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard-header p {
+    color: #666;
+  }
+
+  .stats-section {
+    margin-bottom: 3rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+  }
+
+  .stat-change {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .positive {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-title {
+    color: #666;
+    font-size: 0.875rem;
+  }
+
+  .activity-section {
+    margin-bottom: 3rem;
+  }
+
+  .activity-section h2 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+  }
+
+  .activity-list {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .activity-item {
+    display: flex;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+  }
+
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+
+  .activity-item:hover {
+    background: #f8f9fa;
+  }
+
+  .activity-icon {
+    margin-right: 1rem;
+    font-size: 1.5rem;
+  }
+
+  .activity-content p {
+    margin: 0;
+    color: #2c3e50;
+  }
+
+  .activity-time {
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  .quick-actions h2 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .action-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .action-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .action-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+  }
+
+  .action-card p {
+    margin: 0;
+    color: #666;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-page {
+      padding: 1rem;
+    }
+
+    .stats-grid,
+    .actions-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>`;
+  }
+
+  private generateProfilePage(): string {
+    const { name, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import { fade } from '../transitions/route-transitions.${hasTypeScript ? 'ts' : 'js'}';
+
+  // Mock user data
+  let user = {
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    avatar: '👤',
+    role: 'Admin',
+    joinDate: 'January 2023',
+    bio: 'Frontend developer passionate about creating amazing user experiences.'
+  };
+
+  let isEditing = false;
+  let editedUser = {...user};
+
+  function handleSave() {
+    user = {...editedUser};
+    isEditing = false;
+  }
+
+  function handleCancel() {
+    editedUser = {...user};
+    isEditing = false;
+  }
+</script>
+
+<svelte:head>
+  <title>Profile - {name}</title>
+</svelte:head>
+
+<div class="profile-page" in:fade={{ duration: 300 }}>
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <span class="avatar-icon">{user.avatar}</span>
+      </div>
+      <div class="profile-info">
+        {#if !isEditing}
+          <h1>{user.name}</h1>
+          <p class="role">{user.role}</p>
+          <button class="btn btn-secondary" on:click={() => isEditing = true}>
+            Edit Profile
+          </button>
+        {:else}
+          <input type="text" bind:value={editedUser.name} class="input" />
+          <input type="text" bind:value={editedUser.role} class="input" />
+          <div class="edit-actions">
+            <button class="btn btn-primary" on:click={handleSave}>Save</button>
+            <button class="btn btn-secondary" on:click={handleCancel}>Cancel</button>
+          </div>
+        {/if}
+      </div>
+    </div>
+
+    <div class="profile-content">
+      <section class="profile-details">
+        <h2>Account Details</h2>
+        <div class="details-grid">
+          <div class="detail-item">
+            <h3>Email</h3>
+            {#if !isEditing}
+              <p>{user.email}</p>
+            {:else}
+              <input type="email" bind:value={editedUser.email} class="input" />
+            {/if}
+          </div>
+          <div class="detail-item">
+            <h3>Member Since</h3>
+            <p>{user.joinDate}</p>
+          </div>
+          <div class="detail-item">
+            <h3>Bio</h3>
+            {#if !isEditing}
+              <p>{user.bio}</p>
+            {:else}
+              <textarea bind:value={editedUser.bio} class="input textarea"></textarea>
+            {/if}
+          </div>
+        </div>
+      </section>
+
+      <section class="activity-section">
+        <h2>Recent Activity</h2>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-icon">📝</div>
+            <div class="activity-content">
+              <p>Updated profile information</p>
+              <span class="activity-time">2 hours ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">🔔</div>
+            <div class="activity-content">
+              <p>Received notification from system</p>
+              <span class="activity-time">1 day ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">🔒</div>
+            <div class="activity-content">
+              <p>Changed password</p>
+              <span class="activity-time">3 days ago</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<style>
+  .profile-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 2rem;
+    flex-shrink: 0;
+  }
+
+  .avatar-icon {
+    font-size: 4rem;
+  }
+
+  .profile-info h1 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+  }
+
+  .profile-info .role {
+    margin: 0 0 1rem 0;
+    color: #666;
+  }
+
+  .profile-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .profile-details {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .profile-details h2 {
+    margin: 0 0 1.5rem 0;
+    color: #2c3e50;
+  }
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .detail-item h3 {
+    margin: 0 0 0.5rem 0;
+    color: #666;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+  }
+
+  .detail-item p {
+    margin: 0;
+    color: #2c3e50;
+  }
+
+  .input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: #3498db;
+  }
+
+  .textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .activity-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .activity-section h2 {
+    margin: 0 0 1.5rem 0;
+    color: #2c3e50;
+  }
+
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .activity-item:hover {
+    background: #e9ecef;
+  }
+
+  .activity-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+  }
+
+  .activity-content p {
+    margin: 0;
+    color: #2c3e50;
+  }
+
+  .activity-time {
+    margin-left: auto;
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: #3498db;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #2980b9;
+  }
+
+  .btn-secondary {
+    background: #95a5a6;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: #7f8c8d;
+  }
+
+  @media (max-width: 768px) {
+    .profile-page {
+      padding: 1rem;
+    }
+
+    .profile-header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .profile-avatar {
+      margin-right: 0;
+      margin-bottom: 1rem;
+    }
+
+    .details-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>`;
+  }
+
+  private generateNotFoundPage(): string {
+    const { hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import { bounce } from '../transitions/route-transitions.${hasTypeScript ? 'ts' : 'js'}';
+
+  let currentPage = $location.pathname;
+</script>
+
+<svelte:head>
+  <title>404 - Page Not Found</title>
+</svelte:head>
+
+<div class="not-found" in:bounce={{ duration: 500 }}>
+  <div class="not-found-container">
+    <div class="error-code">404</div>
+    <h1>Oops! Page not found</h1>
+    <p>The page you're looking for doesn't exist or has been moved.</p>
+    <div class="not-found-actions">
+      <Link to="/" class="btn btn-primary">
+        Go to Homepage
+      </Link>
+      <button class="btn btn-secondary" on:click={() => history.back()}>
+        Go Back
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .not-found {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+  }
+
+  .not-found-container {
+    text-align: center;
+    max-width: 600px;
+    padding: 3rem;
+  }
+
+  .error-code {
+    font-size: 8rem;
+    font-weight: 700;
+    color: #3498db;
+    line-height: 1;
+    margin-bottom: 1rem;
+    opacity: 0.1;
+    position: relative;
+    display: inline-block;
+  }
+
+  .error-code::after {
+    content: 'Page Not Found';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .not-found-container h1 {
+    font-size: 3rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  .not-found-container p {
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  .not-found-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: #3498db;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #2980b9;
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #3498db;
+    border: 2px solid #3498db;
+  }
+
+  .btn-secondary:hover {
+    background: #3498db;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .not-found-container {
+      padding: 2rem 1rem;
+    }
+
+    .error-code {
+      font-size: 6rem;
+    }
+
+    .error-code::after {
+      font-size: 1.5rem;
+    }
+
+    .not-found-container h1 {
+      font-size: 2rem;
+    }
+
+    .not-found-container p {
+      font-size: 1rem;
+    }
+  }
+</style>`;
+  }
+
+  private generateRouteTransitions(): string {
+    const { hasTypeScript } = this.context;
+    return `<script lang="${hasTypeScript ? 'ts' : 'ts'}">
+import {
+  fade,
+  fly,
+  slide,
+  scale,
+  blur,
+  fade as svelteFade,
+  crossfade
+} from 'svelte/transition';
+import { cubicOut } from 'svelte/easing';
+
+// Fade transition for smooth page transitions
+export function fadeTransition(node: HTMLElement, options: any = {}) {
+  return fade({
+    duration: options.duration || 300,
+    easing: options.easing || cubicOut
+  });
+}
+
+// Slide transition for directional page transitions
+export function slideTransition(node: HTMLElement, options: any = {}) {
+  const direction = options.direction || 'right'; // 'left', 'right', 'up', 'down'
+
+  return slide({
+    duration: options.duration || 400,
+    easing: options.easing || cubicOut,
+    x: direction === 'left' ? 100 : direction === 'right' ? -100 : 0,
+    y: direction === 'up' ? 100 : direction === 'down' ? -100 : 0
+  });
+}
+
+// Scale transition for zoom effects
+export function scaleTransition(node: HTMLElement, options: any = {}) {
+  return scale({
+    duration: options.duration || 300,
+    easing: options.easing || cubicOut,
+    start: options.start || 0.9,
+    opacity: options.opacity !== undefined ? options.opacity : 1
+  });
+}
+
+// Blur transition for focus effects
+export function blurTransition(node: HTMLElement, options: any = {}) {
+  return blur({
+    duration: options.duration || 300,
+    easing: options.easing || cubicOut,
+    amount: options.amount || 10
+  });
+}
+
+// Crossfade transition for dynamic content
+export function inTransition(node: HTMLElement, options: any = {}) {
+  return fade({
+    duration: options.duration || 300,
+    easing: options.easing || cubicOut
+  });
+}
+
+export function outTransition(node: HTMLElement, options: any = {}) {
+  return fade({
+    duration: options.duration || 300,
+    easing: options.easing || cubicOut
+  });
+}
+
+// Create fade group for multiple elements
+export function fadeGroup(items: any[], options: any = {}) {
+  const { fallback, ...rest } = options;
+  return fade({ ...rest, fallback });
+}
+
+// Custom transition builder
+export function createTransition(
+  type: 'fade' | 'slide' | 'scale' | 'blur' | 'fly',
+  options: any = {}
+) {
+  switch (type) {
+    case 'fade':
+      return fadeTransition(null, options);
+    case 'slide':
+      return slideTransition(null, options);
+    case 'scale':
+      return scaleTransition(null, options);
+    case 'blur':
+      return blurTransition(null, options);
+    case 'fly':
+      return fly({
+        duration: options.duration || 300,
+        easing: options.easing || cubicOut,
+        x: options.x || 0,
+        y: options.y || 0,
+        z: options.z || 0
+      });
+    default:
+      return fadeTransition(null, options);
+  }
+}
+
+// Spring-based transitions (requires svelte-motion or similar)
+// For now, we'll use cubic easing to simulate spring-like behavior
+export function springTransition(node: HTMLElement, options: any = {}) {
+  return {
+    duration: options.duration || 500,
+    easing: options.easing || cubicOut,
+    css: (t: number) => {
+      const stiffness = options.stiffness || 0.1;
+      const damping = options.damping || 0.8;
+
+      // Simulate spring behavior with CSS
+      const eased = cubicOut(t);
+
+      return \`
+        transform: scale(\${0.95 + 0.05 * eased});
+        opacity: \${eased};
+      \`;
+    }
+  };
+}
+
+// Directional transition helper for navigation
+export function getDirectionalTransition(direction: string, options: any = {}) {
+  switch (direction) {
+    case 'forward':
+      return slideTransition(null, {
+        direction: 'left',
+        duration: 400,
+        ...options
+      });
+    case 'backward':
+      return slideTransition(null, {
+        direction: 'right',
+        duration: 400,
+        ...options
+      });
+    case 'up':
+      return slideTransition(null, {
+        direction: 'up',
+        duration: 400,
+        ...options
+      });
+    case 'down':
+      return slideTransition(null, {
+        direction: 'down',
+        duration: 400,
+        ...options
+      });
+    default:
+      return fadeTransition(null, options);
+  }
+}
+
+// Transition utilities
+export const transitions = {
+  fade: fadeTransition,
+  slide: slideTransition,
+  scale: scaleTransition,
+  blur: blurTransition,
+  fly,
+  spring: springTransition,
+  create: createTransition,
+  directional: getDirectionalTransition,
+  group: fadeGroup
+};
+
+// Easing utilities
+export const easings = {
+  cubicOut,
+  elasticOut: (t: number) => {
+    if (t === 0) return 0;
+    if (t === 1) return 1;
+
+    const c4 = (2 * Math.PI) / 3;
+    return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+  },
+  backOut: (t: number) => {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+};
+
+// Transition presets for common use cases
+export const presets = {
+  page: fadeTransition,
+  modal: scaleTransition,
+  alert: blurTransition,
+  notification: (node: HTMLElement, options: any = {}) => slideTransition(node, {
+    direction: 'up',
+    duration: 300,
+    ...options
+  }),
+  card: fadeTransition,
+  list: (node: HTMLElement, options: any = {}) => fadeTransition(node, {
+    duration: 200,
+    ...options
+  })
+};
+
+// Bounce transition for special effects
+export function bounce(node: HTMLElement, options: any = {}) {
+  return {
+    duration: options.duration || 600,
+    easing: options.easing || cubicOut,
+    css: (t: number) => {
+      const eased = cubicOut(t);
+
+      return \`
+        transform: translateY(\${Math.sin(eased * Math.PI * 2) * 20}px);
+        opacity: \${eased};
+      \`;
+    }
+  };
+}
+
+// Spin transition for rotating elements
+export function spin(node: HTMLElement, options: any = {}) {
+  return {
+    duration: options.duration || 400,
+    easing: options.easing || cubicOut,
+    css: (t: number) => {
+      const eased = cubicOut(t);
+
+      return \`
+        transform: rotate(\${eased * 360}deg);
+        opacity: \${eased};
+      \`;
+    }
+  };
+}
+</script>`;
+  }
+
   private generateTimeDisplayComponent(): string {
     return `<script>
   import { time, isMobile } from '../stores/readable';
@@ -1772,301 +4083,295 @@ export function validationStore(initialValues: Record<string, any>) {
   }
 
   private generateAppComponent(): string {
-    const { normalizedName, name, hasTypeScript } = this.context;
+    const { normalizedName, name, hasTypeScript, route } = this.context;
     const scriptLang = hasTypeScript ? ' lang="ts"' : '';
 
     return `<script${scriptLang}>
-  import Counter from './components/Counter.svelte';
-  import TodoList from './components/TodoList.svelte';
-  import ThemeToggle from './components/ThemeToggle.svelte';
-  import TimeDisplay from './components/TimeDisplay.svelte';
+  import { Router, Link } from 'svelte-navigator';
+  import { fade } from 'svelte/transition';
 
-  import { user, login, logout } from './stores/writable';
+  // Import layouts
+  import MainLayout from './layouts/MainLayout.svelte';
+  import DashboardLayout from './layouts/DashboardLayout.svelte';
+  import AuthLayout from './layouts/AuthLayout.svelte';
+  import EmptyLayout from './layouts/EmptyLayout.svelte';
 
-  let showDemo = true;
-  $: isLoggedIn = $user.isAuthenticated;
+  // Import pages
+  import HomePage from './pages/Home.svelte';
+  import AboutPage from './pages/About.svelte';
+  import DashboardPage from './pages/Dashboard.svelte';
+  import ProfilePage from './pages/Profile.svelte';
+  import NotFoundPage from './pages/NotFound.svelte';
 
-  function handleLogin() {
-    login('Demo User', 'demo@example.com');
+  // Import navigation components
+  import Navbar from './components/Navbar.svelte';
+  import Sidebar from './components/Sidebar.svelte';
+
+  // Import transitions
+  import { transitions, presets } from './transitions/route-transitions.${hasTypeScript ? 'ts' : 'js'}';
+
+  // Route definitions
+  const routes = {
+    '/': HomePage,
+    '/about': AboutPage,
+    '/dashboard': DashboardPage,
+    '/profile': ProfilePage
+  };
+
+  // Get the current layout based on route
+  function getLayout(component) {
+    if (component === NotFoundPage) {
+      return EmptyLayout;
+    }
+
+    const path = $location.pathname;
+
+    if (path.startsWith('/dashboard')) {
+      return DashboardLayout;
+    }
+
+    if (path.startsWith('/auth') || path.startsWith('/login') || path.startsWith('/register')) {
+      return AuthLayout;
+    }
+
+    return MainLayout;
   }
 
-  function handleLogout() {
-    logout();
+  // Get page title based on route
+  function getPageTitle() {
+    const path = $location.pathname;
+
+    switch (path) {
+      case '/':
+        return 'Home';
+      case '/about':
+        return 'About';
+      case '/dashboard':
+        return 'Dashboard';
+      case '/profile':
+        return 'Profile';
+      default:
+        return 'Page Not Found';
+    }
   }
+
+  // Track navigation direction for transitions
+  let lastPath = $location.pathname;
+  $: navigationDirection = $location.pathname > lastPath ? 'forward' : 'backward';
+  $: lastPath = $location.pathname;
 </script>
 
-<div class="${normalizedName}-app">
-  <header class="${normalizedName}-header">
-    <div class="header-content">
-      <h1>${name}</h1>
-      <p>A Svelte microfrontend with reactive state management</p>
+<svelte:head>
+  <title>${name} - {getPageTitle()}</title>
+</svelte:head>
 
-      {#if isLoggedIn}
-        <div class="auth-info">
-          <span>👤 Welcome, {$user.username}!</span>
-          <button on:click={handleLogout} class="btn btn-secondary btn-sm">Logout</button>
-        </div>
-      {:else}
-        <button on:click={handleLogin} class="btn btn-primary btn-sm">Demo Login</button>
-      {/if}
-    </div>
-  </header>
+<Router>
+  <div class="${normalizedName}-app" class:dark-theme>
 
-  <main class="${normalizedName}-main">
-    {#if showDemo}
-      <section class="${normalizedName}-intro">
-        <h2>Store Examples</h2>
-        <p>This template demonstrates various Svelte 5 store patterns for reactive state management.</p>
-
-        <div class="demo-grid">
-          <div class="demo-card">
-            <h3>⏰ Time Display</h3>
-            <p>Readable store that updates every second</p>
-          </div>
-          <div class="demo-card">
-            <h3>🎯 Counter</h3>
-            <p>Writable store with basic state management</p>
-          </div>
-          <div class="demo-card">
-            <h3>📝 Todo List</h3>
-            <p>CRUD operations with derived stores</p>
-          </div>
-          <div class="demo-card">
-            <h3>🎨 Theme Toggle</h3>
-            <p>Custom persistent store example</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="${normalizedName}-demos">
-        <div class="demo-section">
-          <h3>Time & Device Detection</h3>
-          <TimeDisplay />
-        </div>
-
-        <div class="demo-section">
-          <h3>Interactive Counter</h3>
-          <Counter />
-        </div>
-
-        <div class="demo-section">
-          <h3>Todo Application</h3>
-          <TodoList />
-        </div>
-
-        <div class="demo-section">
-          <h3>Theme Persistence</h3>
-          <ThemeToggle />
-        </div>
-      </section>
-    {:else}
-      <section class="${normalizedName}-placeholder">
-        <h2>Welcome to ${name}</h2>
-        <p>The demo components are hidden. Toggle them using the button above.</p>
-      </section>
+    {/* Main layout with navigation */}
+    {#if $location.pathname !== '/404'}
+      <Navbar />
     {/if}
-  </main>
 
-  <footer class="${normalizedName}-footer">
-    <button
-      on:click={() => showDemo = !showDemo}
-      class="btn btn-outline"
+    {/* Main content area with transitions */}
+    <main
+      class="${normalizedName}-main"
+      class:dashboard={$location.pathname.startsWith('/dashboard')}
+      transition:fade={{ duration: 300 }}
     >
-      {#if showDemo}
-        Hide Demos
+
+      {#if $location.pathname === '/404'}
+        <NotFoundPage />
       {:else}
-        Show Demos
+        {#each Object.entries(routes) as [path, component]}
+          {#if $location.pathname === path || $location.pathname.startsWith(path + '/')}
+            <svelte:component
+              this={getLayout(component)}
+              key={path}
+              outlet={component}
+              transition:presets.page({ duration: 300 })
+            >
+              <svelte:component this={component} />
+            </svelte:component>
+          {/if}
+        {/each}
       {/if}
-    </button>
-    <p class="footer-text">
-      Built with Svelte, Vite, and Re-Shell
-    </p>
-  </footer>
-</div>
+
+    </main>
+
+    {/* Footer for main routes */}
+    {#if !$location.pathname.startsWith('/dashboard') && $location.pathname !== '/404'}
+      <footer class="${normalizedName}-footer">
+        <div class="footer-content">
+          <p>&copy; 2024 ${name}. Built with Svelte and Re-Shell.</p>
+          <nav class="footer-nav">
+            <Link to="/" class="footer-link">Home</Link>
+            <Link to="/about" class="footer-link">About</Link>
+            {#if $user?.isAuthenticated}
+              <Link to="/dashboard" class="footer-link">Dashboard</Link>
+              <Link to="/profile" class="footer-link">Profile</Link>
+            {/if}
+          </nav>
+        </div>
+      </footer>
+    {/if}
+
+  </div>
+</Router>
 
 <style>
   .${normalizedName}-app {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: #f8fafc;
+    color: #1e293b;
   }
 
-  .${normalizedName}-header {
-    margin-bottom: 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 8px;
-    padding: 2rem;
-  }
-
-  .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .${normalizedName}-header h1 {
-    margin: 0;
-    font-size: 2.5rem;
-    font-weight: 600;
-  }
-
-  .${normalizedName}-header p {
-    margin: 0;
-    font-size: 1.1rem;
-    opacity: 0.9;
-  }
-
-  .auth-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  .${normalizedName}-app.dark-theme {
+    background-color: #0f172a;
+    color: #f1f5f9;
   }
 
   .${normalizedName}-main {
     flex: 1;
+    width: 100%;
+    position: relative;
   }
 
-  .${normalizedName}-intro {
-    text-align: center;
-    margin-bottom: 3rem;
+  .${normalizedName}-main.dashboard {
+    padding: 0;
   }
 
-  .${normalizedName}-intro h2 {
-    color: #333;
-    margin-bottom: 1rem;
-    font-size: 2rem;
-  }
-
-  .${normalizedName}-intro > p {
-    color: #666;
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
-  }
-
-  .demo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-  }
-
-  .demo-card {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .demo-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .demo-card h3 {
-    margin: 0 0 0.5rem 0;
-    color: #495057;
-    font-size: 1.2rem;
-  }
-
-  .demo-card p {
-    margin: 0;
-    color: #6c757d;
-    font-size: 0.95rem;
-  }
-
-  .${normalizedName}-demos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
-  }
-
-  .demo-section {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .demo-section h3 {
-    color: #333;
-    margin-bottom: 1.5rem;
-    font-size: 1.3rem;
-    text-align: center;
-  }
-
-  .${normalizedName}-placeholder {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .${normalizedName}-placeholder h2 {
-    color: #333;
-    margin-bottom: 1rem;
-  }
-
-  .${normalizedName}-placeholder p {
-    color: #666;
-  }
-
-  .${normalizedName}-footer {
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid #e9ecef;
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
+    border-top: 1px solid #e2e8f0;
   }
 
-  .footer-text {
-    margin: 0;
-    color: #6c757d;
-    font-size: 0.9rem;
+  .${normalizedName}-app.dark-theme .footer-content {
+    border-top-color: #334155;
   }
 
-  .btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.2s ease;
+  .footer-nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
   }
 
-  .btn-primary {
-    background: #3498db;
-    color: white;
+  .footer-link {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
   }
 
-  .btn-primary:hover {
-    background: #2980b9;
+  .${normalizedName}-app.dark-theme .footer-link {
+    color: #94a3b8;
   }
 
-  .btn-secondary {
-    background: #95a5a6;
-    color: white;
+  .footer-link:hover {
+    color: #3b82f6;
   }
 
-  .btn-secondary:hover {
-    background: #7f8c8d;
+  .${normalizedName}-app.dark-theme .footer-link:hover {
+    color: #60a5fa;
   }
+
+  @media (max-width: 768px) {
+    .footer-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .footer-nav {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+</style>`;
+  }
+
+  private generateMainLayout(): string {
+    const { normalizedName, name, hasTypeScript } = this.context;
+    const scriptLang = hasTypeScript ? ' lang="ts"' : '';
+
+    return `<script${scriptLang}>
+  import { Router, Link } from 'svelte-navigator';
+  import { fade } from 'svelte/transition';
+
+  // Import other layouts if needed
+  import Navbar from '../components/Navbar.svelte';
+  import Breadcrumbs from '../components/Breadcrumbs.svelte';
+
+  let showBreadcrumb = true;
+  let pageTitle = 'Home';
+</script>
+
+<svelte:head>
+  <title>${name} - {pageTitle}</title>
+</svelte:head>
+
+<div class="${normalizedName}-main-layout">
+  {/* Navigation Header */}
+  <header class="${normalizedName}-main-header">
+    <div class="header-container">
+      <Navbar />
+
+      {#if showBreadcrumb}
+        <Breadcrumbs />
+      {/if}
+    </div>
+  </header>
+
+  {/* Main Content */}
+  <main class="${normalizedName}-main-content">
+    <slot />
+  </main>
+</div>
+
+<style>
+  .${normalizedName}-main-layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8fafc;
+  }
+
+  .${normalizedName}-main-header {
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .${normalizedName}-main-content {
+    flex: 1;
+    width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .${normalizedName}-main-layout {
+      padding-top: 60px; /* Account for mobile navbar */
+    }
+  }
+</style>`;
+  }
+
+  private generateTimeDisplayComponent(): string {
 
   .btn-outline {
     background: white;
@@ -2135,6 +4440,71 @@ A Svelte microfrontend template with Vite, featuring comprehensive reactive stat
 - 🐳 **Docker Support** - Containerized with multi-stage builds
 - 🌐 **Microfrontend Ready** - Integrated with Re-Shell shell
 - 🔄 **Reactive State Management** - Complete Svelte 5 store implementation
+- 🛣️ **Client-Side Routing** - Full routing with svelte-navigator
+- 🎨 **Layout System** - Multiple layout components for different page types
+- ✨ **Page Transitions** - Smooth animations between route changes
+
+## Routing & Navigation
+
+This template includes a complete client-side routing system built with [svelte-navigator](https://github.com/rixo/svelte-navigator), providing a seamless single-page application experience.
+
+### Route Structure
+
+The application uses the following route structure:
+
+\`\`\`
+/
+/about
+/dashboard
+/profile
+/404 (fallback)
+\`\`\`
+
+### Layout System
+
+The template includes multiple layout components for different page types:
+
+1. **MainLayout** - The primary layout with navigation and breadcrumbs
+2. **DashboardLayout** - Specialized layout for dashboard pages with sidebar
+3. **AuthLayout** - Clean layout for authentication pages
+4. **EmptyLayout** - Minimal layout for full-page experiences
+
+### Page Components
+
+- **Home** (`/`) - Landing page with hero section and features
+- **About** (`/about`) - Information about the application
+- **Dashboard** (`/dashboard`) - Dashboard with statistics and activity feed
+- **Profile** (`/profile`) - User profile with editing capabilities
+- **Not Found** (`/404`) - Custom 404 error page
+
+### Navigation Components
+
+- **Navbar** - Main navigation bar with responsive design
+- **Sidebar** - Dashboard sidebar with menu items
+- **Breadcrumbs** - Navigation breadcrumbs for context
+
+### Page Transitions
+
+Smooth page transitions are built-in using Svelte's transition system:
+
+- **Fade** - Smooth fade in/out between pages
+- **Slide** - Directional slide transitions
+- **Scale** - Zoom effects for emphasis
+- **Bounce** - Fun bounce animations for special effects
+
+### Using Navigation
+
+\`\`\`javascript
+// Navigation in components
+import { Router, Link } from 'svelte-navigator';
+
+// Linking to routes
+<Link to="/about">About Page</Link>
+
+// Programmatically navigate
+import { navigate } from 'svelte-navigator';
+navigate('/dashboard');
+\`\`\`
 
 ## Store Examples
 
@@ -2376,12 +4746,28 @@ ${name}.unmount();
 \`\`\`
 ${name}/
 ├── src/
-│   ├── components/     # Svelte components demonstrating store usage
-│   │   ├── Counter.svelte
-│   │   ├── TodoList.svelte
-│   │   ├── ThemeToggle.svelte
-│   │   └── TimeDisplay.svelte
-│   ├── stores/        # Svelte stores implementation
+│   ├── components/     # UI components
+│   │   ├── Navbar.svelte           # Main navigation bar
+│   │   ├── Sidebar.svelte          # Dashboard sidebar
+│   │   ├── Breadcrumbs.svelte      # Navigation breadcrumbs
+│   │   ├── Counter.svelte          # Counter example
+│   │   ├── TodoList.svelte         # Todo application
+│   │   ├── ThemeToggle.svelte      # Theme switcher
+│   │   └── TimeDisplay.svelte      # Clock component
+│   ├── layouts/       # Page layouts
+│   │   ├── MainLayout.svelte       # Primary layout
+│   │   ├── DashboardLayout.svelte  # Dashboard layout
+│   │   ├── AuthLayout.svelte       # Authentication layout
+│   │   └── EmptyLayout.svelte      # Minimal layout
+│   ├── pages/         # Page components
+│   │   ├── Home.svelte             # Home page
+│   │   ├── About.svelte            # About page
+│   │   ├── Dashboard.svelte       # Dashboard page
+│   │   ├── Profile.svelte          # Profile page
+│   │   └── NotFound.svelte         # 404 error page
+│   ├── transitions/   # Transition utilities
+│   │   └── route-transitions.${hasTypeScript ? 'ts' : 'js'}  # Page transitions
+│   ├── stores/        # Svelte stores
 │   │   ├── writable.${hasTypeScript ? 'ts' : 'js'}    # Writable stores
 │   │   ├── readable.${hasTypeScript ? 'ts' : 'js'}    # Readable stores
 │   │   ├── derived.${hasTypeScript ? 'ts' : 'js'}     # Derived stores
