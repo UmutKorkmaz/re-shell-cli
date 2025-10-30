@@ -4914,12 +4914,12 @@ When deploying with SSR:
 
 **SSR vs Browser APIs**
 - Avoid using browser-only APIs directly in components
-- Use Angular's `isPlatformServer()` to check platform context
-- Move browser-specific code to `ngAfterViewInit()` or use dependency injection
+- Use Angular's \`isPlatformServer()\` to check platform context
+- Move browser-specific code to \`ngAfterViewInit()\` or use dependency injection
 
 **Styling Considerations**
 - CSS is scoped to the server context
-- Use global styles in `styles.scss` for SSR compatibility
+- Use global styles in \`styles.scss\` for SSR compatibility
 - Angular Material styles work seamlessly with SSR
 
 **Performance Optimization**
@@ -4967,21 +4967,21 @@ A Progressive Web App is a web application that uses modern web capabilities to 
 ### Key PWA Features
 
 #### 1. Service Worker
-The application includes a service worker (`ngsw-worker.js`) that:
+The application includes a service worker (\`ngsw-worker.js\`) that:
 - Caches application assets for offline use
 - Manages background sync
 - Handles push notifications
 - Provides update management
 
 #### 2. App Shell
-The `AppShellComponent` provides:
+The \`AppShellComponent\` provides:
 - Loading states with spinner
 - Skeleton screens during content loading
 - Offline detection and notifications
 - Retry functionality for failed requests
 
 #### 3. Offline Support
-The `OfflineService` monitors network connectivity and:
+The \`OfflineService\` monitors network connectivity and:
 - Tracks online/offline status
 - Queues requests when offline
 - Shows offline notifications
@@ -4989,9 +4989,9 @@ The `OfflineService` monitors network connectivity and:
 
 ### Service Worker Configuration
 
-The service worker is configured in `src/ngsw-config.json`:
+The service worker is configured in \`src/ngsw-config.json\`:
 
-```json
+\\\`\\\`\\\`json
 {
   "index": "/index.html",
   "assetGroups": [
@@ -5019,11 +5019,11 @@ The service worker is configured in `src/ngsw-config.json`:
     }
   ]
 }
-```
+\\\`\\\`\\\`
 
 ### PWA Manifest
 
-The `manifest.webmanifest` file defines the PWA metadata:
+The \`manifest.webmanifest\` file defines the PWA metadata:
 - Application name and icons
 - Start URL and display mode
 - Theme colors
@@ -5038,7 +5038,7 @@ The application automatically detects offline status and:
 3. Queues requests for later execution
 4. Notifies users when returning online
 
-```typescript
+\\\`\\\`\\\`typescript
 // Usage in components
 constructor(private offlineService: OfflineService) {}
 
@@ -5053,7 +5053,7 @@ this.offlineService.requestWithRetry('/api/data')
   .catch(error => {
     // Handle failure
   });
-```
+\\\`\\\`\\\`
 
 ### Installation
 
@@ -5074,13 +5074,13 @@ The PWA automatically:
 
 To test PWA quality, run Lighthouse:
 
-```bash
+\\\`\\\`\\\`bash
 # Install Lighthouse CLI
 npm install -g lighthouse
 
 # Run audit
 lighthouse http://localhost:4200 --output=html --output-path=./lighthouse-report.html
-```
+\\\`\\\`\\\`
 
 ### Deployment Considerations
 
@@ -6350,7 +6350,7 @@ export class OfflineService {
 }
 `;
 
-  private generateCustomValidators() {
+  protected generateCustomValidators(): string {
     return `import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { map, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
@@ -6550,6 +6550,7 @@ export function minLengthValidator(min: number, message?: string): ValidatorFn {
           }
         };
   };
+  \`
 }
 
 /**
@@ -9066,9 +9067,8 @@ export class FormExamplesModule { }
   /**
    * Generate English translation file
    */
-  private generateTranslationEn() {
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  protected generateTranslationEn(): string {
+    return `<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="ng2.template" source-language="en-US" target-language="en-US" datatype="plaintext">
     <body>
       <trans-unit id="app-title" resname="app.title">
