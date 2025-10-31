@@ -56,11 +56,6 @@ export class VueCliTemplate extends BaseTemplate {
     });
 
     files.push({
-      path: 'src/i18n/index.js',
-      content: this.generateI18nSetup()
-    });
-
-    files.push({
       path: 'src/views/Home.vue',
       content: this.generateHomeView()
     });
@@ -126,11 +121,6 @@ export class VueCliTemplate extends BaseTemplate {
     files.push({
       path: 'src/components/HelloWorld.vue',
       content: this.generateHelloWorldComponent()
-    });
-
-    files.push({
-      path: 'src/components/LanguageSwitcher.vue',
-      content: this.generateLanguageSwitcher()
     });
 
     // Async component for Suspense
@@ -280,7 +270,6 @@ export class VueCliTemplate extends BaseTemplate {
         '@vueuse/core': '^10.7.0',
         'vee-validate': '^4.12.0',
         'yup': '^1.4.0',
-        'vue-i18n': '^9.9.0',
         'register-service-worker': '^1.7.2'
       },
       devDependencies: {
@@ -460,34 +449,14 @@ import type { App } from 'vue'` : `import { createApp } from 'vue'`;
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import i18n from './i18n'
 import './registerServiceWorker'
 import './assets/css/main.css'
-
-// Import and register custom directives
-import { registerDirectives } from './directives'
-// Import and register custom plugins
-import { registerPlugins } from './plugins'
 
 const app: App = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-app.use(i18n)
-
-// Register all custom directives
-registerDirectives(app)
-
-// Register all custom plugins
-const { toast, modal, loading, storage, eventBus } = registerPlugins(app)
-
-// Store plugins globally for easy access
-app.config.globalProperties.$toast = toast
-app.config.globalProperties.$modal = modal
-app.config.globalProperties.$loading = loading
-app.config.globalProperties.$storage = storage
-app.config.globalProperties.$eventBus = eventBus
 
 app.mount('#app')
 `;
@@ -498,39 +467,22 @@ app.mount('#app')
   <div id="app">
     <div class="header">
       <nav>
-        <router-link to="/">{{ $t('nav.home') }}</router-link> |
-        <router-link to="/about">{{ $t('nav.about') }}</router-link>
+        <router-link to="/">Home</router-link> |
+        <router-link to="/about">About</router-link>
       </nav>
-      <LanguageSwitcher />
     </div>
     <main class="main">
       <router-view />
     </main>
     <div class="counter-demo">
-      <h2>{{ $t('common.loading') }} (Pinia): {{ counterStore.count }}</h2>
+      <h2>Counter (Pinia): {{ counterStore.count }}</h2>
       <button @click="counterStore.increment">+</button>
       <button @click="counterStore.decrement">-</button>
       <p v-if="message" class="message">{{ message }}</p>
     </div>
 
-    <!-- Demo Navigation -->
-    <div class="demo-nav">
-      <h3>Feature Demos</h3>
-      <nav class="demo-links">
-        <router-link to="/dashboard/directives" class="demo-link">
-          🎯 Custom Directives Demo
-        </router-link>
-        <router-link to="/dashboard/plugins" class="demo-link">
-          🔌 Custom Plugins Demo
-        </router-link>
-      </nav>
-      <p class="demo-note">
-        Explore the power of Vue 3 custom directives and plugins!
-      </p>
-    </div>
-
     <!-- Teleport Example: Modal -->
-    <button @click="showModal = true">{{ $t('common.submit') }} Modal (Teleport)</button>
+    <button @click="showModal = true">Show Modal (Teleport)</button>
 
     <!-- Teleport to body -->
     <Teleport to="body">
@@ -538,7 +490,7 @@ app.mount('#app')
         <div class="modal-content" @click.stop>
           <h2>Teleport Modal</h2>
           <p>This modal is rendered at the body level using Vue 3 Teleport</p>
-          <button @click="showModal = false">{{ $t('common.cancel') }}</button>
+          <button @click="showModal = false">Close</button>
         </div>
       </div>
     </Teleport>
@@ -549,7 +501,7 @@ app.mount('#app')
         <AsyncComponent />
       </template>
       <template #fallback>
-        <div class="loading">{{ $t('common.loading') }} async component...</div>
+        <div class="loading">Loading async component...</div>
       </template>
     </Suspense>
   </div>
@@ -558,7 +510,6 @@ app.mount('#app')
 <script>
 import { ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { useCounterStore } from '@/stores/counter'
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 // Async component for Suspense
 const AsyncComponent = defineAsyncComponent(() =>
@@ -568,8 +519,7 @@ const AsyncComponent = defineAsyncComponent(() =>
 export default {
   name: 'App',
   components: {
-    AsyncComponent,
-    LanguageSwitcher
+    AsyncComponent
   },
   setup() {
     const counterStore = useCounterStore()
@@ -612,9 +562,6 @@ export default {
   padding: 1rem 2rem;
   background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .header nav a {
@@ -667,48 +614,6 @@ export default {
   color: #42b983;
   font-size: 1rem;
   margin-top: 1rem;
-}
-
-/* Demo Navigation Styles */
-.demo-nav {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 0.5rem;
-  color: white;
-}
-
-.demo-nav h3 {
-  margin: 0 0 1rem 0;
-  font-size: 1.2rem;
-}
-
-.demo-links {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.demo-link {
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  text-decoration: none;
-  border-radius: 0.25rem;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.demo-link:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateX(5px);
-}
-
-.demo-note {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.9;
 }
 
 /* Teleport Modal Styles */
@@ -785,24 +690,6 @@ const routes = [
         component: () => import('../views/dashboard/Home.vue'),
         meta: {
           title: 'Dashboard Home',
-          requiresAuth: true
-        }
-      },
-      {
-        path: 'directives',
-        name: 'directives-demo',
-        component: () => import('../components/DirectivesDemo.vue'),
-        meta: {
-          title: 'Directives Demo',
-          requiresAuth: true
-        }
-      },
-      {
-        path: 'plugins',
-        name: 'plugins-demo',
-        component: () => import('../components/PluginsDemo.vue'),
-        meta: {
-          title: 'Plugins Demo',
           requiresAuth: true
         }
       },
@@ -969,10 +856,9 @@ export default router
     return `<template>
   <div class="home">
     <div class="hero">
-      <h1>{{ $t('home.welcome') }}</h1>
+      <h1>Welcome to Your Vue.js App</h1>
       <p class="subtitle">
-        {{ $t('home.description') }} {{ $t('home.docs') }},
-        {{ $t('home.install') }}, and {{ $t('home.plugins') }}
+        Built with Vue CLI 3, PWA support, and legacy browser compatibility
       </p>
     </div>
 
@@ -991,7 +877,7 @@ export default router
       </div>
     </div>
 
-    <HelloWorld :msg="$t('home.welcome')" />
+    <HelloWorld msg="Welcome to Your Vue.js App" />
   </div>
 </template>
 
@@ -1060,22 +946,22 @@ export default {
   private generateAboutView() {
     return `<template>
   <div class="about">
-    <h1>{{ $t('about.title') }}</h1>
+    <h1>About This Application</h1>
 
     <p>
-      {{ $t('about.description') }}
+      This is a Vue CLI 3 application with Progressive Web App (PWA) support
+      and legacy browser compatibility.
     </p>
 
     <h2>Features</h2>
     <ul>
       <li>Vue 3 with Composition API</li>
       <li>Vue Router for navigation</li>
-      <li>Pinia for state management</li>
+      <li>Vuex for state management</li>
       <li>PWA with service worker</li>
-      <li>Internationalization support</li>
       <li>Legacy browser support via Babel</li>
       <li>ESLint and Prettier for code quality</li>
-      <li>Unit testing with Vitest</li>
+      <li>Unit testing with Jest</li>
     </ul>
 
     <h2>PWA Features</h2>
@@ -1085,9 +971,9 @@ export default {
     </p>
 
     <div class="counter-demo">
-      <h2>{{ $t('common.loading') }} Counter</h2>
+      <h2>Interactive Counter</h2>
       <p>{{ count }}</p>
-      <button @click="count++">{{ $t('common.submit') }}</button>
+      <button @click="count++">Increment</button>
     </div>
   </div>
 </template>
@@ -2112,196 +1998,6 @@ export default createStore({
 `;
   }
 
-  protected generateI18nSetup() {
-    return `import { createI18n } from 'vue-i18n';
-
-const messages = {
-  en: {
-    nav: {
-      home: 'Home',
-      about: 'About',
-      dashboard: 'Dashboard',
-      admin: 'Admin',
-      login: 'Login',
-    },
-    home: {
-      welcome: 'Welcome to Your Vue.js App',
-      description: 'For a guide and recipes on how to configure / customize this project, check out the',
-      docs: 'Vue documentation',
-      install: 'CLI Installation',
-      plugins: 'Plugins/Guides',
-    },
-    about: {
-      title: 'About This App',
-      description: 'This is a Vue.js application built with Vue CLI.',
-    },
-    common: {
-      loading: 'Loading...',
-      error: 'An error occurred',
-      submit: 'Submit',
-      cancel: 'Cancel',
-      save: 'Save',
-      delete: 'Delete',
-    },
-  },
-  es: {
-    nav: {
-      home: 'Inicio',
-      about: 'Acerca de',
-      dashboard: 'Panel',
-      admin: 'Admin',
-      login: 'Iniciar sesión',
-    },
-    home: {
-      welcome: 'Bienvenido a tu aplicación Vue.js',
-      description: 'Para obtener una guía y recetas sobre cómo configurar / personalizar este proyecto, consulte la',
-      docs: 'documentación de Vue',
-      install: 'Instalación CLI',
-      plugins: 'Complementos/Guías',
-    },
-    about: {
-      title: 'Acerca de esta aplicación',
-      description: 'Esta es una aplicación Vue.js construida con Vue CLI.',
-    },
-    common: {
-      loading: 'Cargando...',
-      error: 'Ocurrió un error',
-      submit: 'Enviar',
-      cancel: 'Cancelar',
-      save: 'Guardar',
-      delete: 'Eliminar',
-    },
-  },
-  fr: {
-    nav: {
-      home: 'Accueil',
-      about: 'À propos',
-      dashboard: 'Tableau de bord',
-      admin: 'Admin',
-      login: 'Connexion',
-    },
-    home: {
-      welcome: 'Bienvenue dans votre application Vue.js',
-      description: 'Pour un guide et des recettes sur la façon de configurer / personnaliser ce projet, consultez la',
-      docs: 'documentation Vue',
-      install: 'Installation CLI',
-      plugins: 'Plugins/Guides',
-    },
-    about: {
-      title: 'À propos de cette application',
-      description: 'Ceci est une application Vue.js construite avec Vue CLI.',
-    },
-    common: {
-      loading: 'Chargement...',
-      error: 'Une erreur s\'est produite',
-      submit: 'Soumettre',
-      cancel: 'Annuler',
-      save: 'Enregistrer',
-      delete: 'Supprimer',
-    },
-  },
-  zh: {
-    nav: {
-      home: '首页',
-      about: '关于',
-      dashboard: '仪表板',
-      admin: '管理员',
-      login: '登录',
-    },
-    home: {
-      welcome: '欢迎使用您的 Vue.js 应用',
-      description: '有关如何配置/自定义此项目的指南和配方,请查看',
-      docs: 'Vue 文档',
-      install: 'CLI 安装',
-      plugins: '插件/指南',
-    },
-    about: {
-      title: '关于此应用',
-      description: '这是一个使用 Vue CLI 构建的 Vue.js 应用程序。',
-    },
-    common: {
-      loading: '加载中...',
-      error: '发生错误',
-      submit: '提交',
-      cancel: '取消',
-      save: '保存',
-      delete: '删除',
-    },
-  },
-};
-
-const i18n = createI18n({
-  legacy: false, // Use Composition API mode
-  locale: 'en', // Set default locale
-  fallbackLocale: 'en', // Set fallback locale
-  messages,
-  globalInjection: true, // Allow global use of $t()
-});
-
-export default i18n;
-`;
-  }
-
-  protected generateLanguageSwitcher() {
-    return `<template>
-  <div class="language-switcher">
-    <select v-model="currentLocale" @change="changeLocale" class="locale-select">
-      <option value="en">🇺🇸 English</option>
-      <option value="es">🇪🇸 Español</option>
-      <option value="fr">🇫🇷 Français</option>
-      <option value="zh">🇨🇳 中文</option>
-    </select>
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-
-const { locale } = useI18n();
-const currentLocale = ref(locale.value);
-
-const changeLocale = () => {
-  locale.value = currentLocale.value;
-  localStorage.setItem('user-locale', currentLocale.value);
-};
-
-// Load saved locale from localStorage
-const savedLocale = localStorage.getItem('user-locale');
-if (savedLocale) {
-  currentLocale.value = savedLocale;
-  locale.value = savedLocale;
-}
-</script>
-
-<style scoped>
-.language-switcher {
-  display: inline-block;
-}
-
-.locale-select {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: white;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.locale-select:hover {
-  border-color: #42b983;
-}
-
-.locale-select:focus {
-  outline: none;
-  border-color: #42b983;
-  box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
-}
-</style>
-`;
-  }
-
   private generateStoresIndex() {
     return `// Pinia stores index
 // Export all stores for easy importing
@@ -2868,7 +2564,6 @@ ${description || 'A Vue CLI application with PWA support and advanced Vue 3 ecos
 - 📱 Progressive Web App (PWA) support
 - 🌐 Legacy browser support via Babel
 - 🛣️ Vue Router for navigation with advanced features
-- 🌍 Internationalization (i18n) with Vue i18n
 
 ### State Management
 - 📦 Pinia for state management (replaces Vuex)
@@ -2993,110 +2688,6 @@ const isDark = usePreferredDark()
 
 // Window size
 const { width, height } = useWindowSize()
-\`\`\`
-
-## Internationalization with Vue i18n
-
-This template includes Vue i18n for multi-language support out of the box:
-
-### Features
-- 🌍 Support for English, Spanish, French, and Chinese
-- 🔄 Locale switching with persistence
-- 📦 Built-in translation keys for common UI elements
-- 🎯 Nested translation structure for organization
-- 💾 Local storage integration for user preference
-
-### Using Translations
-
-In Vue components, use the \`$t\` function:
-
-\`\`\`vue
-<template>
-  <div>
-    <h1>{{ $t('home.welcome') }}</h1>
-    <p>{{ $t('common.loading') }}</p>
-    <button>{{ $t('common.submit') }}</button>
-  </div>
-</template>
-\`\`\`
-
-### Translation Structure
-
-Translations are organized by category:
-
-\`\`\`
-messages = {
-  en: {
-    nav: { home: 'Home', about: 'About' },
-    home: {
-      welcome: 'Welcome to Your Vue.js App',
-      description: 'Built with Vue CLI...'
-    },
-    about: {
-      title: 'About This App',
-      description: 'This is a Vue.js application...'
-    },
-    common: {
-      loading: 'Loading...',
-      submit: 'Submit',
-      cancel: 'Cancel',
-      save: 'Save',
-      delete: 'Delete'
-    }
-  }
-}
-\`\`\`
-
-### Adding New Languages
-
-1. Add new translations to the \`messages\` object in \`src/i18n/index.js\`
-2. Add the new language option to the LanguageSwitcher component
-3. Update the \`locale\` in the i18n configuration if needed
-
-### Language Switcher
-
-The \`LanguageSwitcher.vue\` component provides a dropdown to change languages:
-
-\`\`\`vue
-<template>
-  <div class="language-switcher">
-    <select v-model="currentLocale" @change="changeLocale" class="locale-select">
-      <option value="en">🇺🇸 English</option>
-      <option value="es">🇪🇸 Español</option>
-      <option value="fr">🇫🇷 Français</option>
-      <option value="zh">🇨🇳 中文</option>
-    </select>
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-
-const { locale } = useI18n();
-const currentLocale = ref(locale.value);
-
-const changeLocale = () => {
-  locale.value = currentLocale.value;
-  localStorage.setItem('user-locale', currentLocale.value);
-};
-</script>
-\`\`\`
-
-### Programmatic Locale Change
-
-You can also change the locale programmatically:
-
-\`\`\`javascript
-import { useI18n } from 'vue-i18n';
-
-const { locale } = useI18n();
-
-// Change to Spanish
-locale.value = 'es';
-
-// Get current locale
-console.log(locale.value);
 \`\`\`
 
 ## Form Validation with VeeValidate
@@ -3404,13 +2995,7 @@ src/
 ├── components/      # Reusable Vue components
 │   ├── AsyncComponent.vue    # Suspense example
 │   ├── ContactForm.vue       # VeeValidate form example
-│   ├── DirectivesDemo.vue    # Custom directives demo
-│   ├── HelloWorld.vue        # Demo component
-│   └── PluginsDemo.vue       # Custom plugins demo
-├── directives/      # Custom directives
-│   └── index.js     # All custom directives (v-click-outside, v-tooltip, v-loading, v-lazy, v-autofocus, v-debounce)
-├── plugins/         # Custom plugins
-│   └── index.js     # All custom plugins (Event bus, Toast, Modal, Loading, Storage)
+│   └── HelloWorld.vue        # Demo component
 ├── stores/          # Pinia stores
 │   ├── index.js     # Store exports
 │   ├── counter.js   # Counter store
@@ -3426,245 +3011,6 @@ src/
 tests/
 └── unit/            # Vitest unit tests
 \`\`\`
-
-## Custom Directives
-
-This template includes 6 powerful custom directives to solve common UI/UX problems:
-
-### v-click-outside
-Detects clicks outside an element and triggers a handler.
-
-**Usage:**
-\`\`\`vue
-<template>
-  <div v-click-outside="handleClose">
-    <!-- Content -->
-  </div>
-</template>
-
-<script setup>
-const handleClose = () => {
-  console.log('Clicked outside!')
-}
-</script>
-\`\`\`
-
-### v-tooltip
-Shows tooltips on hover with configurable position.
-
-**Usage:**
-\`\`\`vue
-<template>
-  <!-- Default (bottom) -->
-  <button v-tooltip="'Hello World'">Tooltip</button>
-
-  <!-- Different positions -->
-  <button v-tooltip.top="'Top tooltip'">Top</button>
-  <button v-tooltip.left="'Left tooltip'">Left</button>
-  <button v-tooltip.right="'Right tooltip'">Right</button>
-</template>
-\`\`\`
-
-### v-loading
-Shows a loading overlay on any element.
-
-**Usage:**
-\`\`\`vue
-<template>
-  <div v-loading="'Loading data...'">
-    <!-- Content -->
-  </div>
-
-  <!-- Without message -->
-  <div v-loading="isLoading">
-    <!-- Content -->
-  </div>
-</template>
-
-<script setup>
-const isLoading = ref(true)
-</script>
-\`\`\`
-
-### v-lazy
-Lazy loads images with intersection observer.
-
-**Usage:**
-\`\`\`vue
-<template>
-  <img v-lazy="'/path/to/image.jpg'" alt="Lazy loaded">
-</template>
-\`\`\`
-
-### v-autofocus
-Auto focuses elements on mount with options.
-
-**Usage:**
-\`\`\`vue
-<template>
-  <!-- Basic autofocus -->
-  <input v-autofocus>
-
-  <!-- With delay -->
-  <input v-autofocus.delay="500">
-
-  <!-- Select text on focus -->
-  <input v-autofocus.select>
-
-  <!-- Set input mode -->
-  <input v-autofocus="'numeric'">
-</template>
-\`\`\`
-
-### v-debounce
-Debounces input events.
-
-**Usage:**
-\`\`\`vue
-<template>
-  <!-- Default (input event, 300ms delay) -->
-  <input v-debounce="handleInput">
-
-  <!-- Custom delay -->
-  <input v-debounce.500="handleInput">
-
-  <!-- Different events -->
-  <input v-debounce.keyup="handleKeyup">
-  <input v-debounce.change="handleChange">
-</template>
-\`\`\`
-
-## Custom Plugins
-
-This template includes 5 powerful custom plugins:
-
-### Event Bus Plugin
-Centralized event system for component communication.
-
-**Usage:**
-\`\`\`javascript
-// Emit event
-eventBus.emit('custom-event', data)
-
-// Listen for event
-eventBus.on('custom-event', (data) => {
-  console.log(data)
-})
-
-// Once listener
-eventBus.once('custom-event', callback)
-
-// Remove listener
-eventBus.off('custom-event', callback)
-\`\`\`
-
-### Toast Notification Plugin
-Displays toast notifications with various types and options.
-
-**Usage:**
-\`\`\`javascript
-// Basic toasts
-toast.success('Success message!')
-toast.error('Error message!')
-toast.warning('Warning message!')
-toast.info('Info message!')
-
-// Custom options
-toast.show('Custom message', {
-  type: 'success',
-  duration: 5000,
-  action: {
-    text: 'Undo',
-    handler: () => console.log('Undo clicked')
-  }
-})
-
-// Remove toast
-toast.remove(id)
-\`\`\`
-
-### Modal Dialog Plugin
-Creates customizable modal dialogs.
-
-**Usage:**
-\`\`\`javascript
-// Basic modal
-modal.show({
-  title: 'Title',
-  content: 'Content HTML',
-  buttons: [
-    { text: 'Close', type: 'secondary' },
-    { text: 'Save', type: 'primary' }
-  ]
-})
-
-// Alert modal
-await modal.alert('Message', 'Title')
-
-// Confirm modal
-const confirmed = await modal.confirm('Are you sure?', 'Confirm')
-\`\`\`
-
-### Loading State Plugin
-Global loading state management.
-
-**Usage:**
-\`\`\`javascript
-// Basic usage
-loading.show('Loading...')
-loading.hide()
-
-// With async function
-await loading.withLoading(async () => {
-  // Your async code here
-}, 'Loading message')
-
-// Reactivity
-const { isLoading } = loading
-\`\`\`
-
-### Storage Plugin
-Wrapper for localStorage/sessionStorage with Vue reactivity.
-
-**Usage:**
-\`\`\`javascript
-// localStorage
-storage.localStorage.set('key', value)
-const data = storage.localStorage.get('key')
-storage.localStorage.remove('key')
-
-// sessionStorage
-storage.sessionStorage.set('key', value)
-const data = storage.sessionStorage.get('key')
-\`\`\`
-
-## Demo Pages
-
-The template includes two demo pages to showcase all features:
-
-1. **Directives Demo** (`/dashboard/directives`)
-   - Interactive examples of all custom directives
-   - Live demonstrations with explanations
-
-2. **Plugins Demo** (`/dashboard/plugins`)
-   - Examples of all custom plugins
-   - Interactive tests and demonstrations
-
-## TypeScript Support
-
-All custom directives and plugins are written with TypeScript-style JSDoc comments for better IDE support and type checking.
-
-## Browser Support
-
-These custom directives and plugins are compatible with all modern browsers that support Vue 3 and Intersection Observer API.
-
-## Performance Considerations
-
-- Directives use efficient event listeners and cleanup
-- Lazy loading uses Intersection Observer for optimal performance
-- Event bus includes error handling to prevent crashes
-- Toast notifications use efficient DOM manipulation
-- Modals are properly cleaned up after closing
 
 ## Migration from Vuex
 
