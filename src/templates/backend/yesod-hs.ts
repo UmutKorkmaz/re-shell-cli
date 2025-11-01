@@ -703,29 +703,71 @@ JWT_SECRET=change-this-secret-in-production
 DATABASE_PATH={{projectNameSnake}}.sqlite3
 `,
 
-    // Dockerfile
-    'Dockerfile': `FROM haskell:9.6
+    // Dockerfile - Multi-stage optimized build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM haskell:9.6 AS builder
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y libsqlite3-dev
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    libsqlite3-dev \\
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy stack config
+# Copy stack.yaml and package.yaml first for better caching
 COPY stack.yaml package.yaml ./
 
-# Copy source
+# Initialize stack and install dependencies
+RUN stack setup --install-cabal 3.10.3.0
+RUN stack build --only-dependencies --copy-bins
+
+# Copy source code
 COPY . .
 
-# Build
-RUN stack setup
+# Build application
 RUN stack build --copy-bins
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM debian:bookworm-slim AS runtime
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    libsqlite3-0 \\
+    libgmp10 \\
+    ca-certificates \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser
+
+WORKDIR /app
+
+# Copy binaries and static files from builder
+COPY --from=builder /app/.stack-work/install/x86_64-linux-tinfo6/*/bin/{{projectNameSnake}}-exe /app/{{projectNameSnake}}-exe
+COPY --from=builder /app/static /app/static
+COPY --from=builder /app/config /app/config
+
+# Create data directory
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
 
 # Expose port
 EXPOSE 3000
 
-# Run
-CMD ["{{projectNameSnake}}-exe"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Run application
+CMD ["./{{projectNameSnake}}-exe"]
 `,
 
     // Docker Compose

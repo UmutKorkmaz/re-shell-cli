@@ -839,48 +839,73 @@ lint:
 	hlint src app
 `,
 
-    'Dockerfile': `# Build stage
-FROM haskell:9.4 AS builder
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM haskell:9.6 AS builder
 
 WORKDIR /app
 
-# Install Stack
-RUN curl -sSL https://get.haskellstack.org/ | sh
-
-# Copy project files
-COPY stack.yaml package.yaml ./
-RUN stack setup
-
-# Build dependencies first (for caching)
-COPY {{projectName}}.cabal ./
-RUN stack build --only-dependencies
-
-# Copy source and build
-COPY . .
-RUN stack build --copy-bins
-
-# Runtime stage
-FROM debian:bullseye-slim
-
-WORKDIR /app
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \\
-    libgmp10 \\
-    ca-certificates \\
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    libpq-dev \\
+    libsqlite3-dev \\
     && rm -rf /var/lib/apt/lists/*
 
-# Copy binary
-COPY --from=builder /root/.local/bin/{{projectName}}-exe ./{{projectName}}
+# Copy stack.yaml and package.yaml first for better caching
+COPY stack.yaml package.yaml ./
+
+# Initialize stack and install dependencies
+RUN stack setup --install-cabal 3.10.3.0
+RUN stack build --only-dependencies --copy-bins
+
+# Copy cabal file and source code
+COPY {{projectName}}.cabal ./
+COPY . .
+
+# Build application
+RUN stack build --copy-bins
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM debian:bookworm-slim AS runtime
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    libpq5 \\
+    libsqlite3-0 \\
+    libgmp10 \\
+    ca-certificates \\
+    curl \\
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN useradd -m appuser
+RUN useradd -m -u 1000 appuser
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /root/.local/bin/{{projectName}}-exe /app/{{projectName}}
+
+# Create data directory
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
+# Switch to non-root user
 USER appuser
 
+# Expose port
 EXPOSE 8080
 
 ENV PORT=8080
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Run application
 CMD ["./{{projectName}}"]
 `,
 
