@@ -564,34 +564,52 @@ docker-run:
 	docker run -p 5000:5000 --env-file .env {{projectName}}
 `,
 
-    'Dockerfile': `# Build stage
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
 
 WORKDIR /app
 
-# Copy project file and restore
+# Copy project file and restore dependencies (for better caching)
 COPY *.fsproj ./
 RUN dotnet restore
 
 # Copy source and build
 COPY . .
-RUN dotnet publish -c Release -o out
+RUN dotnet publish -c Release -o out /p:DebugType=None /p:DebugSymbols=false
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
 WORKDIR /app
 
+# Copy published output from builder
 COPY --from=builder /app/out ./
 
 # Create non-root user
-RUN useradd -m appuser
+RUN useradd -m -u 1000 appuser
+
+# Create data directory
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
+# Switch to non-root user
 USER appuser
 
+# Expose port
 EXPOSE 5000
 
 ENV ASPNETCORE_URLS=http://+:5000
 ENV PORT=5000
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:5000/health || exit 1
 
 ENTRYPOINT ["dotnet", "{{projectName}}.dll"]
 `,

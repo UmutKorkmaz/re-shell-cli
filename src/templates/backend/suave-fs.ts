@@ -472,18 +472,54 @@ ASPNETCORE_URLS=http://localhost:8080
 JWT_SECRET=change-this-secret-in-production
 `,
 
-    // Dockerfile
-    'Dockerfile': `FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+    // Dockerfile - Multi-stage optimized build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
+
 WORKDIR /src
+
+# Copy project file and restore dependencies (for better caching)
 COPY ["{{projectNamePascal}}.fsproj", "./"]
 RUN dotnet restore "{{projectNamePascal}}.fsproj"
-COPY . .
-RUN dotnet publish "{{projectNamePascal}}.fsproj" -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# Copy source and build
+COPY . .
+RUN dotnet publish "{{projectNamePascal}}.fsproj" -c Release -o /app/publish \\
+    /p:DebugType=None /p:DebugSymbols=false
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+
 WORKDIR /app
-COPY --from=build /app/publish .
+
+# Copy published output from builder
+COPY --from=builder /app/publish .
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser
+
+# Create data directory
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 8080
+
+ENV ASPNETCORE_URLS=http://+:8080
+ENV PORT=8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:8080/health || exit 1
+
 ENTRYPOINT ["dotnet", "{{projectNamePascal}}.dll"]
 `,
 
