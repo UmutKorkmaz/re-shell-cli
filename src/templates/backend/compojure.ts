@@ -508,34 +508,55 @@ docker-run:
 	docker run -p 3000:3000 --env-file .env {{projectName}}
 `,
 
-    'Dockerfile': `# Build stage
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
 FROM clojure:openjdk-17-lein AS builder
 
 WORKDIR /app
 
-# Copy project file and fetch dependencies
+# Copy project file and fetch dependencies (for better caching)
 COPY project.clj ./
 RUN lein deps
 
 # Copy source and build uberjar
 COPY . .
+RUN lein clean
 RUN lein uberjar
 
-# Runtime stage
-FROM openjdk:17-slim
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM eclipse-temurin:17-jre-jammy AS runtime
 
 WORKDIR /app
 
-# Copy uberjar
+# Install curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy uberjar from builder
 COPY --from=builder /app/target/uberjar/{{projectName}}-*-standalone.jar ./app.jar
 
 # Create non-root user
-RUN useradd -m appuser
+RUN useradd -m -u 1000 appuser
+
+# Create data directory
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
+# Switch to non-root user
 USER appuser
 
+# Expose port
 EXPOSE 3000
 
 ENV PORT=3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:3000/health || exit 1
 
 CMD ["java", "-jar", "app.jar"]
 `,

@@ -236,13 +236,62 @@ export const pedestalCljTemplate: BackendTemplate = {
   (swap! products dissoc id))
 `,
 
-    // Dockerfile
-    'Dockerfile': `FROM clojure:lein-2.11.1
+    // Dockerfile - Multi-stage optimized build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM clojure:lein AS builder
+
 WORKDIR /app
-COPY project.clj .
+
+# Copy project file first for better dependency caching
+COPY project.clj ./
+
+# Download dependencies
+RUN lein deps
+
+# Copy source code
 COPY src ./src
+
+# Build uberjar
+RUN lein clean
 RUN lein uberjar
-CMD ["java" "-jar" "target/uberjar/{{projectNameSnake}}-standalone.jar"]
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM eclipse-temurin:17-jre-jammy AS runtime
+
+WORKDIR /app
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy uberjar from builder
+COPY --from=builder /app/target/uberjar/{{projectNameSnake}}-standalone.jar ./app.jar
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser
+
+# Create data directory
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8080
+
+ENV PORT=8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["java", "-jar", "app.jar"]
 `,
 
     // Docker Compose
