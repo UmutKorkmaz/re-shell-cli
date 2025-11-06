@@ -479,13 +479,61 @@ charset UTF-8;
 <jwt_expiration>604800</jwt_expiration>
 `,
 
-    // Dockerfile
-    'Dockerfile': `FROM perl:5.38-slim
+    // Dockerfile - Multi-stage optimized build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM perl:5.38 AS builder
+
 WORKDIR /app
+
+# Copy cpanfile for dependency caching
 COPY cpanfile ./
+
+# Install dependencies
 RUN cpanm --notest --installdeps .
-COPY . []
+
+# Copy application
+COPY . .
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM perl:5.38-slim AS runtime
+
+WORKDIR /app
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    ca-certificates \\
+    curl \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed modules from builder
+COPY --from=builder /usr/local/lib/perl5 /usr/local/lib/perl5
+COPY --from=builder /usr/local/bin/perl /usr/local/bin/perl
+
+# Copy application files
+COPY --from=builder /app /app
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser
+
+# Create data directory
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 5000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:5000/health || exit 1
+
 CMD ["perl", "script/{{projectNameSnake}}_server.pl"]
 `,
 
