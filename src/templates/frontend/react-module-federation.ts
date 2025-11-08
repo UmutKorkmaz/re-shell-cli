@@ -130,7 +130,7 @@ export class ReactModuleFederationTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { normalizedName } = this.context;
     return {
       name: normalizedName,
@@ -282,7 +282,7 @@ module.exports = {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compilerOptions: {
         target: 'es5',
@@ -839,7 +839,7 @@ README.md
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager } = this.context;
     return `# ${name}
 

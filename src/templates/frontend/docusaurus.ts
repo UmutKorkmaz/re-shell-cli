@@ -143,7 +143,7 @@ export class DocusaurusTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.0',
@@ -375,7 +375,7 @@ export default config;
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       extends: '@tsconfig/docusaurus/tsconfig.json',
       compilerOptions: {
@@ -1356,7 +1356,7 @@ function hello() {
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A modern documentation site built with [Docusaurus](https://docusaurus.io/).

@@ -2101,7 +2101,7 @@ export class AuthService {
     );
   }
 
-  private generateAccessToken(user: any) {
+  protected generateAccessToken(user: any) {
     return jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       config.jwt.secret,
@@ -2109,7 +2109,7 @@ export class AuthService {
     );
   }
 
-  private generateRefreshToken(user: any) {
+  protected generateRefreshToken(user: any) {
     return jwt.sign(
       { id: user.id, type: 'refresh' },
       config.jwt.secret,

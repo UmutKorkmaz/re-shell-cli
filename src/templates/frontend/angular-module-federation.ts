@@ -172,7 +172,7 @@ export class AngularModuleFederationTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { normalizedName } = this.context;
     return {
       name: normalizedName,
@@ -412,7 +412,7 @@ module.exports = {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compileOnSave: false,
       compilerOptions: {
@@ -444,7 +444,7 @@ module.exports = {
     }, null, 2);
   }
 
-  private generateTsConfigApp() {
+  protected generateTsConfigApp() {
     return JSON.stringify({
       extends: './tsconfig.json',
       compilerOptions: {
@@ -456,7 +456,7 @@ module.exports = {
     }, null, 2);
   }
 
-  private generateTsConfigSpec() {
+  protected generateTsConfigSpec() {
     return JSON.stringify({
       extends: './tsconfig.json',
       compilerOptions: {
@@ -1111,7 +1111,7 @@ README.md
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager, port } = this.context;
     return `# ${name}
 

@@ -416,7 +416,7 @@ export class AngularCliTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { normalizedName } = this.context;
     return {
       name: normalizedName,
@@ -609,7 +609,7 @@ export class AngularCliTemplate extends BaseTemplate {
     }, null, 2);
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compileOnSave: false,
       compilerOptions: {
@@ -640,7 +640,7 @@ export class AngularCliTemplate extends BaseTemplate {
     }, null, 2);
   }
 
-  private generateTsConfigApp() {
+  protected generateTsConfigApp() {
     return JSON.stringify({
       extends: './tsconfig.json',
       compilerOptions: {
@@ -652,7 +652,7 @@ export class AngularCliTemplate extends BaseTemplate {
     }, null, 2);
   }
 
-  private generateTsConfigSpec() {
+  protected generateTsConfigSpec() {
     return JSON.stringify({
       extends: './tsconfig.json',
       compilerOptions: {
@@ -664,7 +664,7 @@ export class AngularCliTemplate extends BaseTemplate {
     }, null, 2);
   }
 
-  private generateTsConfigWorker() {
+  protected generateTsConfigWorker() {
     return JSON.stringify({
       extends: './tsconfig.json',
       compilerOptions: {
@@ -2737,7 +2737,7 @@ coverage
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager } = this.context;
     return `# ${name}
 

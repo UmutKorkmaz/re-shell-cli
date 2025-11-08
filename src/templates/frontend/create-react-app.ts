@@ -137,7 +137,7 @@ export class CreateReactAppTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { hasTypeScript, normalizedName } = this.context;
     const isTypeScript = hasTypeScript !== false;
 
@@ -185,7 +185,7 @@ export class CreateReactAppTemplate extends BaseTemplate {
     };
   }
 
-  private generateHtmlFile() {
+  protected generateHtmlFile() {
     const { name, description } = this.context;
     return `<!DOCTYPE html>
 <html lang="en">
@@ -595,7 +595,7 @@ export function unregister() {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compilerOptions: {
         target: 'es5',
@@ -766,7 +766,7 @@ coverage
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager } = this.context;
     return `# ${name}
 

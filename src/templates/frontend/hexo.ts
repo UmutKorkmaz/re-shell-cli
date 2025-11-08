@@ -91,7 +91,7 @@ export class HexoTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '1.0.0',
@@ -1073,7 +1073,7 @@ console.log('${this.context.name} loaded successfully!');
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A Hexo static site with Node.js.

@@ -135,7 +135,7 @@ export class SvelteModuleFederationTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { normalizedName } = this.context;
     return {
       name: normalizedName,
@@ -284,7 +284,7 @@ module.exports = {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       extends: '@tsconfig/svelte/tsconfig.json',
       compilerOptions: {
@@ -814,7 +814,7 @@ README.md
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager, port } = this.context;
     return `# ${name}
 

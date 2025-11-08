@@ -117,7 +117,7 @@ export class VuePressTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '1.0.0',
@@ -303,7 +303,7 @@ export default defineUserConfig({
 })`;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compilerOptions: {
         baseUrl: '.',
@@ -1345,7 +1345,7 @@ Check out the [Getting Started](/guide/getting-started.html) guide to begin.
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A modern documentation site built with [VuePress](https://vuepress.vuejs.org/).

@@ -98,7 +98,7 @@ export class GridsomeTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '1.0.0',
@@ -207,7 +207,7 @@ export class GridsomeTemplate extends BaseTemplate {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compilerOptions: {
         target: 'ES2020',
@@ -1189,7 +1189,7 @@ p {
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A Gridsome static site with Vue 2 and GraphQL.

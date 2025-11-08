@@ -143,7 +143,7 @@ export class ViteSvelteTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { normalizedName } = this.context;
     return {
       name: normalizedName,
@@ -298,7 +298,7 @@ export default {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       extends: './tsconfig.node.json',
       compilerOptions: {
@@ -320,7 +320,7 @@ export default {
     }, null, 2);
   }
 
-  private generateTsConfigNode() {
+  protected generateTsConfigNode() {
     return JSON.stringify({
       compilerOptions: {
         composite: true,
@@ -1063,7 +1063,7 @@ playwright-report
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager } = this.context;
     return `# ${name}
 

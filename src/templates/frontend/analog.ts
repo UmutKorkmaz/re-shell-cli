@@ -137,7 +137,7 @@ export class AnalogTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { normalizedName } = this.context;
     return {
       name: normalizedName,
@@ -234,7 +234,7 @@ export default defineConfig({
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       'compileOnSave': false,
       'compilerOptions': {
@@ -273,7 +273,7 @@ export default defineConfig({
     }, null, 2);
   }
 
-  private generateTsConfigSpec() {
+  protected generateTsConfigSpec() {
     return JSON.stringify({
       'extends': './tsconfig.json',
       'compilerOptions': {
@@ -285,7 +285,7 @@ export default defineConfig({
     }, null, 2);
   }
 
-  private generateTsConfigApp() {
+  protected generateTsConfigApp() {
     return JSON.stringify({
       'extends': './tsconfig.json',
       'compilerOptions': {
@@ -633,7 +633,7 @@ coverage
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager } = this.context;
     return `# ${name}
 

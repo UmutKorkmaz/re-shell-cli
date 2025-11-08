@@ -123,7 +123,7 @@ export class VueModuleFederationTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     const { normalizedName } = this.context;
     return {
       name: normalizedName,
@@ -149,7 +149,7 @@ export class VueModuleFederationTemplate extends BaseTemplate {
     };
   }
 
-  private generateVueConfig() {
+  protected generateVueConfig() {
     return `const { defineConfig } = require('@vue/cli-service');
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
 
@@ -233,7 +233,7 @@ module.exports = {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       compilerOptions: {
         target: 'esnext',
@@ -774,7 +774,7 @@ README.md
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description, packageManager } = this.context;
     return `# ${name}
 

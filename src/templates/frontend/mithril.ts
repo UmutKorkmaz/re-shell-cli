@@ -128,7 +128,7 @@ export class MithrilTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -153,7 +153,7 @@ export class MithrilTemplate extends BaseTemplate {
     };
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return {
       compilerOptions: {
         target: 'ES2020',
@@ -814,7 +814,7 @@ export interface RouteResolver {
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A Mithril.js application built with Vite, TypeScript, and modern tooling.

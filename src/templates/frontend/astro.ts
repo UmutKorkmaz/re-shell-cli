@@ -114,7 +114,7 @@ export class AstroTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -180,7 +180,7 @@ export default defineConfig({
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return {
       extends: 'astro/tsconfigs/strict',
       compilerOptions: {
@@ -834,7 +834,7 @@ export function truncate(text: string, maxLength: number): string {
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 An Astro application built with islands architecture, partial hydration, and multi-framework support.

@@ -68,7 +68,7 @@ export class PythonCodeQualityGenerator {
     return templates;
   }
 
-  private generatePyprojectToml(config: CodeQualityConfig): string {
+  protected generatePyprojectToml(config: CodeQualityConfig): string {
     const pythonVersion = config.pythonVersion || '3.11';
     
     return `[tool.black]
@@ -217,7 +217,7 @@ build-backend = "poetry.core.masonry.api"
 `;
   }
 
-  private generateIsortConfig(config: CodeQualityConfig): string {
+  protected generateIsortConfig(config: CodeQualityConfig): string {
     return `[settings]
 profile = black
 multi_line_output = 3
@@ -235,7 +235,7 @@ sections = FUTURE,STDLIB,FRAMEWORK,THIRDPARTY,FIRSTPARTY,LOCALFOLDER
 `;
   }
 
-  private generateMypyConfig(config: CodeQualityConfig): string {
+  protected generateMypyConfig(config: CodeQualityConfig): string {
     return `[mypy]
 python_version = ${config.pythonVersion || '3.11'}
 warn_return_any = True
@@ -277,7 +277,7 @@ ${this.getFrameworkMypyModules(config.framework)}${config.framework === 'django'
 `;
   }
 
-  private generateRuffConfig(config: CodeQualityConfig): string {
+  protected generateRuffConfig(config: CodeQualityConfig): string {
     return `# Ruff configuration file
 target-version = "py${(config.pythonVersion || '3.11').replace('.', '')}"
 line-length = 88
@@ -400,7 +400,7 @@ line-ending = "auto"
 `;
   }
 
-  private generatePreCommitConfig(config: CodeQualityConfig): string {
+  protected generatePreCommitConfig(config: CodeQualityConfig): string {
     return `# Pre-commit hooks configuration
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -527,7 +527,7 @@ ci:
 `;
   }
 
-  private generateVSCodeSettings(config: CodeQualityConfig): string {
+  protected generateVSCodeSettings(config: CodeQualityConfig): string {
     return JSON.stringify({
       "python.linting.enabled": true,
       "python.linting.pylintEnabled": false,
@@ -612,7 +612,7 @@ ci:
     }, null, 2);
   }
 
-  private generateQualityMakefile(config: CodeQualityConfig): string {
+  protected generateQualityMakefile(config: CodeQualityConfig): string {
     return `.PHONY: format lint type-check test quality
 
 # Variables
@@ -755,7 +755,7 @@ help-quality:
 `;
   }
 
-  private generateQualityCheckScript(config: CodeQualityConfig): string {
+  protected generateQualityCheckScript(config: CodeQualityConfig): string {
     return `#!/usr/bin/env python3
 """Comprehensive code quality checker."""
 

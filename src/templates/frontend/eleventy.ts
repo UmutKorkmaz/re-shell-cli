@@ -140,7 +140,7 @@ export class EleventyTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -736,7 +736,7 @@ This makes it easy to share data across your site while keeping specific data lo
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 An 11ty (Eleventy) static site with data cascade and plugins.

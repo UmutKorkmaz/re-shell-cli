@@ -1567,7 +1567,7 @@ export class AuthService {
     });
   }
 
-  private generateAccessToken(user: any) {
+  protected generateAccessToken(user: any) {
     return jwt.sign(
       {
         id: user.id,
@@ -1579,7 +1579,7 @@ export class AuthService {
     );
   }
 
-  private generateRefreshToken(userId: string) {
+  protected generateRefreshToken(userId: string) {
     return jwt.sign(
       { userId },
       process.env.JWT_REFRESH_SECRET!,

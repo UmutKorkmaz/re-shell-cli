@@ -4,7 +4,9 @@ import * as path from 'path';
 export interface FrameworkConfig {
   name: string;
   displayName: string;
-  buildTool: 'vite' | 'webpack' | 'rollup' | 'esbuild';
+  buildTool: 'vite' | 'webpack' | 'rollup' | 'esbuild' | 'angular-cli' | 'astro' | 'eleventy' |
+    'docusaurus' | 'gridsome' | 'jekyll' | 'hugo' | 'hexo' | 'zola' | 'vue-cli' | 'nuxt' | 'next' |
+    'remix' | 'gatsby' | 'sveltekit' | 'solid' | 'qwik' | 'lit' | 'stencil' | 'parcel' | 'rush';
   packageManager: string[];
   dependencies: Record<string, string>;
   devDependencies: Record<string, string>;

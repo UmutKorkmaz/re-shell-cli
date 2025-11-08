@@ -119,7 +119,7 @@ export class StencilTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -224,7 +224,7 @@ export const config: Config = {
 `;
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return {
       compilerOptions: {
         allowSyntheticDefaultImports: true,
@@ -878,7 +878,7 @@ describe('my-component', () => {
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A Stencil web components library built with [Stencil](https://stenciljs.com/).

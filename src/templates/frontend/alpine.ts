@@ -110,7 +110,7 @@ export class AlpineTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -1146,7 +1146,7 @@ export async function del(url) {
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 An Alpine.js + HTMX application built with Vite for modern, lightweight web development.

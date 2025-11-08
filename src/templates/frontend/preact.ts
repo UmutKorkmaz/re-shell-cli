@@ -127,7 +127,7 @@ export class PreactTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -160,7 +160,7 @@ export class PreactTemplate extends BaseTemplate {
     };
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return {
       compilerOptions: {
         target: 'ES2020',
@@ -778,7 +778,7 @@ export interface Feature {
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A Preact application built with Vite, TypeScript, and modern tooling.

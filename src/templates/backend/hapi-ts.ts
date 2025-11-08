@@ -1363,7 +1363,7 @@ export class AuthService {
     console.log(\`User \${userId} logged out\`);
   }
 
-  private generateToken(id: string, email: string, role: Role): string {
+  protected generateToken(id: string, email: string, role: Role): string {
     return jwt.sign(
       { id, email, role },
       this.env.JWT_SECRET,
@@ -1695,7 +1695,7 @@ export interface PaginatedPosts {
 }
 
 export class PostService {
-  private generateSlug(title: string): string {
+  protected generateSlug(title: string): string {
     return title
       .toLowerCase()
       .replace(/[^a-z0-9 -]/g, '')

@@ -82,7 +82,7 @@ export class CeleryTaskGenerator {
     return templates;
   }
 
-  private generateCeleryApp(config: CeleryConfig): string {
+  protected generateCeleryApp(config: CeleryConfig): string {
     return `"""
 Celery application configuration and initialization.
 """
@@ -190,7 +190,7 @@ if __name__ == '__main__':
 `;
   }
 
-  private generateEmailTasks(config: CeleryConfig): string {
+  protected generateEmailTasks(config: CeleryConfig): string {
     return `"""
 Email-related Celery tasks.
 """
@@ -561,7 +561,7 @@ class ValidationError(Exception):
 `;
   }
 
-  private generateDataTasks(config: CeleryConfig): string {
+  protected generateDataTasks(config: CeleryConfig): string {
     return `"""
 Data processing Celery tasks.
 """
@@ -1123,7 +1123,7 @@ def send_report_notification(
 `;
   }
 
-  private generateNotificationTasks(config: CeleryConfig): string {
+  protected generateNotificationTasks(config: CeleryConfig): string {
     return `"""
 Notification-related Celery tasks.
 """
@@ -1808,7 +1808,7 @@ from ..tasks.email_tasks import send_notification_email
 `;
   }
 
-  private generateWorkerScript(config: CeleryConfig): string {
+  protected generateWorkerScript(config: CeleryConfig): string {
     return `#!/usr/bin/env python
 """
 Celery worker management script.
@@ -1990,7 +1990,7 @@ if __name__ == '__main__':
 `;
   }
 
-  private generateMonitoringTasks(config: CeleryConfig): string {
+  protected generateMonitoringTasks(config: CeleryConfig): string {
     return `"""
 Monitoring and health check tasks for Celery.
 """
@@ -2530,7 +2530,7 @@ def store_queue_metrics(queue_lengths: Dict[str, int]) -> None:
 `;
   }
 
-  private generateScheduledTasks(config: CeleryConfig): string {
+  protected generateScheduledTasks(config: CeleryConfig): string {
     return `"""
 Scheduled and periodic tasks configuration.
 """
@@ -2992,7 +2992,7 @@ logger = logging.getLogger(__name__)
 `;
   }
 
-  private generateCeleryDockerfile(config: CeleryConfig): string {
+  protected generateCeleryDockerfile(config: CeleryConfig): string {
     return `FROM python:3.11-slim
 
 # Install system dependencies
@@ -3037,7 +3037,7 @@ CMD ["celery", "-A", "celery_app", "worker", "--loglevel=info"]
 `;
   }
 
-  private generateSupervisorConfig(config: CeleryConfig): string {
+  protected generateSupervisorConfig(config: CeleryConfig): string {
     return `[program:celery-worker]
 command=celery -A celery_app worker --loglevel=info --concurrency=4
 directory=/app
@@ -3159,7 +3159,7 @@ def init_celery_sanic(sanic_app: Sanic):
     return integrations[framework] || '';
   }
 
-  private generateTaskRouting(): string {
+  protected generateTaskRouting(): string {
     return `# Task routing configuration
 app.conf.task_routes = {
     'tasks.email_tasks.*': {'queue': 'emails'},
@@ -3186,7 +3186,7 @@ app.conf.task_route = {
 }`;
   }
 
-  private generateResultBackend(): string {
+  protected generateResultBackend(): string {
     return `# Result backend configuration
 app.conf.result_backend = 'redis://localhost:6379/1'
 app.conf.result_expires = 3600  # 1 hour
@@ -3201,7 +3201,7 @@ app.conf.result_backend_transport_options = {
 }`;
   }
 
-  private generateCeleryConfigFile(config: CeleryConfig): string {
+  protected generateCeleryConfigFile(config: CeleryConfig): string {
     return `"""
 Celery configuration file.
 """
@@ -3257,7 +3257,7 @@ ${config.enableResultBackend ? "result_backend_transport_options = {'visibility_
 `;
   }
 
-  private generateMonitoringSignals(): string {
+  protected generateMonitoringSignals(): string {
     return `# Monitoring signal handlers
 @task_prerun.connect
 def task_prerun_handler(sender=None, task_id=None, task=None, args=None, kwargs=None, **kw):

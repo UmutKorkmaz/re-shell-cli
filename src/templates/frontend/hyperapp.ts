@@ -122,7 +122,7 @@ export class HyperappTemplate extends BaseTemplate {
     return files;
   }
 
-  private generatePackageJson() {
+  protected generatePackageJson() {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -147,7 +147,7 @@ export class HyperappTemplate extends BaseTemplate {
     };
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return {
       compilerOptions: {
         target: 'ES2020',
@@ -789,7 +789,7 @@ export interface State {
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A Hyperapp application built with Vite, TypeScript, and functional programming patterns.
