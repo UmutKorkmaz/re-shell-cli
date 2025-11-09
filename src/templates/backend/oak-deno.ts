@@ -966,6 +966,10 @@ USER deno
 
 EXPOSE 8000
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD deno run --allow-net --allow-env --allow-read -e "Deno.connect('http://localhost:8000/health').then(r => r.status === 200 ? Deno.exit(0) : Deno.exit(1))" || exit 1
+
 CMD ["run", "--allow-net", "--allow-env", "--allow-read", "src/main.ts"]
 `,
 

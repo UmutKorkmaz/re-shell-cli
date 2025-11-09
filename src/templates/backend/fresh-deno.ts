@@ -770,19 +770,54 @@ JWT_EXPIRATION=7d
 DB_PATH=./data/db.json
 `,
 
-    // Dockerfile
-    'Dockerfile': `FROM denoland/deno:1.40.0
+    // Dockerfile - Multi-stage optimized build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM denoland/deno:1.40.0 AS builder
 
 WORKDIR /app
 
-# Cache dependencies
+# Copy dependency files first for better caching
 COPY deno.json import_map.json ./
+
+# Download and cache dependencies
 RUN deno install
 
-# Copy source
+# Copy source code
 COPY . .
 
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM denoland/deno:1.40.0-alpine AS runtime
+
+WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy cached dependencies and source from builder
+COPY --from=builder /app /app
+
+# Create non-root user
+RUN addgroup -S -g 1000 appgroup && \\
+    adduser -S -u 1000 -G appgroup appuser
+
+# Set ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:8000/health || exit 1
 
 CMD ["deno", "task", "start"]
 `,

@@ -902,27 +902,58 @@ akka {
 </configuration>
 `,
 
-    // Dockerfile
-    'Dockerfile': `FROM sbtscala/scala-sbt:eclipse-temurin-17.0.4_1.8.0_2.13.10 AS builder
+    // Dockerfile - Multi-stage optimized build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM sbtscala/scala-sbt:eclipse-temurin-17.0.4_1.8.0_2.13.10 AS builder
 
 WORKDIR /app
 
+# Copy build files first for better caching
 COPY build.sbt .
 COPY project ./project
 
+# Download dependencies
 RUN sbt update
 
+# Copy source code
 COPY src ./src
 
+# Build application
 RUN sbt stage
 
-FROM eclipse-temurin:17-jre-alpine
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM eclipse-temurin:17-jre-alpine AS runtime
 
 WORKDIR /app
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy built application from builder
 COPY --from=builder /app/target/universal/stage .
 
+# Create non-root user
+RUN addgroup -S -g 1000 appgroup && \\
+    adduser -S -u 1000 -G appgroup appuser
+
+# Set ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \\
+    CMD wget -q -O /dev/null http://localhost:8080/health || exit 1
 
 CMD ["./bin/{{projectName}}"]
 `,

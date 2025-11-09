@@ -450,16 +450,57 @@ JWT_SECRET=change-this-secret-in-production
 JWT_EXPIRATION=604800
 `,
 
-    // Dockerfile
-    'Dockerfile': `FROM denoland/deno:1.38.0
+    // Dockerfile - Multi-stage optimized build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM denoland/deno:1.38.0 AS builder
 
 WORKDIR /app
 
+# Copy dependency files first for better caching
+COPY deno.json ./
+
+# Download and cache dependencies
+RUN deno cache --reload $(find . -name "*.tsx" -o -name "*.ts" 2>/dev/null || true)
+
+# Copy source code
 COPY . .
 
-RUN deno cache --reload \$(find . -name "*.tsx" -o -name "*.ts")
+# Cache all dependencies
+RUN deno cache --reload $(find . -name "*.tsx" -o -name "*.ts")
 
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM denoland/deno:1.38.0-alpine AS runtime
+
+WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy cached dependencies and source from builder
+COPY --from=builder /app /app
+
+# Create non-root user
+RUN addgroup -S -g 1000 appgroup && \\
+    adduser -S -u 1000 -G appgroup appuser
+
+# Set ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD curl -f http://localhost:3000/health || exit 1
 
 CMD ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "--allow-write", "aleph.dev.ts"]
 `,
