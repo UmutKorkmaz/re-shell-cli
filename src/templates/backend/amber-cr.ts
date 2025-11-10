@@ -422,14 +422,55 @@ Database.init
 end
 `,
 
-    // Dockerfile
-    'Dockerfile': `FROM crystallang/crystal:1.10.0-alpine
+    // Dockerfile - Multi-stage optimized build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM crystallang/crystal:1.10.0-alpine AS builder
+
 WORKDIR /app
+
+# Copy shard files first for better caching
 COPY shard.yml shard.lock ./
-RUN shards install
+
+# Install dependencies
+RUN shards install --production
+
+# Copy source code
 COPY . .
+
+# Build application
 RUN crystal build src/server.cr --release
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM alpine:3.18
+
+WORKDIR /app
+
+# Install runtime dependencies only
+RUN apk add --no-cache libgcc libstdc++ ca-certificates
+
+# Copy binary from builder
+COPY --from=builder /app/server ./server
+
+# Create non-root user
+RUN addgroup -S -g 1000 appgroup && \\
+    adduser -S -u 1000 -G appgroup appuser
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD wget -q -O /dev/null http://localhost:8080/health || exit 1
+
 CMD ["./server"]
 `,
 

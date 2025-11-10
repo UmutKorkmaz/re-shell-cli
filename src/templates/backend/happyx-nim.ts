@@ -278,14 +278,51 @@ websocket "/ws":
 `,
 
     // Dockerfile
-    'Dockerfile': `FROM nimlang/nim:2.0-alpine
+    'Dockerfile': `# Builder stage
+FROM nimlang/nim:2.0-alpine AS builder
+
 WORKDIR /app
+
+# Copy dependency file first for better layer caching
 COPY {{projectNameSnake}}.nimble ./
-RUN nimble install -y
+
+# Install dependencies
+RUN nimble install -y --depsOnly
+
+# Copy source code
 COPY src ./src
-RUN nim c -d:release --opt:speed src/{{projectNameSnake}}.nim
+
+# Build the application
+RUN nim c -d:release --opt:speed --opt:size src/{{projectNameSnake}}.nim
+
+# Runtime stage
+FROM alpine:3.18
+
+# Install ca-certificates for HTTPS requests
+RUN apk add --no-cache ca-certificates
+
+# Create non-root user
+RUN addgroup -g 1000 appgroup && \
+    adduser -D -u 1000 -G appgroup appuser
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/src/{{projectNameSnake}} /app/{{projectNameSnake}}
+
+# Change ownership to non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
 EXPOSE 5000
-CMD ["./src/{{projectNameSnake}}"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5000/api/v1/health || exit 1
+
+CMD ["/app/{{projectNameSnake}}"]
 `,
 
     // Docker Compose

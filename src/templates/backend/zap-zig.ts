@@ -535,17 +535,52 @@ pub fn build(b: *std.Build) void {
 `,
 
     // Dockerfile
-    'Dockerfile': `FROM ziglang/zig:latest
+    'Dockerfile': `# Builder stage
+FROM ziglang/zig:latest AS builder
 
 WORKDIR /app
 
-COPY . .
+# Copy dependency files first for better layer caching
+COPY build.zig.zon ./
+COPY build.zig ./
 
-RUN zig build
+# Download dependencies
+RUN zig fetch
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN zig build -Doptimize=ReleaseFast
+
+# Runtime stage
+FROM alpine:3.18
+
+# Install ca-certificates for HTTPS requests
+RUN apk add --no-cache ca-certificates
+
+# Create non-root user
+RUN addgroup -g 1000 appgroup && \
+    adduser -D -u 1000 -G appgroup appuser
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/zig-out/bin/{{projectName}} /app/{{projectName}}
+
+# Change ownership to non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
 
 EXPOSE 3000
 
-CMD ["zig", "build", "run"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/v1/health || exit 1
+
+CMD ["/app/{{projectName}}"]
 `,
 
     // Docker Compose

@@ -398,23 +398,66 @@ main :: proc() {
 ,
 
     // Dockerfile
-    'Dockerfile': `FROM ubuntu:22.04
+    'Dockerfile': `# Builder stage
+FROM ubuntu:22.04 AS builder
 
-RUN apt-get update && apt-get install -y \\
-    git \\
-    wget \\
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    wget \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY . .
+# Copy source code
+COPY src ./src
+COPY odin-run ./
 
-# Install Odin (simplified - in production use proper installation)
-RUN wget -qO- https://github.com/odin-lang/Odin/releases/download/dev-2024-01/odin-linux-amd64-dev-2024-01.tar.gz | tar xz
+# Install Odin
+RUN wget -qO- https://github.com/odin-lang/Odin/releases/download/dev-2024-01/odin-linux-amd64-dev-2024-01.tar.gz | tar xz && \
+    mv odin-linux-amd64-dev-2024-01/odin /usr/local/bin/odin && \
+    rm -rf odin-linux-amd64-dev-2024-01
+
+# Build the application
+RUN odin build src/main.odin -out:./{{projectName}} -o:speed
+
+# Runtime stage
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -g 1000 appgroup && \
+    useradd -r -u 1000 -g appgroup appuser
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/{{projectName}} /app/{{projectName}}
+
+# Change ownership to non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
 
 EXPOSE 8080
 
-CMD ["./{{projectName}}"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/v1/health || exit 1
+
+CMD ["/app/{{projectName}}"]
 `
 ,
 

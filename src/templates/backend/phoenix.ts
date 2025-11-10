@@ -1120,7 +1120,22 @@ COPY --from=builder /app/_build/prod/rel/{{projectName}} ./
 
 ENV HOME=/app
 
+# Create non-root user
+RUN addgroup -S -g 1000 appgroup && \\
+    adduser -S -u 1000 -G appgroup -h /app appuser
+
+# Set ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 4000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \\
+    CMD wget -q -O /dev/null http://localhost:4000/health || exit 1
 
 CMD ["bin/{{projectName}}", "start"]
 `,

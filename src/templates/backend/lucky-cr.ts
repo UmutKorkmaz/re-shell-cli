@@ -451,13 +451,46 @@ end
 `,
 
     // Dockerfile
-    'Dockerfile': `FROM crystallang/crystal:1.10.0-alpine
+    'Dockerfile': `# Builder stage
+FROM crystallang/crystal:1.10.0-alpine AS builder
+
 WORKDIR /app
+
+# Install dependencies
 COPY shard.yml shard.lock ./
-RUN shards install
+RUN shards install --production
+
+# Copy source and build
 COPY . .
-RUN crystal build src/server.cr --release
+RUN crystal build src/server.cr --release --static
+
+# Runtime stage
+FROM alpine:3.18
+
+# Install ca-certificates for HTTPS requests and openssl for crystal
+RUN apk add --no-cache ca-certificates openssl
+
+# Create non-root user
+RUN addgroup -g 1000 appgroup && \
+    adduser -D -u 1000 -G appgroup appuser
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/server /app/server
+
+# Change ownership to non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/v1/health || exit 1
+
 CMD ["./server"]
 `,
 
