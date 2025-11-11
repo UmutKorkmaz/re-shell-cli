@@ -500,11 +500,39 @@ class HealthController {
 `,
 
     // Dockerfile
-    'Dockerfile': `FROM eclipse-temurin:17-jdk-alpine
-COPY build.gradle.kts gradlew settings.gradle.kts src/ /app/
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM eclipse-temurin:17-jdk-alpine AS build
+WORKDIR /app
+COPY build.gradle.kts settings.gradle.kts ./
+RUN ./gradlew dependencies --no-daemon
+COPY src src
 RUN ./gradlew build --no-daemon
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM eclipse-temurin:17-jre-alpine
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Create non-root user
+RUN addgroup -g 1001 -S appuser && adduser -u 1001 -S appuser -G appuser
+
+WORKDIR /app
+COPY --from=build --chown=appuser:appuser /app/build/libs/*.jar app.jar
+USER appuser
 EXPOSE 8080
-CMD ["java", "-jar", "build/libs/{{projectNameSnake}}-0.1.jar"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["java", "-jar", "app.jar"]
 `,
 
     // Docker Compose

@@ -630,13 +630,40 @@ class AuthService(
 `,
 
     // Dockerfile
-    'Dockerfile': `FROM eclipse-temurin:21-jdk-alpine
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM eclipse-temurin:21-jdk-alpine AS build
+WORKDIR /app
 VOLUME /tmp
-COPY build.gradle.kts settings.gradle.kts src/ /app/
-RUN ./gradlew build
-RUN gradle clean build --no-daemon
+COPY build.gradle.kts settings.gradle.kts ./
+RUN ./gradlew dependencies --no-daemon
+COPY src src
+RUN ./gradlew clean build --no-daemon
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM eclipse-temurin:21-jre-alpine
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Create non-root user
+RUN addgroup -g 1001 -S appuser && adduser -u 1001 -S appuser -G appuser
+
+WORKDIR /app
+COPY --from=build --chown=appuser:appuser /app/build/libs/*.jar app.jar
+USER appuser
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "build/libs/{{projectNameSnake}}-0.0.1-SNAPSHOT.jar"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
 `,
 
     // Docker Compose

@@ -1828,19 +1828,36 @@ nb-configuration.xml
 .vertx/
 file-uploads/
 `,
-    'Dockerfile': `FROM maven:3.9-eclipse-temurin-17 AS build
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src src
 RUN mvn clean package
 
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
 FROM eclipse-temurin:17-jre-alpine
 RUN addgroup -g 1001 -S appuser && adduser -u 1001 -S appuser -G appuser
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 WORKDIR /app
 COPY --from=build --chown=appuser:appuser /app/target/*-fat.jar app.jar
 USER appuser
 EXPOSE {{port}}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:{{port}}/health || exit 1
+
 CMD ["java", "-jar", "app.jar"]
 `,
     'docker-compose.yml': `version: '3.8'

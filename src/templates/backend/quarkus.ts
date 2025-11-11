@@ -1369,43 +1369,46 @@ nb-configuration.xml
 # Quarkus
 .quarkus/
 `,
-    'Dockerfile': `####
-# This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
-#
-# Before building the container image run:
-#
-# ./mvnw package
-#
-# Then, build the image with:
-#
-# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/{{serviceName}}-jvm .
-#
-# Then run the container using:
-#
-# docker run -i --rm -p {{port}}:{{port}} quarkus/{{serviceName}}-jvm
-#
-# If you want to include the debug port into your docker image
-# you will have to expose the debug port (default 5005) like this :  EXPOSE {{port}} 5005
-#
-# Then run the container using :
-#
-# docker run -i --rm -p {{port}}:{{port}} -p 5005:5005 -e JAVA_ENABLE_DEBUG="true" quarkus/{{serviceName}}-jvm
-#
-###
-FROM registry.access.redhat.com/ubi8/openjdk-17:1.16
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for Quarkus JVM mode
+# =============================================================================
+
+# Stage 1: Builder
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src src
+RUN mvn clean package -DskipTests
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM eclipse-temurin:17-jre-alpine
 
 ENV LANGUAGE='en_US:en'
 
-# We make four distinct layers so if there are application changes the library layers can be re-used
-COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
-COPY --chown=185 target/quarkus-app/*.jar /deployments/
-COPY --chown=185 target/quarkus-app/app/ /deployments/app/
-COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+# Install curl for health checks
+RUN apk add --no-cache curl
 
+# Create non-root user
+RUN addgroup -g 1001 -S appuser && adduser -u 1001 -S appuser -G appuser
+
+# We make four distinct layers so if there are application changes the library layers can be re-used
+COPY --from=build --chown=appuser:appuser target/quarkus-app/lib/ /deployments/lib/
+COPY --from=build --chown=appuser:appuser target/quarkus-app/*.jar /deployments/
+COPY --from=build --chown=appuser:appuser target/quarkus-app/app/ /deployments/app/
+COPY --from=build --chown=appuser:appuser target/quarkus-app/quarkus/ /deployments/quarkus/
+
+WORKDIR /deployments
 EXPOSE {{port}}
-USER 185
+USER appuser
 ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:{{port}}/q/health || exit 1
 `,
     'Dockerfile.native': `####
 # This Dockerfile is used in order to build a container that runs the Quarkus application in native (no JVM) mode.

@@ -1665,11 +1665,39 @@ nb-configuration.xml
 # Micronaut
 .micronaut/
 `,
-    'Dockerfile': `FROM openjdk:17-alpine
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY target/*.jar app.jar
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src src
+RUN mvn clean package -DskipTests
+
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
+FROM eclipse-temurin:17-jre-alpine
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Create non-root user
+RUN addgroup -g 1001 -S appuser && adduser -u 1001 -S appuser -G appuser
+
+WORKDIR /app
+COPY --from=build --chown=appuser:appuser /app/target/*-*.jar app.jar
+USER appuser
 EXPOSE {{port}}
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:{{port}}/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
 `,
     'docker-compose.yml': `version: '3.8'
 
