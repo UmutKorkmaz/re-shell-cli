@@ -1869,7 +1869,11 @@ TLS_KEY_FILE=
 `,
 
     // Docker files
-    'Dockerfile': `# Build stage
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
 FROM golang:1.21-alpine AS builder
 
 # Install build dependencies
@@ -1894,14 +1898,20 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 RUN swag init
 
-# Final stage
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
 FROM alpine:latest
 
 # Install runtime dependencies
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata curl
+
+# Create non-root user
+RUN addgroup -g 1000 appgroup && \\
+    adduser -S -u 1000 -G appgroup appuser
 
 # Set working directory
-WORKDIR /root/
+WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /app/main .
@@ -1910,8 +1920,18 @@ COPY --from=builder /app/docs ./docs
 # Copy .env file if needed
 COPY --from=builder /app/.env.example .env
 
+# Set ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
 # Expose port
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
+    CMD wget -q -O /dev/null http://localhost:8080/health || exit 1
 
 # Run the application
 CMD ["./main"]
