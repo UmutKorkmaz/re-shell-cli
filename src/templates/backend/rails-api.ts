@@ -1353,7 +1353,8 @@ RUN apk add --no-cache \
     nodejs \
     yarn \
     tzdata \
-    git
+    git \
+    curl
 
 # Set working directory
 WORKDIR /app
@@ -1385,6 +1386,10 @@ USER app
 
 # Expose port
 EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD wget -q -O /dev/null http://localhost:3000/health || exit 1
 
 # Start server
 CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

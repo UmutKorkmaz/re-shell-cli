@@ -1317,7 +1317,8 @@ RUN apk add --no-cache \
     build-base \
     postgresql-dev \
     tzdata \
-    git
+    git \
+    curl
 
 # Set working directory
 WORKDIR /app
@@ -1346,6 +1347,10 @@ USER app
 
 # Expose port
 EXPOSE 4567
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD wget -q -O /dev/null http://localhost:4567/health || exit 1
 
 # Start server
 CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

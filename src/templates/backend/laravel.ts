@@ -1149,6 +1149,11 @@ USER www-data
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
+
+# Health check - verify PHP-FPM is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \\
+    CMD php-fpm-healthcheck || exit 1
+
 CMD ["php-fpm"]`,
 
     // Docker Compose configuration

@@ -809,6 +809,10 @@ RUN mkdir -p logs cache && \\
 
 EXPOSE 80
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \\
+    CMD curl -f http://localhost/health || exit 1
+
 CMD ["apache2-foreground"]`,
 
     // Docker Compose configuration

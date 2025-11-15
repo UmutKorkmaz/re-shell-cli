@@ -471,11 +471,12 @@ RUN mkdir build && cd build && \\
 # Runtime stage
 FROM ubuntu:22.04
 
-# Install runtime dependencies
+# Install runtime dependencies and curl for health checks
 RUN apt-get update && apt-get install -y \\
     libboost-system1.74.0 \\
     libboost-thread1.74.0 \\
     libssl3 \\
+    curl \\
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -492,7 +493,11 @@ RUN chown -R appuser:appuser /etc/{{serviceName}}
 USER appuser
 
 # Expose ports
-EXPOSE {{port}} {{port}}+1
+EXPOSE {{port}}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \\
+    CMD curl -f http://localhost:{{port}}/health || exit 1
 
 # Run the application
 CMD ["{{serviceName}}"]
