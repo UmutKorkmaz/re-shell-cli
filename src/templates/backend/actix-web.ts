@@ -1134,7 +1134,12 @@ volumes:
   postgres_data:
   redis_data:`,
 
-    'Dockerfile': `FROM rust:1.75 as builder
+    'Dockerfile': `# =============================================================================
+# Multi-stage build for optimized image size
+# =============================================================================
+
+# Stage 1: Builder
+FROM rust:1.75 as builder
 
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
@@ -1143,19 +1148,37 @@ COPY migrations ./migrations
 
 RUN cargo build --release
 
+# =============================================================================
+# Stage 2: Runtime - Minimal image
+# =============================================================================
 FROM debian:bookworm-slim
 
+# Install runtime dependencies and curl for health checks
 RUN apt-get update && apt-get install -y \\
     ca-certificates \\
     libpq-dev \\
+    curl \\
     && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser
 
 WORKDIR /app
 
 COPY --from=builder /app/target/release/{{serviceName}} /app/{{serviceName}}
 COPY --from=builder /app/migrations /app/migrations
 
+# Set ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \\
+    CMD curl -f http://localhost:8080/health || exit 1
 
 CMD ["./{{serviceName}}"]`,
 

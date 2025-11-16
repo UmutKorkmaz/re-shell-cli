@@ -1415,6 +1415,13 @@ RUN useradd -m -u 1000 django && chown -R django:django /app
 # Switch to non-root user
 USER django
 
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
 # Run the application
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
 `,
