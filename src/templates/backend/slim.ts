@@ -877,6 +877,41 @@ networks:
 volumes:
   db_data:`,
 
+    '.dockerignore': `# Composer
+vendor/
+composer.lock
+
+# Slim specific
+cache/*
+logs/*
+tmp/*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose.yml
+Dockerfile`,
+
     // README
     'README.md': `# {{serviceName}} - Slim Framework API
 

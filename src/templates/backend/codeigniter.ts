@@ -924,6 +924,42 @@ networks:
 volumes:
   db_data:`,
 
+    '.dockerignore': `# Composer
+vendor/
+composer.lock
+
+# CodeIgniter specific
+writable/cache/*
+writable/logs/*
+writable/session/*
+writable/uploads/*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose.yml
+Dockerfile`,
+
     // README
     'README.md': `# {{serviceName}} - CodeIgniter 4 Application
 

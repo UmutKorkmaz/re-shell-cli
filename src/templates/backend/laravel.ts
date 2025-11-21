@@ -1251,6 +1251,48 @@ volumes:
   dbdata:
     driver: local`,
 
+    '.dockerignore': `# Composer
+vendor/
+composer.lock
+
+# Laravel specific
+storage/*.key
+.env.backup
+.phpunit.result.cache
+
+# Framework cache
+bootstrap/cache/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Logs
+*.log
+storage/logs/*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose.yml
+Dockerfile`,
+
     // Artisan console script
     'artisan': `#!/usr/bin/env php
 <?php

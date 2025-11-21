@@ -1268,6 +1268,41 @@ volumes:
   dbdata:
     driver: local`,
 
+    '.dockerignore': `# Composer
+vendor/
+composer.lock
+
+# Symfony cache
+var/cache/*
+var/log/*
+public/build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose.yml
+Dockerfile`,
+
     // README
     'README.md': `# {{serviceName}} - Symfony API
 

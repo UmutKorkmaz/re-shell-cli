@@ -1037,6 +1037,53 @@ volumes:
   bundle:
 `,
 
+    '.dockerignore': `# Ruby
+*.gem
+*.rbc
+.config
+coverage
+InstalledFiles
+lib/bundler/man
+pkg
+spec/reports
+spec/examples.txt
+test/tmp
+test/version_tmp
+tmp
+
+# Yarn artifacts
+.yarn-integrity
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Logs
+log/*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose.yml
+Dockerfile`,
+
     // README.md
     'README.md': `# Grape API Application
 
