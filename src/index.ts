@@ -58,6 +58,7 @@ import { setupStreamErrorHandlers, processManager, createAsyncCommand, withTimeo
 // Core imports only
 import { Command } from 'commander';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import chalk from 'chalk';
 
 // Additional imports for functions used in commands
@@ -385,7 +386,26 @@ program
   .option('--template <template>', 'Template to use (react, react-ts)', 'react-ts')
   .option(
     '--framework <framework>',
-    'Framework to use (react|react-ts|vue|vue-ts|svelte|svelte-ts)'
+    'Frontend framework to use (react|react-ts|vue|vue-ts|svelte|svelte-ts)'
+  )
+  .option('--frontend <framework>', 'Frontend framework (alias for --framework)')
+  .option(
+    '--backend <framework>',
+    'Backend framework (express, fastify, nestjs, koa, hapi, etc.)'
+  )
+  .option(
+    '--db <database>',
+    'Database ORM (prisma, typeorm, mongoose, none)',
+    'none'
+  )
+  .option('--fullstack', 'Create full-stack project with both frontend and backend')
+  .option(
+    '--polyglot',
+    'Create polyglot microservices project with services in multiple languages'
+  )
+  .option(
+    '--microfrontend',
+    'Create microfrontend project with Module Federation setup'
   )
   .option('--type <type>', 'Workspace type (app|package|lib|tool) - monorepo only')
   .option('--port <port>', 'Development server port [default: 5173]')
@@ -394,8 +414,16 @@ program
   .action(
     createAsyncCommand(async (name, options) => {
       // Handle backward compatibility: if template is provided but not framework, map it
-      if (options.template && !options.framework) {
+      if (options.template && !options.framework && !options.frontend) {
         options.framework = options.template;
+      }
+      // Handle frontend alias
+      if (options.frontend && !options.framework) {
+        options.framework = options.frontend;
+      }
+      // Auto-detect fullstack if both backend and frontend are specified
+      if (options.backend && options.framework && !options.fullstack) {
+        options.fullstack = true;
       }
       const spinner = createSpinner('Creating Re-Shell project...').start();
       processManager.addCleanup(() => spinner.stop());
@@ -1195,6 +1223,765 @@ envCommand
   .action(
     createAsyncCommand(async () => {
       await manageEnvironment({ interactive: true });
+    })
+  );
+
+// Unified configuration management commands
+const uconfigCommand = program.command('uconfig').alias('uc').description('Unified configuration management with environment synchronization');
+
+uconfigCommand
+  .command('sync <source> <targets...>')
+  .description('Synchronize configuration across environments')
+  .option('-s, --strategy <strategy>', 'Merge strategy: overwrite, merge, ask', 'merge')
+  .option('--exclude <patterns...>', 'Exclude patterns')
+  .option('--include <patterns...>', 'Include patterns')
+  .option('--include-secrets', 'Include sensitive values')
+  .option('--dry-run', 'Preview without making changes')
+  .option('--json', 'Output as JSON')
+  .action(
+    createAsyncCommand(async (source, targets, options) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Synchronizing configurations...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+
+        const syncOptions = {
+          sourceEnv: source,
+          targetEnvs: targets,
+          includeSecrets: options.includeSecrets,
+          dryRun: options.dryRun,
+          mergeStrategy: options.mergeStrategy as 'overwrite' | 'merge' | 'ask',
+          excludePatterns: options.exclude || [],
+          includePatterns: options.include || [],
+        };
+
+        const status = await manager.syncConfigurations(syncOptions);
+
+        spinner.stop();
+
+        if (options.json) {
+          console.log(JSON.stringify(status, null, 2));
+          return;
+        }
+
+        if (status.success) {
+          console.log(chalk.green('\n✅ Configuration sync complete!'));
+          console.log(chalk.gray('═'.repeat(50)));
+          console.log(`Source: ${chalk.blue(source)}`);
+          console.log(`Synced environments: ${chalk.blue(status.syncedEnvironments.join(', ') || 'none')}`);
+
+          if (status.conflicts.length > 0) {
+            console.log(chalk.yellow('\n⚠️  Conflicts detected:'));
+            for (const conflict of status.conflicts) {
+              console.log(`  ${chalk.gray(conflict.key)}: ${chalk.red(String(conflict.sourceValue))} → ${chalk.blue(String(conflict.targetValue))}`);
+            }
+          }
+
+          if (options.dryRun) {
+            console.log(chalk.yellow('\nDry run - no changes written'));
+          }
+        } else {
+          console.log(chalk.red('\n❌ Sync failed'));
+          console.log(chalk.gray(status.message || 'Unknown error'));
+        }
+
+      } catch (error) {
+        spinner.fail(chalk.red('Configuration sync failed'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('snapshot <environment>')
+  .description('Create configuration snapshot')
+  .option('-v, --version <version>', 'Snapshot version')
+  .action(
+    createAsyncCommand(async (environment, options) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner(`Creating snapshot for ${environment}...`).start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+        const snapshot = await manager.createSnapshot(environment, options.version);
+
+        spinner.succeed(chalk.green(`Snapshot created: ${snapshot.version}`));
+        console.log(`  Environment: ${chalk.blue(environment)}`);
+        console.log(`  Checksum: ${chalk.gray(snapshot.checksum)}`);
+
+      } catch (error) {
+        spinner.fail(chalk.red('Snapshot creation failed'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('restore <environment> <version>')
+  .description('Restore configuration from snapshot')
+  .action(
+    createAsyncCommand(async (environment, version) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner(`Restoring snapshot ${version}...`).start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+        await manager.restoreSnapshot(environment, version);
+
+        spinner.succeed(chalk.green(`Snapshot restored: ${version}`));
+        console.log(`  Environment: ${chalk.blue(environment)}`);
+
+      } catch (error) {
+        spinner.fail(chalk.red('Snapshot restore failed'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('list-snapshots <environment>')
+  .description('List snapshots for an environment')
+  .action(
+    createAsyncCommand(async (environment) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Loading snapshots...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+        const snapshots = manager.listSnapshots(environment);
+
+        spinner.stop();
+
+        if (snapshots.length === 0) {
+          console.log(chalk.yellow(`\nNo snapshots found for ${chalk.blue(environment)}`));
+          return;
+        }
+
+        console.log(chalk.cyan(`\n📸 Snapshots for ${chalk.blue(environment)}`));
+        console.log(chalk.gray('─'.repeat(60)));
+
+        for (const snapshot of snapshots.reverse()) {
+          const date = new Date(snapshot.timestamp).toLocaleString();
+          console.log(`\n${chalk.blue(snapshot.version)}`);
+          console.log(`  Date: ${chalk.gray(date)}`);
+          console.log(`  Checksum: ${chalk.gray(snapshot.checksum)}`);
+        }
+
+      } catch (error) {
+        spinner.fail(chalk.red('Failed to load snapshots'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('export <output>')
+  .description('Export configuration to file')
+  .option('-e, --env <environment>', 'Environment to export')
+  .action(
+    createAsyncCommand(async (output, options) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Exporting configuration...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+        await manager.exportConfig(output, options.env);
+
+        spinner.succeed(chalk.green('Configuration exported'));
+        console.log(`  Output: ${chalk.blue(output)}`);
+        if (options.env) {
+          console.log(`  Environment: ${chalk.blue(options.env)}`);
+        }
+
+      } catch (error) {
+        spinner.fail(chalk.red('Export failed'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('import <input>')
+  .description('Import configuration from file')
+  .option('-l, --layer <layer>', 'Target layer (project, local)', 'project')
+  .option('--no-merge', 'Replace instead of merge')
+  .action(
+    createAsyncCommand(async (input, options) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Importing configuration...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+        await manager.importConfig(input, options.layer, options.merge !== false);
+
+        spinner.succeed(chalk.green('Configuration imported'));
+        console.log(`  Source: ${chalk.blue(input)}`);
+        console.log(`  Layer: ${chalk.blue(options.layer)}`);
+        console.log(`  Mode: ${options.merge ? 'merge' : 'replace'}`);
+
+      } catch (error) {
+        spinner.fail(chalk.red('Import failed'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('validate [environment]')
+  .description('Validate configuration')
+  .option('--json', 'Output as JSON')
+  .action(
+    createAsyncCommand(async (environment, options) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Validating configuration...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+        const validation = manager.validateConfig(environment);
+
+        spinner.stop();
+
+        if (options.json) {
+          console.log(JSON.stringify(validation, null, 2));
+          return;
+        }
+
+        if (validation.valid) {
+          console.log(chalk.green('\n✅ Configuration is valid'));
+        } else {
+          console.log(chalk.red('\n❌ Configuration validation failed'));
+          console.log(chalk.gray('═'.repeat(50)));
+          for (const error of validation.errors) {
+            console.log(`  • ${chalk.yellow(error)}`);
+          }
+        }
+
+      } catch (error) {
+        spinner.fail(chalk.red('Validation failed'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('layers')
+  .description('List all configuration layers')
+  .action(
+    createAsyncCommand(async () => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Loading configuration layers...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+        const layers = manager.getAllLayers();
+
+        spinner.stop();
+
+        console.log(chalk.cyan('\n📚 Configuration Layers'));
+        console.log(chalk.gray('═'.repeat(60)));
+
+        for (const layer of layers) {
+          const readOnly = layer.readOnly ? ' (read-only)' : '';
+          console.log(`\n${chalk.blue(layer.name.padEnd(20))} priority: ${layer.priority}${readOnly ? chalk.gray(readOnly) : ''}`);
+          console.log(`  Source: ${chalk.gray(layer.source)}`);
+        }
+
+        console.log(chalk.gray('\n═'.repeat(60)));
+        console.log(chalk.gray('Higher priority layers override lower priority ones'));
+
+      } catch (error) {
+        spinner.fail(chalk.red('Failed to load layers'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('get <key>')
+  .description('Get configuration value by key path')
+  .option('-e, --env <environment>', 'Environment')
+  .action(
+    createAsyncCommand(async (key, options) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner(`Getting ${key}...`).start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const manager = await createUnifiedConfig();
+        const value = manager.getValue(key, options.env);
+
+        spinner.stop();
+
+        if (value === undefined) {
+          console.log(chalk.yellow(`\n⚠️  Key not found: ${chalk.blue(key)}`));
+        } else {
+          console.log(chalk.cyan(`\n${chalk.blue(key)}:`));
+          console.log(chalk.gray(JSON.stringify(value, null, 2)));
+        }
+
+      } catch (error) {
+        spinner.fail(chalk.red('Failed to get value'));
+        throw error;
+      }
+    })
+  );
+
+uconfigCommand
+  .command('set <key> <value>')
+  .description('Set configuration value by key path')
+  .option('-l, --layer <layer>', 'Target layer', 'project')
+  .action(
+    createAsyncCommand(async (key, value, options) => {
+      const { createUnifiedConfig } = await import('./utils/unified-config');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner(`Setting ${key}...`).start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        // Parse value (try JSON first)
+        let parsedValue: unknown = value;
+        try {
+          parsedValue = JSON.parse(value);
+        } catch {
+          // Keep as string
+        }
+
+        const manager = await createUnifiedConfig();
+        manager.setValue(key, parsedValue, options.layer);
+        await manager.saveAll();
+
+        spinner.succeed(chalk.green(`Value set: ${chalk.blue(key)}`));
+        console.log(`  Layer: ${chalk.blue(options.layer)}`);
+        console.log(`  Value: ${chalk.gray(String(value).slice(0, 50))}${value.length > 50 ? '...' : ''}`);
+
+      } catch (error) {
+        spinner.fail(chalk.red('Failed to set value'));
+        throw error;
+      }
+    })
+  );
+
+// IntelliSense and code completion commands
+const intellisenseCommand = program.command('intellisense').alias('lsp').description('Setup code completion and LSP integration');
+
+intellisenseCommand
+  .command('setup [path]')
+  .description('Setup IntelliSense for project')
+  .option('-l, --languages <languages...>', 'Specific languages to setup')
+  .option('-t, --type <type>', 'Project type')
+  .option('--dry-run', 'Preview without writing files')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { createIntelliSenseGenerator, getAllLanguageServers } = await import('./utils/intellisense');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const pathToSetup = projectPath || process.cwd();
+      const spinner = createSpinner('Detecting languages...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const generator = await createIntelliSenseGenerator(pathToSetup, options.type);
+        const detectedLanguages = await generator.detectLanguages();
+
+        spinner.succeed(chalk.green(`Detected ${detectedLanguages.length} languages`));
+
+        if (options.dryRun) {
+          console.log(chalk.cyan('\n📋 Dry-run IntelliSense setup:'));
+          console.log(`  Path: ${chalk.blue(pathToSetup)}`);
+          console.log(`  Languages: ${chalk.blue(detectedLanguages.join(', ') || 'none')}`);
+          if (options.languages) {
+            console.log(`  Override: ${chalk.blue(options.languages.join(', '))}`);
+          }
+          return;
+        }
+
+        spinner.setText('Setting up IntelliSense...');
+        spinner.start();
+
+        const languages = options.languages || detectedLanguages;
+        await generator.setupIntelliSense(languages);
+
+        spinner.stop();
+
+        console.log(chalk.green('\n✅ IntelliSense setup complete!'));
+        console.log(chalk.gray('═'.repeat(50)));
+        console.log(`\nConfigured for: ${chalk.blue(languages.join(', ') || 'generic')}`);
+        console.log(chalk.gray('\nGenerated files:'));
+        console.log(`  • ${chalk.blue('.vscode/settings.json')}`);
+        console.log(`  • ${chalk.blue('.vscode/extensions.json')}`);
+
+        // Add language-specific files
+        const langSpecificFiles: Record<string, string> = {
+          'python': 'pyrightconfig.json',
+          'c++': '.clangd',
+          'go': 'go.mod',
+        };
+
+        for (const lang of languages) {
+          const file = langSpecificFiles[lang.toLowerCase()];
+          if (file) {
+            console.log(`  • ${chalk.blue(file)}`);
+          }
+        }
+
+        console.log(chalk.gray('\nRestart your IDE for IntelliSense to take effect.'));
+
+      } catch (error) {
+        spinner.fail(chalk.red('IntelliSense setup failed'));
+        throw error;
+      }
+    })
+  );
+
+intellisenseCommand
+  .command('list-languages')
+  .description('List all supported languages')
+  .option('--json', 'Output as JSON')
+  .action(
+    createAsyncCommand(async (options) => {
+      const { getAllLanguageServers } = await import('./utils/intellisense');
+      const servers = getAllLanguageServers();
+
+      if (options.json) {
+        console.log(JSON.stringify(servers, null, 2));
+        return;
+      }
+
+      console.log(chalk.cyan('\n🔡 Supported Languages for IntelliSense'));
+      console.log(chalk.gray('═'.repeat(70)));
+
+      for (const [key, server] of Object.entries(servers)) {
+        console.log(`\n${chalk.blue(server.language.padEnd(15))} [${chalk.gray(key)}]`);
+        console.log(`  Extensions: ${chalk.gray(server.fileExtensions.join(', '))}`);
+        console.log(`  Server: ${chalk.gray(server.serverName)}`);
+        if (server.requiresInstall) {
+          console.log(`  Install: ${chalk.yellow(server.installCommand || 'See language server docs')}`);
+        }
+      }
+
+      console.log(chalk.gray('\n═'.repeat(70)));
+    })
+  );
+
+intellisenseCommand
+  .command('extensions <language>')
+  .description('Get recommended extensions for a language')
+  .action(
+    createAsyncCommand(async (language, options) => {
+      const { getRecommendedExtensions, getAllLanguageServers } = await import('./utils/intellisense');
+
+      const servers = getAllLanguageServers();
+      const serverKey = language.toLowerCase();
+      const server = servers[serverKey];
+
+      if (!server) {
+        console.log(chalk.yellow(`\n⚠️  Language not found: ${language}`));
+        console.log(chalk.gray('Run `re-shell intellisense list-languages` to see supported languages.'));
+        return;
+      }
+
+      const extensions = getRecommendedExtensions(language);
+
+      console.log(chalk.cyan(`\n📦 Recommended Extensions for ${chalk.blue(server.language)}`));
+      console.log(chalk.gray('═'.repeat(60)));
+
+      if (extensions.length === 0) {
+        console.log(chalk.yellow('No specific extensions recommended'));
+      } else {
+        for (const ext of extensions) {
+          console.log(`  • ${chalk.blue(ext)}`);
+        }
+      }
+
+      console.log(chalk.gray('\n═'.repeat(60)));
+      console.log(chalk.gray(`Language Server: ${server.serverName}`));
+      if (server.requiresInstall) {
+        console.log(chalk.gray(`Install: ${server.installCommand}`));
+      }
+    })
+  );
+
+intellisenseCommand
+  .command('vim-config [path]')
+  .description('Generate Neovim LSP configuration')
+  .option('-o, --output <file>', 'Output file path')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { createIntelliSenseGenerator } = await import('./utils/intellisense');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const pathToSetup = projectPath || process.cwd();
+      const spinner = createSpinner('Generating Neovim config...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const generator = await createIntelliSenseGenerator(pathToSetup);
+        const languages = await generator.detectLanguages();
+        const config = await generator.setupIntelliSense(languages);
+
+        const outputPath = options.output || path.join(pathToSetup, '.nvim.lsp.lua');
+        await require('fs-extra').writeFile(outputPath, config.vimSettings, 'utf-8');
+
+        spinner.succeed(chalk.green('Neovim config generated'));
+        console.log(`  Output: ${chalk.blue(outputPath)}`);
+
+      } catch (error) {
+        spinner.fail(chalk.red('Config generation failed'));
+        throw error;
+      }
+    })
+  );
+
+intellisenseCommand
+  .command('emacs-config [path]')
+  .description('Generate Emacs LSP configuration')
+  .option('-o, --output <file>', 'Output file path')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { createIntelliSenseGenerator } = await import('./utils/intellisense');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const pathToSetup = projectPath || process.cwd();
+      const spinner = createSpinner('Generating Emacs config...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const generator = await createIntelliSenseGenerator(pathToSetup);
+        const languages = await generator.detectLanguages();
+        const config = await generator.setupIntelliSense(languages);
+
+        const outputPath = options.output || path.join(pathToSetup, '.lsp-config.el');
+        await require('fs-extra').writeFile(outputPath, config.emacsSettings, 'utf-8');
+
+        spinner.succeed(chalk.green('Emacs config generated'));
+        console.log(`  Output: ${chalk.blue(outputPath)}`);
+
+      } catch (error) {
+        spinner.fail(chalk.red('Config generation failed'));
+        throw error;
+      }
+    })
+  );
+
+// Universal testing commands
+const testCommand = program.command('test').alias('ut').description('Universal testing across all frameworks and languages');
+
+testCommand
+  .command('run [path]')
+  .description('Run tests with auto-detected framework')
+  .option('-p, --pattern <pattern>', 'Test file pattern filter')
+  .option('-c, --coverage', 'Generate coverage report')
+  .option('-w, --watch', 'Watch mode')
+  .option('-v, --verbose', 'Verbose output')
+  .option('--parallel', 'Run tests in parallel')
+  .option('--max-workers <n>', 'Maximum number of parallel workers')
+  .option('-u, --update-snapshot', 'Update snapshots')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { runTests, formatTestResult } = await import('./utils/universal-test');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const pathToTest = projectPath || process.cwd();
+      const spinner = createSpinner('Detecting test framework...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const testOptions = {
+          pattern: options.pattern,
+          coverage: options.coverage,
+          watch: options.watch,
+          verbose: options.verbose,
+          parallel: options.parallel,
+          maxWorkers: options.maxWorkers ? parseInt(options.maxWorkers) : undefined,
+          updateSnapshot: options.updateSnapshot,
+        };
+
+        spinner.setText('Running tests...');
+
+        const result = await runTests(pathToTest, testOptions);
+
+        spinner.stop();
+
+        console.log(formatTestResult(result));
+
+        if (result.failed > 0) {
+          process.exit(1);
+        }
+
+      } catch (error) {
+        spinner.fail(chalk.red('Test execution failed'));
+        const errorMessage = (error as Error).message;
+        if (errorMessage.includes('No test framework detected')) {
+          console.log(chalk.yellow('\n⚠️  No test framework detected in this project.'));
+          console.log(chalk.gray('Supported frameworks: jest, vitest, mocha, pytest, unittest, go test, cargo test, junit, rspec, phpunit, and more.'));
+        } else {
+          throw error;
+        }
+      }
+    })
+  );
+
+testCommand
+  .command('list [path]')
+  .description('List test files')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { createTestRunner } = await import('./utils/universal-test');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const pathToList = projectPath || process.cwd();
+      const spinner = createSpinner('Scanning for test files...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const runner = await createTestRunner(pathToList);
+        const testFiles = await runner.listTestFiles();
+        const info = await runner.getTestInfo();
+
+        spinner.stop();
+
+        console.log(chalk.cyan('\n📋 Test Configuration'));
+        console.log(chalk.gray('═'.repeat(50)));
+        console.log(`\nFrameworks: ${chalk.blue(info.frameworks.join(', ') || 'none detected')}`);
+        console.log(`Test files: ${chalk.blue(String(info.testFileCount))}`);
+        console.log(`Command: ${chalk.gray(info.testCommand)}`);
+
+        if (testFiles.length > 0) {
+          console.log(chalk.gray('\nTest files:'));
+          for (const file of testFiles.slice(0, 20)) {
+            console.log(`  • ${chalk.gray(file)}`);
+          }
+          if (testFiles.length > 20) {
+            console.log(`  ... and ${testFiles.length - 20} more`);
+          }
+        }
+
+      } catch (error) {
+        spinner.fail(chalk.red('Failed to list test files'));
+        throw error;
+      }
+    })
+  );
+
+testCommand
+  .command('frameworks')
+  .description('List all supported test frameworks')
+  .option('--json', 'Output as JSON')
+  .action(
+    createAsyncCommand(async (options) => {
+      const { getSupportedTestFrameworks } = await import('./utils/universal-test');
+      const frameworks = getSupportedTestFrameworks();
+
+      if (options.json) {
+        console.log(JSON.stringify(frameworks, null, 2));
+        return;
+      }
+
+      console.log(chalk.cyan('\n🧪 Supported Test Frameworks'));
+      console.log(chalk.gray('═'.repeat(70)));
+
+      // Group by language
+      const byLanguage: Record<string, typeof frameworks> = {};
+      for (const f of frameworks) {
+        if (!byLanguage[f.language]) {
+          byLanguage[f.language] = [];
+        }
+        byLanguage[f.language].push(f);
+      }
+
+      for (const [language, langFrameworks] of Object.entries(byLanguage).sort()) {
+        console.log(chalk.cyan(`\n${language.charAt(0).toUpperCase() + language.slice(1)}:`));
+        for (const f of langFrameworks) {
+          console.log(`  ${chalk.blue(f.name.padEnd(15))} ${chalk.gray(f.frameworks.join(', '))}`);
+        }
+      }
+
+      console.log(chalk.gray('\n═'.repeat(70)));
+    })
+  );
+
+testCommand
+  .command('info [path]')
+  .description('Show test configuration info')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { createTestRunner } = await import('./utils/universal-test');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const pathToInfo = projectPath || process.cwd();
+      const spinner = createSpinner('Getting test info...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const runner = await createTestRunner(pathToInfo);
+        const info = await runner.getTestInfo();
+
+        spinner.stop();
+
+        console.log(chalk.cyan('\n📊 Test Information'));
+        console.log(chalk.gray('═'.repeat(50)));
+
+        console.log(`\nDetected Frameworks:`);
+        if (info.frameworks.length === 0) {
+          console.log(chalk.yellow('  No test framework detected'));
+          console.log(chalk.gray('  Run `re-shell test frameworks` to see supported frameworks'));
+        } else {
+          for (const f of info.frameworks) {
+            console.log(`  • ${chalk.blue(f)}`);
+          }
+        }
+
+        console.log(`\nTest Files Found: ${chalk.blue(String(info.testFileCount))}`);
+        console.log(`\nTest Command: ${chalk.gray(info.testCommand)}`);
+
+      } catch (error) {
+        spinner.fail(chalk.red('Failed to get test info'));
+        throw error;
+      }
     })
   );
 
@@ -2299,6 +3086,1482 @@ devCommand
       }, 60000); // 1 minute timeout
 
       spinner.stop();
+    })
+  );
+
+// Hot reload commands
+const hotreloadCommand = program.command('hotreload').alias('hr').description('Intelligent hot-reload for all frameworks with file watching');
+
+hotreloadCommand
+  .command('start [path]')
+  .description('Start hot-reload with framework auto-detection')
+  .option('-f, --framework <framework>', 'Framework (express, nestjs, fastapi, django, etc.)')
+  .option('-l, --language <language>', 'Language filter (typescript, python, go, rust, etc.)')
+  .option('-w, --watch <patterns...>', 'Additional watch patterns')
+  .option('-x, --exclude <patterns...>', 'Exclude patterns')
+  .option('-d, --debounce <ms>', 'Debounce delay in milliseconds', '300')
+  .option('-p, --port <port>', 'Override default port')
+  .option('--verbose', 'Show detailed file changes')
+  .option('--detect-only', 'Only detect framework without starting')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { createHotReload, detectProjectFramework, listSupportedFrameworks, getFrameworkPattern } = await import('./utils/hot-reload');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const pathToWatch = projectPath || process.cwd();
+      const spinner = createSpinner('Detecting framework...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        let framework = options.framework;
+        let frameworkPattern = framework ? getFrameworkPattern(framework) : undefined;
+
+        // Auto-detect if not specified
+        if (!frameworkPattern) {
+          const detected = await detectProjectFramework(pathToWatch);
+          if (!detected) {
+            spinner.fail(chalk.red('Could not detect framework'));
+            console.log(chalk.yellow('\nSupported frameworks:'));
+            const frameworks = listSupportedFrameworks();
+            for (const f of frameworks) {
+              console.log(`  • ${chalk.blue(f.id.padEnd(15))} ${f.language} (${f.reloadStrategy})`);
+            }
+            console.log(chalk.gray('\nSpecify with: --framework <name>'));
+            return;
+          }
+          framework = detected.framework;
+          frameworkPattern = detected.config;
+          spinner.succeed(chalk.green(`Detected: ${detected.framework} (${detected.language})`));
+        } else {
+          spinner.succeed(chalk.green(`Using framework: ${framework}`));
+        }
+
+        if (options.detectOnly) {
+          console.log(chalk.cyan('\nFramework Details:'));
+          console.log(`  ID: ${chalk.blue(frameworkPattern.framework)}`);
+          console.log(`  Language: ${chalk.blue(frameworkPattern.language)}`);
+          console.log(`  Reload Strategy: ${chalk.blue(frameworkPattern.reloadStrategy)}`);
+          console.log(`  Default Port: ${chalk.blue(String(frameworkPattern.port))}`);
+          console.log(`  Watch Paths: ${chalk.blue(frameworkPattern.watchPaths.join(', '))}`);
+          console.log(`  Dev Command: ${chalk.blue(frameworkPattern.devCommand)}`);
+          return;
+        }
+
+        spinner.setText('Starting hot-reload...');
+        spinner.start();
+
+        const manager = await createHotReload({
+          projectPath: pathToWatch,
+          framework: options.framework,
+          watchPaths: options.watch,
+          excludePatterns: options.exclude,
+          debounceMs: parseInt(options.debounce),
+          verbose: options.verbose,
+          onReload: (type) => {
+            if (options.verbose) {
+              console.log(chalk.green(`\n🔄 Reload triggered: ${type}`));
+            }
+          },
+          onError: (error) => {
+            console.error(chalk.red(`\n❌ Reload error: ${error.message}`));
+          },
+        });
+
+        spinner.stop();
+
+        console.log(chalk.green('\n🔥 Hot-reload started!'));
+        console.log(chalk.gray('═'.repeat(50)));
+        console.log(`Framework: ${chalk.blue(frameworkPattern.framework)}`);
+        console.log(`Strategy: ${chalk.blue(frameworkPattern.reloadStrategy)}`);
+        console.log(`Watch paths: ${chalk.blue(frameworkPattern.watchPaths.join(', '))}`);
+        console.log(chalk.gray('\nWatching for file changes... (Press Ctrl+C to stop)'));
+
+        // Set up event handlers
+        manager.on('ready', () => {
+          if (options.verbose) {
+            console.log(chalk.green('\n👀 Watcher ready'));
+          }
+        });
+
+        manager.on('reload', ({ type, filePath, strategy }) => {
+          if (strategy === 'restart' || strategy === 'custom') {
+            console.log(chalk.yellow(`\n🔄 Restarting dev server (${type}: ${filePath})`));
+          }
+        });
+
+        // Handle graceful shutdown
+        const shutdown = async () => {
+          console.log(chalk.yellow('\n\n⏹️  Stopping hot-reload...'));
+          await manager.stop();
+          process.exit(0);
+        };
+
+        process.on('SIGINT', shutdown);
+        process.on('SIGTERM', shutdown);
+
+        // Keep process alive
+        await new Promise(() => {});
+
+      } catch (error) {
+        spinner.fail(chalk.red('Failed to start hot-reload'));
+        throw error;
+      }
+    })
+  );
+
+hotreloadCommand
+  .command('detect [path]')
+  .description('Detect the framework in use')
+  .option('--json', 'Output as JSON')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { detectProjectFramework, listSupportedFrameworks } = await import('./utils/hot-reload');
+
+      const pathToCheck = projectPath || process.cwd();
+
+      const detected = await detectProjectFramework(pathToCheck);
+
+      if (options.json) {
+        console.log(JSON.stringify(detected, null, 2));
+        return;
+      }
+
+      if (!detected) {
+        console.log(chalk.yellow('⚠️  Could not detect framework'));
+        console.log(chalk.gray('\nSupported frameworks:'));
+        const frameworks = listSupportedFrameworks();
+        for (const f of frameworks) {
+          console.log(`  • ${chalk.blue(f.id.padEnd(15))} ${f.language}`);
+        }
+        return;
+      }
+
+      console.log(chalk.green('✅ Framework detected!'));
+      console.log(chalk.gray('═'.repeat(40)));
+      console.log(`Framework: ${chalk.blue(detected.framework)}`);
+      console.log(`Language: ${chalk.blue(detected.language)}`);
+      console.log(`Confidence: ${chalk.blue(detected.confidence + '%')}`);
+      console.log(`Strategy: ${chalk.blue(detected.config.reloadStrategy)}`);
+      console.log(`Port: ${chalk.blue(String(detected.config.port))}`);
+    })
+  );
+
+hotreloadCommand
+  .command('list')
+  .description('List all supported frameworks')
+  .option('--language <language>', 'Filter by language')
+  .option('--json', 'Output as JSON')
+  .action(
+    createAsyncCommand(async (options) => {
+      const { listSupportedFrameworks } = await import('./utils/hot-reload');
+
+      const frameworks = listSupportedFrameworks();
+      const filtered = options.language
+        ? frameworks.filter(f => f.language === options.language)
+        : frameworks;
+
+      if (options.json) {
+        console.log(JSON.stringify(filtered, null, 2));
+        return;
+      }
+
+      console.log(chalk.cyan('\n🔥 Supported Hot-Reload Frameworks'));
+      console.log(chalk.gray('═'.repeat(70)));
+
+      // Group by language
+      const byLanguage: Record<string, typeof frameworks> = {};
+      for (const f of filtered) {
+        if (!byLanguage[f.language]) {
+          byLanguage[f.language] = [];
+        }
+        byLanguage[f.language].push(f);
+      }
+
+      for (const [language, langFrameworks] of Object.entries(byLanguage).sort()) {
+        console.log(chalk.cyan(`\n${language.charAt(0).toUpperCase() + language.slice(1)}:`));
+        for (const f of langFrameworks) {
+          const strategyIcon = f.reloadStrategy === 'hmr' ? '⚡' : f.reloadStrategy === 'restart' ? '🔄' : '🔧';
+          console.log(`  ${strategyIcon} ${chalk.blue(f.id.padEnd(20))} port: ${String(f.port || '-').padEnd(5)} ${chalk.gray(f.reloadStrategy)}`);
+        }
+      }
+
+      console.log(chalk.gray('\n═'.repeat(70)));
+      console.log(chalk.gray('Legend: ⚡ HMR  🔄 Restart  🔧 Custom'));
+      console.log(chalk.gray('\nUsage: re-shell hotreload start [--framework <name>]'));
+    })
+  );
+
+// Development environment setup commands
+const devenvCommand = program.command('devenv').alias('ide').description('Setup integrated development environment with container port forwarding');
+
+devenvCommand
+  .command('setup [path]')
+  .description('Setup IDE configuration and port forwarding')
+  .option('-i, --ide <ide>', 'IDE type (vscode, jetbrains, vim, emacs)', 'vscode')
+  .option('-r, --runtime <runtime>', 'Container runtime (docker, podman)')
+  .option('-p, --ports <ports...>', 'Port mappings (local:container:service)')
+  .option('-c, --containers <containers...>', 'Container names to forward')
+  .option('--no-port-forwarding', 'Disable automatic port forwarding')
+  .option('--no-service-discovery', 'Disable automatic service discovery')
+  .option('--dry-run', 'Preview without writing files')
+  .action(
+    createAsyncCommand(async (projectPath, options) => {
+      const { createDevEnv, detectContainerRuntime, getServicePorts } = await import('./utils/dev-env-setup');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const pathToSetup = projectPath || process.cwd();
+      const projectName = path.basename(pathToSetup);
+      const spinner = createSpinner('Detecting container runtime...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        // Detect container runtime
+        const runtime = options.runtime || await detectContainerRuntime();
+        if (!runtime) {
+          spinner.fail(chalk.red('No container runtime found (Docker or Podman required)'));
+          return;
+        }
+        spinner.succeed(chalk.green(`Detected runtime: ${runtime}`));
+
+        spinner.setText('Setting up development environment...');
+        spinner.start();
+
+        // Parse port mappings
+        const ports: Array<{ localPort: number; containerPort: number; service: string; protocol: 'tcp' | 'udp' }> = [];
+        const servicePorts = getServicePorts();
+
+        if (options.ports) {
+          for (const portSpec of options.ports) {
+            const parts = portSpec.split(':');
+            if (parts.length >= 3) {
+              ports.push({
+                localPort: parseInt(parts[0]),
+                containerPort: parseInt(parts[1]),
+                service: parts[2],
+                protocol: 'tcp',
+              });
+            }
+          }
+        }
+
+        // Default ports if none specified
+        if (ports.length === 0) {
+          ports.push(
+            { localPort: 3000, containerPort: 3000, service: 'web', protocol: 'tcp' },
+            { localPort: 8000, containerPort: 8000, service: 'api', protocol: 'tcp' },
+          );
+        }
+
+        const config = {
+          projectPath: pathToSetup,
+          projectName,
+          ports,
+          containers: options.containers || [],
+          ide: options.ide as 'vscode' | 'jetbrains' | 'vim' | 'emacs' | 'generic',
+          containerRuntime: runtime as 'docker' | 'podman',
+          enablePortForwarding: options.portForwarding !== false,
+          enableServiceDiscovery: options.serviceDiscovery !== false,
+          autoStartContainers: false,
+        };
+
+        if (options.dryRun) {
+          spinner.stop();
+          console.log(chalk.cyan('\n📋 Dry-run configuration:'));
+          console.log(`  Project: ${chalk.blue(projectName)}`);
+          console.log(`  Path: ${chalk.blue(pathToSetup)}`);
+          console.log(`  IDE: ${chalk.blue(config.ide)}`);
+          console.log(`  Runtime: ${chalk.blue(runtime)}`);
+          console.log(`  Port mappings:`);
+          for (const p of ports) {
+            console.log(`    ${p.localPort}:${p.containerPort} -> ${p.service}`);
+          }
+          return;
+        }
+
+        const manager = await createDevEnv(config);
+
+        // Setup IDE configuration
+        const ideConfig = await manager.setupIDE(config.ide);
+
+        spinner.stop();
+
+        console.log(chalk.green('\n🚀 Development environment setup complete!'));
+        console.log(chalk.gray('═'.repeat(60)));
+
+        console.log(`\n${chalk.cyan('IDE Configuration:')} ${chalk.blue(config.ide)}`);
+        if (ideConfig) {
+          console.log(`  ${chalk.gray('Type')}: ${chalk.blue(ideConfig.type)}`);
+          console.log(`  ${chalk.gray('Port Forwarding')}: ${ideConfig.portForwardingEnabled ? '✅' : '❌'}`);
+          console.log(`  ${chalk.gray('Remote Development')}: ${ideConfig.remoteDevelopment ? '✅' : '❌'}`);
+        }
+
+        console.log(`\n${chalk.cyan('Port Mappings:')}`);
+        for (const port of ports) {
+          console.log(`  ${chalk.blue('localhost:' + port.localPort)} → ${port.service}:${port.containerPort}`);
+        }
+
+        console.log(chalk.gray('\nNext steps:'));
+        console.log(`  1. Open ${chalk.blue(projectName)} in ${config.ide}`);
+        if (config.ide === 'vscode') {
+          console.log(`  2. Reopen in ${chalk.blue('Dev Container')} if using containers`);
+        }
+        console.log(`  3. Services will be available at http://localhost:<port>`);
+
+      } catch (error) {
+        spinner.fail(chalk.red('Failed to setup development environment'));
+        throw error;
+      }
+    })
+  );
+
+devenvCommand
+  .command('ports [action] [args...]')
+  .description('Manage port forwarding (list, forward, unforward)')
+  .action(
+    createAsyncCommand(async (action, args) => {
+      const { DevEnvManager, getServicePorts, detectContainerRuntime } = await import('./utils/dev-env-setup');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = process.cwd();
+      const projectName = path.basename(projectPath);
+
+      if (!action || action === 'list') {
+        // List active port forwards
+        const servicePorts = getServicePorts();
+        console.log(chalk.cyan('\n📋 Common Service Ports:'));
+        console.log(chalk.gray('─'.repeat(40)));
+        for (const [service, port] of Object.entries(servicePorts)) {
+          console.log(`  ${chalk.blue(service.padEnd(15))} port: ${port}`);
+        }
+        return;
+      }
+
+      if (action === 'forward') {
+        if (args.length < 2) {
+          console.log(chalk.yellow('Usage: re-shell devenv ports forward <container> <port> [local-port]'));
+          return;
+        }
+
+        const [container, containerPort, localPort] = args as string[];
+        const spinner = createSpinner('Setting up port forwarding...').start();
+        processManager.addCleanup(() => spinner.stop());
+        flushOutput();
+
+        try {
+          const runtime = await detectContainerRuntime();
+          if (!runtime) {
+            spinner.fail(chalk.red('No container runtime found'));
+            return;
+          }
+
+          const manager = new DevEnvManager({
+            projectPath,
+            projectName,
+            ports: [],
+            containers: [],
+            containerRuntime: runtime,
+            enablePortForwarding: true,
+            enableServiceDiscovery: false,
+            autoStartContainers: false,
+          });
+
+          const status = await manager.setupPortForwarding(
+            container,
+            parseInt(containerPort),
+            localPort ? parseInt(localPort) : undefined
+          );
+
+          spinner.stop();
+
+          if (status.active) {
+            console.log(chalk.green('\n✅ Port forwarding active!'));
+            console.log(`  Container: ${chalk.blue(container)}`);
+            console.log(`  ${containerPort} → ${status.localPort}`);
+            console.log(`  URL: ${chalk.blue(status.url || `http://localhost:${status.localPort}`)}`);
+          } else {
+            console.log(chalk.yellow('\n⚠️  Port forwarding setup failed'));
+          }
+        } catch (error) {
+          spinner.fail(chalk.red('Failed to setup port forwarding'));
+          throw error;
+        }
+        return;
+      }
+
+      if (action === 'unforward') {
+        if (args.length < 2) {
+          console.log(chalk.yellow('Usage: re-shell devenv ports unforward <container> <port>'));
+          return;
+        }
+
+        const [container, port] = args as string[];
+        const spinner = createSpinner('Stopping port forwarding...').start();
+        processManager.addCleanup(() => spinner.stop());
+        flushOutput();
+
+        try {
+          const runtime = await detectContainerRuntime();
+          if (!runtime) {
+            spinner.fail(chalk.red('No container runtime found'));
+            return;
+          }
+
+          const manager = new DevEnvManager({
+            projectPath,
+            projectName,
+            ports: [],
+            containers: [],
+            containerRuntime: runtime,
+            enablePortForwarding: true,
+            enableServiceDiscovery: false,
+            autoStartContainers: false,
+          });
+
+          await manager.stopPortForwarding(container, parseInt(port));
+
+          spinner.succeed(chalk.green('Port forwarding stopped'));
+          console.log(`  ${container}:${port}`);
+        } catch (error) {
+          spinner.fail(chalk.red('Failed to stop port forwarding'));
+          throw error;
+        }
+        return;
+      }
+
+      console.log(chalk.yellow(`Unknown action: ${action}`));
+      console.log(chalk.gray('Available actions: list, forward, unforward'));
+    })
+  );
+
+devenvCommand
+  .command('detect')
+  .description('Detect containers and services')
+  .option('--json', 'Output as JSON')
+  .action(
+    createAsyncCommand(async (options) => {
+      const { DevEnvManager, detectContainerRuntime } = await import('./utils/dev-env-setup');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Detecting environment...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      try {
+        const runtime = await detectContainerRuntime();
+        if (!runtime) {
+          spinner.fail(chalk.red('No container runtime found'));
+          return;
+        }
+
+        const manager = new DevEnvManager({
+          projectPath: process.cwd(),
+          projectName: path.basename(process.cwd()),
+          ports: [],
+          containers: [],
+          containerRuntime: runtime,
+          enablePortForwarding: false,
+          enableServiceDiscovery: true,
+          autoStartContainers: false,
+        });
+
+        const containers = await manager.detectContainers();
+
+        spinner.stop();
+
+        if (options.json) {
+          console.log(JSON.stringify(containers, null, 2));
+          return;
+        }
+
+        console.log(chalk.cyan('\n🔍 Detected Containers and Services'));
+        console.log(chalk.gray('═'.repeat(60)));
+
+        if (containers.length === 0) {
+          console.log(chalk.yellow('No containers found'));
+          return;
+        }
+
+        for (const container of containers) {
+          const statusIcon = container.status === 'running' ? '🟢' : container.status === 'stopped' ? '⏹️' : '⚠️';
+          console.log(`\n${statusIcon} ${chalk.blue(container.name)}`);
+          console.log(`  Image: ${chalk.gray(container.image)}`);
+          console.log(`  Status: ${chalk.gray(container.status)}`);
+          if (container.ports.length > 0) {
+            console.log(`  Ports:`);
+            for (const port of container.ports) {
+              const label = port.host ? `${port.host} → ` : '';
+              console.log(`    ${chalk.blue(label + port.container)}/${port.protocol}`);
+            }
+          }
+        }
+
+        console.log(chalk.gray('\n═'.repeat(60)));
+        console.log(chalk.gray(`Runtime: ${runtime} | Total: ${containers.length} containers`));
+
+      } catch (error) {
+        spinner.fail(chalk.red('Detection failed'));
+        throw error;
+      }
+    })
+  );
+
+// Services management commands
+const servicesCommand = program.command('services').alias('svc').description('Manage development services');
+
+servicesCommand
+  .command('up')
+  .description('Start services with intelligent dependency resolution')
+  .option('-d, --detached', 'Run services in background', true)
+  .option('--build', 'Build images before starting')
+  .option('--force-recreate', 'Recreate containers even if configuration unchanged')
+  .option('--no-deps', 'Do not start dependent services')
+  .option('--scale <service=count...>', 'Scale services (e.g., web=3,worker=2)')
+  .option('--timeout <ms>', 'Startup timeout in milliseconds', '120000')
+  .option('--verbose', 'Show detailed output')
+  .action(
+    createAsyncCommand(async (options) => {
+      const spinner = createSpinner('Starting services...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      const { servicesUp } = await import('./commands/services');
+
+      await withTimeout(async () => {
+        const scale: Record<string, number> = {};
+        if (options.scale) {
+          for (const s of options.scale) {
+            const [service, count] = s.split('=');
+            scale[service] = parseInt(count);
+          }
+        }
+
+        await servicesUp(process.cwd(), {
+          detached: options.detached,
+          build: options.build,
+          forceRecreate: options.forceRecreate,
+          noDeps: options.noDeps,
+          scale,
+          timeout: parseInt(options.timeout),
+          verbose: options.verbose,
+          spinner,
+        });
+      }, parseInt(options.timeout) + 10000);
+
+      spinner.stop();
+    })
+  );
+
+servicesCommand
+  .command('down')
+  .description('Stop and remove services with graceful shutdown')
+  .option('-v, --volumes', 'Remove volumes as well')
+  .option('--remove-orphans', 'Remove containers for services not in compose file')
+  .option('--timeout <ms>', 'Shutdown timeout in milliseconds', '60000')
+  .option('--verbose', 'Show detailed output')
+  .action(
+    createAsyncCommand(async (options) => {
+      const spinner = createSpinner('Stopping services...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      const { servicesDown } = await import('./commands/services');
+
+      await withTimeout(async () => {
+        await servicesDown(process.cwd(), {
+          volumes: options.volumes,
+          removeOrphans: options.removeOrphans,
+          timeout: parseInt(options.timeout),
+          verbose: options.verbose,
+          spinner,
+        });
+      }, parseInt(options.timeout) + 10000);
+
+      spinner.stop();
+    })
+  );
+
+servicesCommand
+  .command('health')
+  .description('Check service health with comprehensive monitoring')
+  .option('-w, --watch', 'Watch health status continuously')
+  .option('--interval <ms>', 'Watch interval in milliseconds', '5000')
+  .option('--json', 'Output as JSON')
+  .option('--verbose', 'Show detailed information')
+  .action(
+    createAsyncCommand(async (options) => {
+      const { servicesHealth } = await import('./commands/services');
+
+      await servicesHealth(process.cwd(), {
+        watch: options.watch,
+        interval: parseInt(options.interval),
+        json: options.json,
+        verbose: options.verbose,
+      });
+    })
+  );
+
+servicesCommand
+  .command('logs [service]')
+  .description('View service logs with filtering and following')
+  .option('-f, --follow', 'Follow log output')
+  .option('--tail <lines>', 'Number of lines to show', '100')
+  .option('--verbose', 'Show detailed information')
+  .action(
+    createAsyncCommand(async (service, options) => {
+      const { servicesLogs } = await import('./commands/services');
+
+      await servicesLogs(process.cwd(), service, {
+        follow: options.follow,
+        tail: parseInt(options.tail),
+        verbose: options.verbose,
+      });
+    })
+  );
+
+servicesCommand
+  .command('restart <service>')
+  .description('Restart service with zero-downtime if possible')
+  .option('--timeout <ms>', 'Restart timeout in milliseconds', '60000')
+  .option('--verbose', 'Show detailed information')
+  .action(
+    createAsyncCommand(async (service, options) => {
+      const spinner = createSpinner(`Restarting ${service}...`).start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      const { servicesRestart } = await import('./commands/services');
+
+      await withTimeout(async () => {
+        await servicesRestart(process.cwd(), service, {
+          timeout: parseInt(options.timeout),
+          verbose: options.verbose,
+          spinner,
+        });
+      }, parseInt(options.timeout) + 10000);
+
+      spinner.stop();
+    })
+  );
+
+servicesCommand
+  .command('scale <service> <replicas>')
+  .description('Scale service to specified number of instances')
+  .option('--timeout <ms>', 'Scale timeout in milliseconds', '60000')
+  .option('--verbose', 'Show detailed information')
+  .action(
+    createAsyncCommand(async (service, replicas, options) => {
+      const spinner = createSpinner(`Scaling ${service}...`).start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      const { servicesScale } = await import('./commands/services');
+
+      await withTimeout(async () => {
+        await servicesScale(process.cwd(), service, parseInt(replicas), {
+          timeout: parseInt(options.timeout),
+          verbose: options.verbose,
+          spinner,
+        });
+      }, parseInt(options.timeout) + 10000);
+
+      spinner.stop();
+    })
+  );
+
+servicesCommand
+  .command('exec <service> <command...>')
+  .description('Execute command in service container')
+  .option('-T, --no-tty', 'Disable pseudo-TTY allocation')
+  .option('--verbose', 'Show detailed information')
+  .action(
+    createAsyncCommand(async (service, command, options) => {
+      const { servicesExec } = await import('./commands/services');
+
+      await servicesExec(process.cwd(), service, command, {
+        interactive: !options.noTty,
+        verbose: options.verbose,
+      });
+    })
+  );
+
+servicesCommand
+  .command('inspect <service>')
+  .description('Inspect service with detailed metrics and dependency information')
+  .option('--json', 'Output as JSON')
+  .option('--verbose', 'Show detailed information')
+  .action(
+    createAsyncCommand(async (service, options) => {
+      const { servicesInspect } = await import('./commands/services');
+
+      await servicesInspect(process.cwd(), service, {
+        json: options.json,
+        verbose: options.verbose,
+      });
+    })
+  );
+
+servicesCommand
+  .command('migrate <service> <target-framework>')
+  .description('Migrate service to a different framework/language')
+  .option('--source <framework>', 'Source framework (auto-detected if not specified)')
+  .option('--dry-run', 'Preview migration without making changes')
+  .option('--no-backup', 'Skip creating backup before migration')
+  .option('--generate-tests', 'Generate tests for target framework')
+  .option('--list-targets', 'List available migration targets')
+  .action(
+    createAsyncCommand(async (service, targetFramework, options) => {
+      const { servicesMigrate, listMigrationTargets } = await import('./commands/services');
+
+      if (options.listTargets) {
+        await listMigrationTargets(options.source);
+        return;
+      }
+
+      const spinner = createSpinner('Planning migration...').start();
+      processManager.addCleanup(() => spinner.stop());
+
+      await servicesMigrate(process.cwd(), service, {
+        sourceFramework: options.source || 'express', // Default to express if not specified
+        targetFramework,
+        dryRun: options.dryRun,
+        backup: options.backup !== false,
+        generateTests: options.generateTests,
+        spinner,
+      });
+
+      spinner.stop();
+    })
+  );
+
+servicesCommand
+  .command('optimize <service>')
+  .description('Analyze and optimize service with performance recommendations')
+  .option('--framework <framework>', 'Framework to analyze (auto-detected if not specified)')
+  .option('--apply', 'Apply recommended optimizations')
+  .option('--dry-run', 'Preview optimizations without making changes (default)')
+  .option('--list-all', 'List all available optimization recommendations')
+  .action(
+    createAsyncCommand(async (service, options) => {
+      const { servicesOptimize, listOptimizationRecommendations } = await import('./commands/services');
+
+      if (options.listAll) {
+        await listOptimizationRecommendations(options.framework);
+        return;
+      }
+
+      const spinner = createSpinner('Analyzing service...').start();
+      processManager.addCleanup(() => spinner.stop());
+
+      await servicesOptimize(process.cwd(), service, {
+        framework: options.framework,
+        apply: options.apply,
+        dryRun: !options.apply,
+        spinner,
+      });
+
+      spinner.stop();
+    })
+  );
+
+// Debug configuration commands
+const debugCommand = program.command('debug').description('Generate debugging configurations for development environments');
+
+debugCommand
+  .command('generate')
+  .description('Generate debug configurations for your project')
+  .option('--framework <framework>', 'Backend framework (express, nestjs, fastapi, django, etc.)')
+  .option('--language <language>', 'Programming language (typescript, python, go, rust, etc.)')
+  .option('--type <type>', 'Project type (backend, frontend, fullstack)', 'backend')
+  .option('--entry <path>', 'Entry point file path')
+  .option('--port <port>', 'Development server port')
+  .option('--force', 'Overwrite existing configuration files')
+  .option('--dry-run', 'Preview without writing files')
+  .action(
+    createAsyncCommand(async (options) => {
+      const { writeDebugConfigs, displayDebugConfigInfo } = await import('./utils/debugging');
+
+      const projectPath = process.cwd();
+      const name = path.basename(projectPath);
+
+      const project = {
+        name,
+        type: options.type as 'backend' | 'frontend' | 'fullstack',
+        framework: options.framework || 'express',
+        language: options.language || 'typescript',
+        entryPoint: options.entry,
+        port: options.port ? parseInt(options.port) : undefined,
+      };
+
+      console.log(chalk.cyan(`\n🐛 Generating debug configurations for ${name}...\n`));
+
+      displayDebugConfigInfo(project);
+
+      if (!options.dryRun) {
+        await writeDebugConfigs(projectPath, project, {
+          force: options.force,
+          verbose: true,
+        });
+
+        console.log(chalk.green('\n✅ Debug configurations generated!'));
+        console.log(chalk.gray('\nNext steps:'));
+        console.log(chalk.gray('  1. Open your project in VS Code'));
+        console.log(chalk.gray('  2. Press F5 to start debugging'));
+        console.log(chalk.gray('  3. Select a configuration from the dropdown'));
+      } else {
+        console.log(chalk.yellow('\nDry run - no files written.'));
+      }
+    })
+  );
+
+debugCommand
+  .command('list <language>')
+  .description('List available debugging configurations for a language')
+  .action(
+    createAsyncCommand(async (language, options) => {
+      const { displayDebugConfigInfo } = await import('./utils/debugging');
+
+      const project = {
+        name: 'example-app',
+        type: 'backend' as const,
+        framework: language === 'python' ? 'fastapi' : language === 'go' ? 'gin' : 'express',
+        language,
+        entryPoint: language === 'python' ? 'src/main.py' : 'src/index.js',
+        port: 3000,
+      };
+
+      displayDebugConfigInfo(project);
+    })
+  );
+
+// OpenAPI specification generator commands
+const openapiCommand = program.command('openapi').alias('api').description('Auto-generate OpenAPI specifications from code annotations');
+
+openapiCommand
+  .command('generate [path]')
+  .description('Generate OpenAPI specification from code')
+  .option('--framework <framework>', 'Backend framework (express, nestjs, fastify, fastapi, django, flask, rails, etc.)')
+  .option('--output <file>', 'Output file path', 'openapi.yaml')
+  .option('--format <format>', 'Output format (yaml or json)', 'yaml')
+  .option('--title <title>', 'API title')
+  .option('--description <description>', 'API description')
+  .option('--version <version>', 'API version', '1.0.0')
+  .option('--port <port>', 'Server port', '3000')
+  .option('--base-path <path>', 'Base API path', '/api/v1')
+  .option('--dry-run', 'Preview without writing file')
+  .action(
+    createAsyncCommand(async (targetPath, options) => {
+      const { createOpenAPIGenerator, getSupportedFrameworks, formatOpenAPISpec } = await import('./utils/openapi-generator');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = path.resolve(targetPath || process.cwd());
+      const outputPath = path.resolve(projectPath, options.output);
+      const name = path.basename(projectPath);
+
+      const spinner = createSpinner('Detecting framework...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        const generator = await createOpenAPIGenerator(projectPath, options.framework);
+
+        // Detect framework if not specified
+        const detectedFramework = options.framework || await generator.detectFramework();
+        spinner.setText(`Generating OpenAPI spec for ${name} (Framework: ${detectedFramework})...`);
+        flushOutput();
+
+        // Generate spec
+        const spec = await generator.generateSpec({
+          info: {
+            title: options.title || name,
+            description: options.description,
+            version: options.version,
+          },
+        });
+
+        // Update server URL if custom port/base-path provided
+        if (options.port || options.basePath) {
+          spec.servers = [{
+            url: `http://localhost:${options.port}${options.basePath}`,
+            description: 'Development server',
+          }];
+        }
+
+        spinner.stop();
+
+        if (options.dryRun) {
+          console.log(chalk.cyan(`\n📄 OpenAPI Specification for ${name}\n`));
+          console.log(formatOpenAPISpec(spec));
+          console.log(chalk.yellow('\nDry run - no file written.'));
+        } else {
+          // Write spec to file
+          const { OpenAPIGenerator } = await import('./utils/openapi-generator');
+          const writeGenerator = new OpenAPIGenerator(projectPath, detectedFramework);
+          await writeGenerator.writeSpec(outputPath, options.format as 'yaml' | 'json', {
+            info: {
+              title: options.title || name,
+              description: options.description,
+              version: options.version,
+            },
+          });
+
+          console.log(chalk.green(`\n✓ OpenAPI specification generated successfully!\n`));
+          console.log(chalk.gray(`Framework: ${detectedFramework}`));
+          console.log(chalk.gray(`Output: ${outputPath}`));
+          console.log(chalk.gray(`Format: ${options.format}`));
+          console.log(`\nEndpoints: ${chalk.blue(String(Object.keys(spec.paths).length))}`);
+
+          for (const [routePath, pathItem] of Object.entries(spec.paths)) {
+            const methods = Object.keys(pathItem).filter(m => m !== 'parameters' && m !== '$ref' && m !== 'summary' && m !== 'description');
+            for (const method of methods) {
+              const operation = pathItem[method as keyof typeof pathItem] as { summary?: string };
+              console.log(`  ${chalk.green(method.toUpperCase().padEnd(6))} ${chalk.gray(routePath)} ${operation.summary ? chalk.blue('- ' + operation.summary) : ''}`);
+            }
+          }
+        }
+      }, 60000); // 1 minute timeout
+    })
+  );
+
+openapiCommand
+  .command('discover [path]')
+  .description('Discover and list API routes from code')
+  .option('--framework <framework>', 'Backend framework')
+  .option('--json', 'Output as JSON')
+  .action(
+    createAsyncCommand(async (targetPath, options) => {
+      const { createOpenAPIGenerator } = await import('./utils/openapi-generator');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = path.resolve(targetPath || process.cwd());
+      const name = path.basename(projectPath);
+
+      const spinner = createSpinner('Discovering routes...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        const generator = await createOpenAPIGenerator(projectPath, options.framework);
+        const routes = await generator.discoverRoutes();
+
+        spinner.stop();
+
+        if (options.json) {
+          console.log(JSON.stringify(routes, null, 2));
+        } else {
+          console.log(chalk.cyan(`\n🔍 Discovered ${routes.length} routes in ${name}\n`));
+
+          // Group by tag/file
+          const byTag: Record<string, typeof routes> = {};
+          for (const route of routes) {
+            const tag = route.tags[0] || 'default';
+            if (!byTag[tag]) byTag[tag] = [];
+            byTag[tag].push(route);
+          }
+
+          for (const [tag, tagRoutes] of Object.entries(byTag)) {
+            console.log(chalk.blue(`${tag}:`));
+            for (const route of tagRoutes) {
+              console.log(`  ${chalk.green(route.method.toUpperCase().padEnd(6))} ${chalk.gray(route.path)} - ${route.operation}`);
+              if (route.parameters.length > 0) {
+                console.log(chalk.gray(`     Params: ${route.parameters.map(p => p.name).join(', ')}`));
+              }
+            }
+          }
+        }
+      }, 60000);
+    })
+  );
+
+openapiCommand
+  .command('list-frameworks')
+  .description('List all supported frameworks')
+  .action(
+    createAsyncCommand(async () => {
+      const { getSupportedFrameworks } = await import('./utils/openapi-generator');
+
+      const frameworks = getSupportedFrameworks();
+
+      console.log(chalk.cyan('\n📋 Supported Frameworks\n'));
+
+      const byLanguage: Record<string, string[]> = {
+        'JavaScript/TypeScript': ['express', 'nestjs', 'fastify'],
+        'Python': ['fastapi', 'django', 'flask'],
+        'Ruby': ['rails'],
+        'Java': ['spring-boot'],
+        'C#': ['aspnet-core'],
+        'Go': ['gin', 'chi', 'fiber'],
+        'Rust': ['actix', 'axum'],
+      };
+
+      for (const [language, langFrameworks] of Object.entries(byLanguage)) {
+        console.log(chalk.blue(`${language}:`));
+        for (const fw of langFrameworks) {
+          if (frameworks.includes(fw)) {
+            console.log(`  ${chalk.gray('•')} ${fw}`);
+          }
+        }
+      }
+
+      console.log(chalk.gray('\nUsage: re-shell openapi generate [--framework <name>]'));
+    })
+  );
+
+openapiCommand
+  .command('annotate <framework>')
+  .description('Show example OpenAPI annotations for a framework')
+  .option('--route <route>', 'Example route path', '/users')
+  .option('--method <method>', 'HTTP method', 'get')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { OpenAPIGenerator } = await import('./utils/openapi-generator');
+
+      const generator = new OpenAPIGenerator(process.cwd(), framework);
+      const code = generator.generateAnnotatedCode(framework, {
+        routePath: options.route,
+        method: options.method,
+        operation: `${options.method}${options.route.replace(/\//g, '-')}`.replace(/^-/, ''),
+        tags: ['api'],
+      });
+
+      console.log(chalk.cyan(`\n📝 OpenAPI Annotations for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(code);
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
+// Swagger UI commands
+const swaggerCommand = program.command('swagger').alias('api-ui').description('Generate Swagger UI documentation with custom branding');
+
+swaggerCommand
+  .command('generate [path]')
+  .description('Generate Swagger UI HTML')
+  .option('--output <file>', 'Output HTML file path', 'swagger-ui.html')
+  .option('--title <title>', 'API documentation title', 'API Documentation')
+  .option('--description <description>', 'API documentation description')
+  .option('--logo <url>', 'Logo URL for branding')
+  .option('--favicon <url>', 'Favicon URL')
+  .option('--theme-color <color>', 'Theme color (hex)', '#3b82f6')
+  .option('--spec <url>', 'OpenAPI spec URL (for single service)')
+  .option('--service-name <name>', 'Service name (for single service)')
+  .option('--try-it-out', 'Enable Try It Out feature (default: true)')
+  .option('--no-try-it-out', 'Disable Try It Out feature')
+  .option('--persist-auth', 'Persist authorization (default: true)')
+  .option('--no-persist-auth', 'Do not persist authorization')
+  .option('--dry-run', 'Preview without writing file')
+  .action(
+    createAsyncCommand(async (targetPath, options) => {
+      const { generateSwaggerUIHTML, formatSwaggerUIConfig } = await import('./utils/swagger-ui');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = path.resolve(targetPath || process.cwd());
+      const outputPath = path.resolve(projectPath, options.output);
+
+      const spinner = createSpinner('Generating Swagger UI...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        const config = {
+          title: options.title,
+          description: options.description,
+          logoUrl: options.logo,
+          faviconUrl: options.favicon,
+          themeColor: options.themeColor,
+          services: options.spec ? [{
+            name: options.serviceName || 'API',
+            url: options.spec,
+            description: options.description || 'API Documentation',
+            version: '1.0.0',
+          }] : [],
+          persistAuthorization: options.persistAuth !== false,
+          tryItOutEnabled: options.tryItOut !== false,
+          displayOperationId: false,
+          displayRequestDuration: true,
+          docExpansion: 'list' as const,
+          filter: true,
+        };
+
+        spinner.stop();
+
+        if (options.dryRun) {
+          console.log(formatSwaggerUIConfig(config));
+          console.log(chalk.yellow('\nDry run - no file written.'));
+        } else {
+          const html = generateSwaggerUIHTML(config);
+          await fs.ensureDir(path.dirname(outputPath));
+          await fs.writeFile(outputPath, html, 'utf-8');
+
+          console.log(chalk.green(`\n✓ Swagger UI generated successfully!\n`));
+          console.log(chalk.gray(`Output: ${outputPath}`));
+          console.log(chalk.gray(`Services: ${config.services.length}`));
+          console.log(`\nNext steps:`);
+          console.log(`  1. Open ${chalk.cyan(outputPath)} in your browser`);
+          console.log(`  2. Or serve it: npx serve ${path.dirname(outputPath)}`);
+        }
+      }, 30000);
+    })
+  );
+
+swaggerCommand
+  .command('multi-service [path]')
+  .description('Generate multi-service Swagger UI from workspace')
+  .option('--output <file>', 'Output HTML file path', 'swagger-ui.html')
+  .option('--title <title>', 'API documentation title', 'API Documentation')
+  .option('--description <description>', 'API documentation description')
+  .option('--logo <url>', 'Logo URL for branding')
+  .option('--theme-color <color>', 'Theme color (hex)', '#3b82f6')
+  .option('--dry-run', 'Preview without writing file')
+  .action(
+    createAsyncCommand(async (targetPath, options) => {
+      const { detectServices, generateSwaggerUI, formatSwaggerUIConfig } = await import('./utils/swagger-ui');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = path.resolve(targetPath || process.cwd());
+      const outputPath = path.resolve(projectPath, options.output);
+
+      const spinner = createSpinner('Detecting services...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        spinner.setText('Scanning workspace for OpenAPI specs...');
+        const services = await detectServices(projectPath);
+
+        if (services.length === 0) {
+          spinner.stop();
+          console.log(chalk.yellow('\nNo services found with OpenAPI specs (openapi.yaml or openapi.json)'));
+          console.log(chalk.gray('\nHint: Generate specs first with: re-shell openapi generate [path]'));
+          return;
+        }
+
+        spinner.setText(`Generating Swagger UI for ${services.length} services...`);
+
+        const config = {
+          title: options.title,
+          description: options.description,
+          logoUrl: options.logo,
+          themeColor: options.themeColor,
+          services,
+          persistAuthorization: true,
+          tryItOutEnabled: true,
+          displayOperationId: false,
+          displayRequestDuration: true,
+          docExpansion: 'list' as const,
+          filter: true,
+        };
+
+        spinner.stop();
+
+        if (options.dryRun) {
+          console.log(formatSwaggerUIConfig(config));
+          console.log(chalk.yellow('\nDry run - no file written.'));
+        } else {
+          await generateSwaggerUI(outputPath, config);
+
+          console.log(chalk.green(`\n✓ Multi-service Swagger UI generated successfully!\n`));
+          console.log(chalk.gray(`Output: ${outputPath}`));
+          console.log(chalk.gray(`Services: ${services.length}`));
+
+          for (const service of services) {
+            console.log(`  ${chalk.gray('•')} ${chalk.yellow(service.name)} - ${chalk.gray(service.specPath || 'N/A')}`);
+          }
+
+          console.log(`\nNext steps:`);
+          console.log(`  1. Open ${chalk.cyan(outputPath)} in your browser`);
+          console.log(`  2. Select a service to view its API documentation`);
+        }
+      }, 30000);
+    })
+  );
+
+swaggerCommand
+  .command('list-services [path]')
+  .description('List detected services in workspace')
+  .action(
+    createAsyncCommand(async (targetPath, options) => {
+      const { detectServices } = await import('./utils/swagger-ui');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = path.resolve(targetPath || process.cwd());
+
+      const spinner = createSpinner('Scanning workspace...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        const services = await detectServices(projectPath);
+        spinner.stop();
+
+        if (services.length === 0) {
+          console.log(chalk.yellow('\nNo services found with OpenAPI specs'));
+          console.log(chalk.gray('\nGenerate specs first with: re-shell openapi generate [path]'));
+        } else {
+          console.log(chalk.cyan(`\n🔍 Found ${services.length} service(s)\n`));
+
+          for (const service of services) {
+            console.log(`${chalk.yellow(service.name)}`);
+            console.log(`  ${chalk.gray('Spec:')} ${service.specPath}`);
+            if (service.description) {
+              console.log(`  ${chalk.gray('Description:')} ${service.description}`);
+            }
+            console.log('');
+          }
+        }
+      }, 30000);
+    })
+  );
+
+swaggerCommand
+  .command('themes')
+  .description('List available theme colors')
+  .action(
+    createAsyncCommand(async () => {
+      const { getThemePresets } = await import('./utils/swagger-ui');
+
+      const themes = getThemePresets();
+
+      console.log(chalk.cyan('\n🎨 Available Theme Colors\n'));
+
+      for (const [key, { color, name }] of Object.entries(themes)) {
+        console.log(`  ${key.padEnd(10)} ${chalk.gray('─')} ${chalk.hex(color)(name)} ${chalk.gray(`(${color})`)}`);
+      }
+
+      console.log(chalk.gray('\nUsage: re-shell swagger generate --theme-color <hex-value>\n'));
+    })
+  );
+
+// API Versioning commands
+const versioningCommand = program.command('versioning').alias('api-version').description('API versioning patterns and backwards compatibility management');
+
+versioningCommand
+  .command('init [path]')
+  .description('Initialize API versioning configuration')
+  .option('--output <file>', 'Config output file', 'api-versioning.json')
+  .option('--strategy <strategy>', 'Versioning strategy (url, header, query, content-type)', 'url')
+  .option('--default-version <version>', 'Default API version', '1')
+  .option('--header-name <name>', 'Header name for header-based versioning', 'X-API-Version')
+  .option('--dry-run', 'Preview without writing file')
+  .action(
+    createAsyncCommand(async (targetPath, options) => {
+      const { createVersioningGenerator, formatVersioningConfig } = await import('./utils/api-versioning');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = path.resolve(targetPath || process.cwd());
+      const outputPath = path.resolve(projectPath, options.output);
+
+      const spinner = createSpinner('Creating versioning configuration...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        const generator = await createVersioningGenerator(projectPath);
+        const config = generator.generateVersioningConfig({
+          strategy: options.strategy as any,
+          defaultVersion: options.defaultVersion,
+          headerName: options.headerName,
+        });
+
+        spinner.stop();
+
+        if (options.dryRun) {
+          console.log(formatVersioningConfig(config));
+          console.log(chalk.yellow('\nDry run - no file written.'));
+        } else {
+          await generator.writeConfig(outputPath, config);
+
+          console.log(chalk.green(`\n✓ API versioning configuration created!\n`));
+          console.log(chalk.gray(`Output: ${outputPath}`));
+          console.log(chalk.gray(`Strategy: ${config.strategy}`));
+          console.log(chalk.gray(`Default Version: v${config.defaultVersion}`));
+          console.log(`\nNext steps:`);
+          console.log(`  1. Review the configuration in ${chalk.cyan(outputPath)}`);
+          console.log(`  2. Generate middleware: re-shell versioning middleware --strategy ${config.strategy}`);
+        }
+      }, 30000);
+    })
+  );
+
+versioningCommand
+  .command('middleware [path]')
+  .description('Generate versioning middleware for your framework')
+  .option('--strategy <strategy>', 'Versioning strategy (url, header, query, content-type)', 'url')
+  .option('--framework <framework>', 'Backend framework (express, nestjs, fastapi, etc.)')
+  .option('--output <file>', 'Output file path', 'versioning-middleware.ts')
+  .action(
+    createAsyncCommand(async (targetPath, options) => {
+      const { createVersioningGenerator } = await import('./utils/api-versioning');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = path.resolve(targetPath || process.cwd());
+      const outputPath = path.resolve(projectPath, options.output);
+
+      const spinner = createSpinner('Generating versioning middleware...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        const generator = await createVersioningGenerator(projectPath, options.framework);
+        const middleware = generator.generateVersioningMiddleware(options.strategy as any);
+
+        spinner.stop();
+
+        await fs.ensureDir(path.dirname(outputPath));
+        await fs.writeFile(outputPath, middleware, 'utf-8');
+
+        console.log(chalk.green(`\n✓ Versioning middleware generated!\n`));
+        console.log(chalk.gray(`Output: ${outputPath}`));
+        console.log(chalk.gray(`Strategy: ${options.strategy}`));
+        console.log(`\nAdd this middleware to your application's request pipeline.`);
+      }, 30000);
+    })
+  );
+
+versioningCommand
+  .command('compare <old-spec> <new-spec>')
+  .description('Compare two API specs to detect breaking changes')
+  .action(
+    createAsyncCommand(async (oldSpecPath, newSpecPath, options) => {
+      const { detectBreakingChanges, formatBreakingChanges } = await import('./utils/api-versioning');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Comparing API specifications...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        const oldSpec = await fs.readJson(path.resolve(oldSpecPath));
+        const newSpec = await fs.readJson(path.resolve(newSpecPath));
+
+        spinner.stop();
+
+        const changes = detectBreakingChanges(oldSpec, newSpec);
+        console.log(formatBreakingChanges(changes));
+
+        if (changes.length > 0) {
+          console.log(chalk.yellow(`⚠️  ${changes.length} breaking change(s) found. Consider a major version bump.`));
+        } else {
+          console.log(chalk.green(`✓ No breaking changes. Safe for minor/patch version update.`));
+        }
+      }, 30000);
+    })
+  );
+
+versioningCommand
+  .command('migrate <from-version> <to-version>')
+  .description('Generate migration guide between API versions')
+  .option('--old-spec <file>', 'Old API spec file')
+  .option('--new-spec <file>', 'New API spec file')
+  .option('--output <file>', 'Output markdown file', 'MIGRATION.md')
+  .action(
+    createAsyncCommand(async (fromVersion, toVersion, options) => {
+      const { detectBreakingChanges, generateMigrationGuide } = await import('./utils/api-versioning');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const spinner = createSpinner('Generating migration guide...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        let breakingChanges: any[] = [];
+
+        if (options.oldSpec && options.newSpec) {
+          const oldSpec = await fs.readJson(path.resolve(options.oldSpec));
+          const newSpec = await fs.readJson(path.resolve(options.newSpec));
+          breakingChanges = detectBreakingChanges(oldSpec, newSpec);
+        }
+
+        spinner.stop();
+
+        const guide = generateMigrationGuide(fromVersion, toVersion, breakingChanges);
+        const outputPath = path.resolve(options.output);
+
+        await fs.writeFile(outputPath, guide, 'utf-8');
+
+        console.log(chalk.green(`\n✓ Migration guide generated!\n`));
+        console.log(chalk.gray(`Output: ${outputPath}`));
+        console.log(chalk.gray(`From: v${fromVersion} → v${toVersion}`));
+        console.log(chalk.gray(`Breaking Changes: ${breakingChanges.length}`));
+      }, 30000);
+    })
+  );
+
+versioningCommand
+  .command('template <framework>')
+  .description('Show versioning template for a framework')
+  .option('--strategy <strategy>', 'Versioning strategy (url, header)', 'url')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { getVersioningTemplate } = await import('./utils/api-versioning');
+
+      const template = getVersioningTemplate(framework);
+
+      if (!template) {
+        console.log(chalk.yellow(`\nNo versioning template found for ${chalk.cyan(framework)}`));
+        console.log(chalk.gray('\nSupported frameworks: express, nestjs, fastapi, django, aspnet-core, spring-boot, gin, rust-actix'));
+        return;
+      }
+
+      console.log(chalk.cyan(`\n📋 Versioning Template for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Language:')} ${template.language}`);
+      console.log(`${chalk.blue('URL Pattern:')} ${template.urlPattern}`);
+      console.log(`${chalk.blue('Header Pattern:')} ${template.headerPattern}`);
+      console.log(`\n${chalk.blue('Example Code:')}\n`);
+      console.log(chalk.gray(template.exampleCode));
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
+versioningCommand
+  .command('list-strategies')
+  .description('List all available versioning strategies')
+  .action(
+    createAsyncCommand(async () => {
+      console.log(chalk.cyan('\n📋 API Versioning Strategies\n'));
+
+      const strategies = [
+        {
+          name: 'url',
+          description: 'URL-based versioning',
+          example: '/api/v1/users, /api/v2/users',
+          pros: ['Clear separation', 'Easy caching', 'Simple routing'],
+          cons: ['Multiple endpoints', 'URL bloat'],
+        },
+        {
+          name: 'header',
+          description: 'Header-based versioning',
+          example: 'X-API-Version: 2',
+          pros: ['Single endpoint URL', 'Clean API', 'Backward compatible'],
+          cons: ['Less discoverable', 'Cache complexity'],
+        },
+        {
+          name: 'query',
+          description: 'Query parameter versioning',
+          example: '/users?version=2',
+          pros: ['Simple to implement', 'Backward compatible'],
+          cons: ['Not RESTful best practice', 'Cache issues'],
+        },
+        {
+          name: 'content-type',
+          description: 'Content-Type negotiation',
+          example: 'Accept: application/vnd.api+json; version=2',
+          pros: ['RFC compliant', 'Clean URLs'],
+          cons: ['Complex client implementation'],
+        },
+      ];
+
+      for (const strategy of strategies) {
+        console.log(`${chalk.yellow(strategy.name.padEnd(15))} ${chalk.gray(strategy.description)}`);
+        console.log(`  ${chalk.gray('Example:')} ${chalk.cyan(strategy.example)}`);
+        console.log(`  ${chalk.green('✓')} ${strategy.pros.join(', ')}`);
+        if (strategy.cons.length > 0) {
+          console.log(`  ${chalk.red('✗')} ${strategy.cons.join(', ')}`);
+        }
+        console.log('');
+      }
     })
   );
 
