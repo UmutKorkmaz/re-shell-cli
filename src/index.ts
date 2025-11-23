@@ -4565,6 +4565,297 @@ versioningCommand
     })
   );
 
+// Validation middleware commands
+const validationCommand = program.command('validation').alias('validate').description('Request/response validation middleware for all frameworks');
+
+validationCommand
+  .command('generate [path]')
+  .description('Generate validation middleware for your framework')
+  .option('--framework <framework>', 'Backend framework (express, nestjs, fastify, fastapi, etc.)')
+  .option('--output <file>', 'Output file path')
+  .option('--mode <mode>', 'Validation mode (strict, lenient, permissive)', 'lenient')
+  .option('--no-request', 'Disable request validation')
+  .option('--response', 'Enable response validation')
+  .option('--strip-unknown', 'Strip unknown properties (default: true)')
+  .option('--no-strip-unknown', 'Do not strip unknown properties')
+  .option('--dry-run', 'Preview without writing file')
+  .action(
+    createAsyncCommand(async (targetPath, options) => {
+      const { generateValidationMiddleware, getValidationTemplate, formatValidationTemplate } = await import('./utils/validation-middleware');
+      const { createSpinner } = await import('./utils/spinner');
+
+      const projectPath = path.resolve(targetPath || process.cwd());
+      const framework = options.framework;
+
+      const spinner = createSpinner('Generating validation middleware...').start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        if (!framework) {
+          spinner.stop();
+          console.log(chalk.yellow('\nPlease specify a framework with --framework\n'));
+          console.log(chalk.gray('Supported: express, nestjs, fastify, fastapi, django, aspnet-core, spring-boot, gin, rust-axum'));
+          return;
+        }
+
+        const template = getValidationTemplate(framework);
+
+        if (!template) {
+          spinner.stop();
+          console.log(chalk.red(`\n❌ No validation template found for ${chalk.cyan(framework)}\n`));
+          console.log(chalk.gray('Supported frameworks: express, nestjs, fastify, fastapi, django, aspnet-core, spring-boot, gin, rust-axum'));
+          return;
+        }
+
+        const middleware = generateValidationMiddleware(framework, {
+          mode: options.mode as any,
+          validateRequest: options.request !== false,
+          validateResponse: options.response || false,
+          stripUnknown: options.stripUnknown !== false,
+        });
+
+        spinner.stop();
+
+        if (options.dryRun) {
+          console.log(formatValidationTemplate(template));
+          if (middleware) {
+            console.log(chalk.gray('\n--- Generated Middleware ---\n'));
+            console.log(chalk.gray(middleware));
+          }
+          console.log(chalk.yellow('\nDry run - no file written.'));
+        } else {
+          const outputPath = options.output || path.join(projectPath, template.middlewareFile);
+          await fs.ensureDir(path.dirname(outputPath));
+          await fs.writeFile(outputPath, middleware || '', 'utf-8');
+
+          console.log(chalk.green(`\n✓ Validation middleware generated!\n`));
+          console.log(chalk.gray(`Framework: ${framework}`));
+          console.log(chalk.gray(`Output: ${outputPath}`));
+          console.log(chalk.gray(`Mode: ${options.mode}`));
+
+          if (template.dependencies.length > 0) {
+            console.log(`\n${chalk.blue('Dependencies to install:')}`);
+            for (const dep of template.dependencies) {
+              console.log(`  ${chalk.gray('npm install')} ${chalk.cyan(dep)}`);
+            }
+          }
+        }
+      }, 30000);
+    })
+  );
+
+validationCommand
+  .command('template <framework>')
+  .description('Show validation middleware template for a framework')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { getValidationTemplate, formatValidationTemplate } = await import('./utils/validation-middleware');
+
+      const template = getValidationTemplate(framework);
+
+      if (!template) {
+        console.log(chalk.yellow(`\nNo validation template found for ${chalk.cyan(framework)}\n`));
+        console.log(chalk.gray('Supported frameworks: express, nestjs, fastify, fastapi, django, aspnet-core, spring-boot, gin, rust-axum'));
+        return;
+      }
+
+      console.log(formatValidationTemplate(template));
+    })
+  );
+
+validationCommand
+  .command('list-frameworks')
+  .description('List all supported frameworks for validation middleware')
+  .action(
+    createAsyncCommand(async () => {
+      console.log(chalk.cyan('\n🔍 Supported Frameworks\n'));
+
+      const frameworks = [
+        { name: 'express', language: 'TypeScript', validator: 'Joi' },
+        { name: 'nestjs', language: 'TypeScript', validator: 'Joi' },
+        { name: 'fastify', language: 'TypeScript', validator: 'Zod' },
+        { name: 'fastapi', language: 'Python', validator: 'Pydantic' },
+        { name: 'django', language: 'Python', validator: 'Pydantic' },
+        { name: 'aspnet-core', language: 'C#', validator: 'FluentValidation' },
+        { name: 'spring-boot', language: 'Java', validator: 'Bean Validation' },
+        { name: 'gin', language: 'Go', validator: 'go-playground/validator' },
+        { name: 'rust-axum', language: 'Rust', validator: 'validator crate' },
+      ];
+
+      for (const fw of frameworks) {
+        console.log(`${chalk.yellow(fw.name.padEnd(15))} ${chalk.gray(fw.language.padEnd(12))} ${chalk.cyan(fw.validator)}`);
+      }
+
+      console.log(chalk.gray('\nUsage: re-shell validation generate --framework <name>\n'));
+    })
+  );
+
+validationCommand
+  .command('schema <framework>')
+  .description('Generate schema validation template for a framework')
+  .option('--model-name <name>', 'Model/DTO name', 'User')
+  .option('--fields <fields>', 'Field definitions (name:type:validation)', 'name:string:required,email:string:email:required,age:int:min=18')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { getValidationTemplate } = await import('./utils/validation-middleware');
+
+      const template = getValidationTemplate(framework);
+
+      if (!template) {
+        console.log(chalk.yellow(`\nNo validation template found for ${chalk.cyan(framework)}\n`));
+        return;
+      }
+
+      console.log(chalk.cyan(`\n📋 Schema Template for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+
+      // Parse fields
+      const fields = options.fields.split(',').map(f => {
+        const parts = f.split(':');
+        return {
+          name: parts[0],
+          type: parts[1] || 'string',
+          validations: parts.slice(2) || [],
+        };
+      });
+
+      const modelName = options.modelName;
+      const schemaCode = generateSchemaCode(framework, modelName, fields);
+
+      console.log(chalk.gray(schemaCode));
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
+function generateSchemaCode(framework: string, modelName: string, fields: Array<{name: string; type: string; validations: string[]}>): string {
+  const templates: Record<string, string> = {
+    express: `// ${modelName} schema (Joi)
+const ${modelName}Schema = Joi.object({
+${fields.map(f => {
+  const v = f.validations.map(v => {
+    if (v === 'required') return '.required()';
+    if (v.startsWith('min=')) return `.min(${v.split('=')[1]})`;
+    if (v.startsWith('max=')) return `.max(${v.split('=')[1]})`;
+    if (v === 'email') return '.email()';
+    return '';
+  }).filter(Boolean).join('');
+  return `  ${f.name}: Joi.${f.type}()${v}`;
+}).join(',\n')}
+});`,
+    nestjs: `// ${modelName} DTO
+export class Create${modelName}Dto {
+${fields.map(f => {
+  const v = f.validations.map(v => {
+    if (v === 'required') return '@IsNotEmpty()';
+    if (v.startsWith('min=')) return `@Min(${v.split('=')[1]})`;
+    if (v.startsWith('max=')) return `@Max(${v.split('=')[1]})`;
+    if (v === 'email') return '@IsEmail()';
+    return '';
+  }).filter(Boolean).join('\n  ');
+  return `  ${v}
+  ${f.name}: ${f.type}${f.validations.includes('required') ? '' : ' | null'};`;
+}).join('\n\n')}
+}`,
+    fastapi: `# ${modelName} schema (Pydantic)
+from pydantic import BaseModel, EmailStr, Field
+
+class ${modelName}(BaseModel):
+${fields.map(f => {
+  const v = f.validations.map(v => {
+    if (v === 'required') return '';
+    if (v.startsWith('min=')) return `Field(ge=${v.split('=')[1]})`;
+    if (v.startsWith('max=')) return `Field(le=${v.split('=')[1]})`;
+    if (v === 'email') return 'EmailStr';
+    return '';
+  }).filter(Boolean).join(' ');
+  const optional = !f.validations.includes('required') ? ' | None = None' : '';
+  return `    ${f.name}: ${f.type}${optional}${v ? ' = ' + v : ''}`;
+}).join('\n')}
+}`,
+    django: `# ${modelName} schema (Pydantic)
+from pydantic import BaseModel, EmailStr, Field
+
+class ${modelName}(BaseModel):
+${fields.map(f => {
+  const v = f.validations.map(v => {
+    if (v === 'required') return '';
+    if (v.startsWith('min=')) return `Field(min_length=${v.split('=')[1]})`;
+    if (v.startsWith('max=')) return `Field(max_length=${v.split('=')[1]})`;
+    if (v === 'email') return 'EmailStr';
+    return '';
+  }).filter(Boolean).join(' ');
+  const optional = !f.validations.includes('required') ? ' = None' : '';
+  return `    ${f.name}: ${f.type}${optional}${v ? ' = ' + v : ''}`;
+}).join('\n')}
+}`,
+    gin: `// ${modelName} struct
+type ${modelName} struct {
+${fields.map(f => {
+  const v = f.validations.map(v => {
+    if (v === 'required') return 'validate:"required"';
+    if (v.startsWith('min=')) return `validate:"min=${v.split('=')[1]}"`;
+    if (v.startsWith('max=')) return `validate:"max=${v.split('=')[1]}"`;
+    if (v === 'email') return 'validate:"email"';
+    return '';
+  }).filter(Boolean).join(' ');
+  const tag = v ? (v + ' ') : '';
+  return `  ${f.name}  ${f.type} \`${tag}json:"${f.name}"\``;
+}).join('\n')}
+}`,
+    'aspnet-core': `// ${modelName} record
+public record Create${modelName}Request
+{
+${fields.map(f => {
+  const v = f.validations.map(v => {
+    if (v === 'required') return '[Required]';
+    if (v.startsWith('min=')) return `[Range(Minimum = ${v.split('=')[1]})]`;
+    if (v.startsWith('max=')) return `[Range(Maximum = ${v.split('=')[1]})]`;
+    if (v === 'email') return '[EmailAddress]';
+    return '';
+  }).filter(Boolean).join(' ');
+  return `  public ${f.type} ${f.name} { get; init; }${v}`;
+}).join('\n')}
+}`,
+    'spring-boot': `// ${modelName} record
+import jakarta.validation.constraints.*;
+
+public record Create${modelName}Request {
+${fields.map(f => {
+  const v = f.validations.map(v => {
+    if (v === 'required') return '@NotNull';
+    if (v.startsWith('min=')) return `@Size(min = ${v.split('=')[1]})`;
+    if (v.startsWith('max=')) return `@Size(max = ${v.split('=')[1]})`;
+    if (v === 'email') return '@Email';
+    return '';
+  }).filter(Boolean).join('\n  ');
+  return `  ${v}
+  private ${f.type} ${f.name};`;
+}).join('\n')}
+}`,
+    'rust-axum': `// ${modelName} struct
+use serde::{Deserialize, Serialize};
+use validator::Validate;
+
+#[derive(Debug, Deserialize, Serialize, Validate)]
+pub struct ${modelName} {
+${fields.map(f => {
+  const v = f.validations.map(v => {
+    if (v === 'required') return '';
+    if (v.startsWith('min=')) return `#[validate(length(min = ${v.split('=')[1]}))]`;
+    if (v.startsWith('max=')) return `#[validate(length(max = ${v.split('=')[1]}))]`;
+    if (v === 'email') return `#[validate(email)]`;
+    return '';
+  }).filter(Boolean).join('\n  ');
+  return `  ${v}
+  pub ${f.name}: ${f.type},`;
+}).join('\n')}
+}`,
+  };
+
+  return templates[framework] || `// No schema template for ${framework}`;
+}
+
 // Workspace definition commands
 const workspaceDefCommand = program.command('workspace-def').description('Manage workspace definitions and schemas');
 
