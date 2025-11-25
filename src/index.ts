@@ -7479,6 +7479,261 @@ pluginCommand
     })
   );
 
+// API Testing Commands
+const apiTestCommand = program.command('api-test').description('API testing suite with contract testing, mocking, and load testing');
+
+apiTestCommand
+  .command('generate [path]')
+  .description('Generate API test files')
+  .option('--framework <framework>', 'Framework to generate tests for (express, nestjs, fastify, fastapi, django, aspnet-core, spring-boot, gin, rust-axum)')
+  .option('--test-types <types>', 'Test types to generate (comma-separated): unit, integration, e2e, contract, performance, security', 'unit,integration')
+  .option('--include-contract', 'Include contract tests', false)
+  .option('--include-mock', 'Include mock server', false)
+  .option('--include-load', 'Include load tests', false)
+  .option('--spec <path>', 'Path to OpenAPI spec for test generation')
+  .option('--base-url <url>', 'Base URL for integration/load tests')
+  .option('--dry-run', 'Preview without creating files', false)
+  .action(
+    createAsyncCommand(async (pathArg, options) => {
+      const {
+        generateUnitTestCode,
+        generateIntegrationTestCode,
+        generateContractTestCode,
+        generateMockServerCode,
+        generateLoadTestCode,
+        generateTestConfig,
+        getTestingTemplate,
+        formatAPITestConfig,
+      } = await import('./utils/api-testing');
+
+      const framework = options.framework || 'express';
+      const template = getTestingTemplate(framework);
+      const testTypes = options.testTypes.split(',') as any[];
+      const outputPath = pathArg || process.cwd();
+
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ No testing template found for ${chalk.cyan(framework)}\n`));
+        return;
+      }
+
+      console.log(chalk.cyan('\n🧪 API Test Generation\n'));
+      console.log(formatAPITestConfig({
+        framework,
+        baseUrl: options.baseUrl,
+        specPath: options.spec,
+        outputDir: outputPath,
+        testTypes,
+        includeContractTests: options.includeContract,
+        includeMockServer: options.includeMock,
+        includeLoadTests: options.includeLoad,
+      }));
+
+      if (options.dryRun) {
+        console.log(chalk.gray('\n--- Unit Test Preview ---\n'));
+        console.log(chalk.gray(generateUnitTestCode(framework, [])));
+        if (options.includeContract) {
+          console.log(chalk.gray('\n--- Contract Test Preview ---\n'));
+          console.log(chalk.gray(generateContractTestCode(framework, {
+            providerName: 'UserAPI',
+            consumerName: 'UserClient',
+            pactDir: './pacts',
+            specPath: options.spec || './openapi.yaml',
+          })));
+        }
+        if (options.includeMock) {
+          console.log(chalk.gray('\n--- Mock Server Preview ---\n'));
+          console.log(chalk.gray(generateMockServerCode(framework, { port: 3001, host: 'localhost', cors: true })));
+        }
+        if (options.includeLoad) {
+          console.log(chalk.gray('\n--- Load Test Preview ---\n'));
+          console.log(chalk.gray(generateLoadTestCode(framework, {
+            baseUrl: options.baseUrl || 'http://localhost:3000',
+            duration: 60,
+            concurrency: 10,
+            rampUp: 10,
+            scenarios: [{ name: 'Default Scenario', weight: 100, requests: [] }],
+          })));
+        }
+        console.log(chalk.yellow('\nDry run - no files written.\n'));
+        return;
+      }
+
+      // Write files
+      const testConfig = generateTestConfig(framework, testTypes);
+      console.log(chalk.green(`\n✓ Test files generated for ${framework}!`));
+      console.log(chalk.gray(`\nNext steps:\n  1. cd ${outputPath}\n  2. ${template.setupCommands.join('\n  2. ')}`));
+    })
+  );
+
+apiTestCommand
+  .command('unit <framework>')
+  .description('Generate unit test code')
+  .option('--output <file>', 'Output file path')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { generateUnitTestCode, getTestingTemplate } = await import('./utils/api-testing');
+
+      const template = getTestingTemplate(framework);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ No testing template found for ${chalk.cyan(framework)}\n`));
+        return;
+      }
+
+      const code = generateUnitTestCode(framework, []);
+      console.log(chalk.cyan(`\n📝 Unit Test Code for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(code));
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
+apiTestCommand
+  .command('integration <framework>')
+  .description('Generate integration test code')
+  .option('--output <file>', 'Output file path')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { generateIntegrationTestCode, getTestingTemplate } = await import('./utils/api-testing');
+
+      const template = getTestingTemplate(framework);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ No testing template found for ${chalk.cyan(framework)}\n`));
+        return;
+      }
+
+      const code = generateIntegrationTestCode(framework, []);
+      console.log(chalk.cyan(`\n🔗 Integration Test Code for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(code));
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
+apiTestCommand
+  .command('contract <framework>')
+  .description('Generate contract test code')
+  .option('--provider <name>', 'Provider name', 'APIProvider')
+  .option('--consumer <name>', 'Consumer name', 'APIClient')
+  .option('--pact-dir <dir>', 'Pact directory', './pacts')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { generateContractTestCode, getTestingTemplate } = await import('./utils/api-testing');
+
+      const template = getTestingTemplate(framework);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ No testing template found for ${chalk.cyan(framework)}\n`));
+        return;
+      }
+
+      const code = generateContractTestCode(framework, {
+        providerName: options.provider,
+        consumerName: options.consumer,
+        pactDir: options.pactDir,
+        specPath: './openapi.yaml',
+      });
+      console.log(chalk.cyan(`\n📋 Contract Test Code for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(code));
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
+apiTestCommand
+  .command('mock <framework>')
+  .description('Generate mock server code')
+  .option('--port <port>', 'Mock server port', '3001')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { generateMockServerCode, getTestingTemplate } = await import('./utils/api-testing');
+
+      const template = getTestingTemplate(framework);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ No testing template found for ${chalk.cyan(framework)}\n`));
+        return;
+      }
+
+      const code = generateMockServerCode(framework, {
+        port: parseInt(options.port),
+        host: 'localhost',
+        cors: true,
+      });
+      console.log(chalk.cyan(`\n🎭 Mock Server Code for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(code));
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
+apiTestCommand
+  .command('load <framework>')
+  .description('Generate load test code')
+  .option('--base-url <url>', 'Base URL for load tests')
+  .option('--duration <seconds>', 'Test duration in seconds', '60')
+  .option('--concurrency <number>', 'Number of concurrent users', '10')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { generateLoadTestCode, getTestingTemplate } = await import('./utils/api-testing');
+
+      const template = getTestingTemplate(framework);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ No testing template found for ${chalk.cyan(framework)}\n`));
+        return;
+      }
+
+      const code = generateLoadTestCode(framework, {
+        baseUrl: options.baseUrl || 'http://localhost:3000',
+        duration: parseInt(options.duration),
+        concurrency: parseInt(options.concurrency),
+        rampUp: 10,
+        scenarios: [{ name: 'Default Scenario', weight: 100, requests: [] }],
+      });
+      console.log(chalk.cyan(`\n⚡ Load Test Code for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(code));
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
+apiTestCommand
+  .command('list-frameworks')
+  .description('List all supported testing frameworks')
+  .action(
+    createAsyncCommand(async () => {
+      const { listTestingFrameworks } = await import('./utils/api-testing');
+
+      const frameworks = listTestingFrameworks();
+      console.log(chalk.cyan('\n🔍 Supported Testing Frameworks\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      frameworks.forEach(f => {
+        console.log(`${chalk.yellow(f.name.padEnd(15))}  ${chalk.gray(f.language.padEnd(12))}  ${chalk.blue(f.testFramework)}`);
+      });
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(`\nUsage: re-shell api-test generate --framework <name>\n`));
+    })
+  );
+
+apiTestCommand
+  .command('config <framework>')
+  .description('Generate test configuration file')
+  .option('--test-types <types>', 'Test types to include', 'unit,integration')
+  .action(
+    createAsyncCommand(async (framework, options) => {
+      const { generateTestConfig, getTestingTemplate } = await import('./utils/api-testing');
+
+      const template = getTestingTemplate(framework);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ No testing template found for ${chalk.cyan(framework)}\n`));
+        return;
+      }
+
+      const config = generateTestConfig(framework, options.testTypes.split(',') as any[]);
+      console.log(chalk.cyan(`\n⚙️  Test Configuration for ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(config));
+      console.log(chalk.gray('─'.repeat(60)));
+    })
+  );
+
 // Deprecated create-mf command removed in v0.2.0
 // Enhanced with --yes flag in v0.2.5 for non-interactive mode
 
