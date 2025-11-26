@@ -7734,6 +7734,143 @@ apiTestCommand
     })
   );
 
+// Interactive API Documentation Commands
+const docsCommand = program.command('docs').description('Interactive API documentation with live examples and try-it functionality');
+
+docsCommand
+  .command('generate <spec> [output]')
+  .description('Generate interactive documentation from OpenAPI spec')
+  .option('--base-url <url>', 'Base URL for API requests', 'http://localhost:3000')
+  .option('--title <title>', 'Documentation title')
+  .option('--description <description>', 'API description')
+  .option('--theme-color <color>', 'Theme color (hex)', '#3b82f6')
+  .option('--auth-type <type>', 'Auth type (none, bearer, apiKey, oauth2)', 'none')
+  .option('--dry-run', 'Preview without creating file', false)
+  .action(
+    createAsyncCommand(async (specPath, outputPath, options) => {
+      const {
+        generateDocsFromSpec,
+        generateInteractiveDocsHTML,
+        openAPIToInteractiveDocs,
+        formatInteractiveDocsConfig,
+      } = await import('./utils/interactive-docs');
+
+      const outputFile = outputPath || './docs/index.html';
+
+      if (!fs.existsSync(specPath)) {
+        console.log(chalk.yellow(`\n❌ Spec file not found: ${specPath}\n`));
+        return;
+      }
+
+      const specContent = await fs.readFile(specPath, 'utf-8');
+      const spec = JSON.parse(specContent);
+      const config = openAPIToInteractiveDocs(spec, options.baseUrl);
+
+      // Apply overrides
+      if (options.title) config.title = options.title;
+      if (options.description) config.description = options.description;
+      if (options.themeColor) config.themeColor = options.themeColor;
+      if (options.authType) config.authConfig = { type: options.authType as any };
+
+      console.log(chalk.cyan('\n📘 Interactive Documentation Generation\n'));
+      console.log(formatInteractiveDocsConfig(config));
+
+      if (options.dryRun) {
+        console.log(chalk.gray('\n--- Preview (first 50 lines) ---\n'));
+        const html = generateInteractiveDocsHTML(config);
+        console.log(chalk.gray(html.split('\n').slice(0, 50).join('\n')));
+        console.log(chalk.yellow('\nDry run - no file written.\n'));
+        return;
+      }
+
+      await generateDocsFromSpec(specPath, outputFile, options.baseUrl);
+      console.log(chalk.green(`\n✓ Documentation generated!`));
+      console.log(chalk.gray(`Output: ${outputFile}`));
+      console.log(chalk.gray('\nOpen the file in a browser to view the interactive documentation.\n'));
+    })
+  );
+
+docsCommand
+  .command('serve <spec>')
+  .description('Serve interactive documentation with live server')
+  .option('--port <port>', 'Server port', '8080')
+  .option('--base-url <url>', 'Base URL for API requests', 'http://localhost:3000')
+  .option('--open', 'Open browser automatically', false)
+  .action(
+    createAsyncCommand(async (specPath, options) => {
+      const {
+        generateInteractiveDocsHTML,
+        openAPIToInteractiveDocs,
+        formatInteractiveDocsConfig,
+      } = await import('./utils/interactive-docs');
+
+      if (!fs.existsSync(specPath)) {
+        console.log(chalk.yellow(`\n❌ Spec file not found: ${specPath}\n`));
+        return;
+      }
+
+      const specContent = await fs.readFile(specPath, 'utf-8');
+      const spec = JSON.parse(specContent);
+      const config = openAPIToInteractiveDocs(spec, options.baseUrl);
+
+      console.log(chalk.cyan('\n📘 Interactive Documentation Server\n'));
+      console.log(formatInteractiveDocsConfig(config));
+      console.log(chalk.yellow(`\n⚠️  Live server not yet implemented.`));
+      console.log(chalk.gray(`To serve the documentation, use:\n  npx serve ${path.dirname(specPath)}/docs\n`));
+    })
+  );
+
+docsCommand
+  .command('preview <spec>')
+  .description('Preview documentation configuration')
+  .option('--base-url <url>', 'Base URL for API requests', 'http://localhost:3000')
+  .action(
+    createAsyncCommand(async (specPath, options) => {
+      const {
+        openAPIToInteractiveDocs,
+        formatInteractiveDocsConfig,
+      } = await import('./utils/interactive-docs');
+
+      if (!fs.existsSync(specPath)) {
+        console.log(chalk.yellow(`\n❌ Spec file not found: ${specPath}\n`));
+        return;
+      }
+
+      const specContent = await fs.readFile(specPath, 'utf-8');
+      const spec = JSON.parse(specContent);
+      const config = openAPIToInteractiveDocs(spec, options.baseUrl);
+
+      console.log(formatInteractiveDocsConfig(config));
+      console.log();
+    })
+  );
+
+docsCommand
+  .command('themes')
+  .description('List available theme colors')
+  .action(
+    createAsyncCommand(async () => {
+      const themes = [
+        { name: 'Blue', color: '#3b82f6' },
+        { name: 'Green', color: '#22c55e' },
+        { name: 'Purple', color: '#a855f7' },
+        { name: 'Red', color: '#ef4444' },
+        { name: 'Orange', color: '#f97316' },
+        { name: 'Pink', color: '#ec4899' },
+        { name: 'Cyan', color: '#06b6d4' },
+        { name: 'Slate', color: '#64748b' },
+      ];
+
+      console.log(chalk.cyan('\n🎨 Available Theme Colors\n'));
+      console.log(chalk.gray('─'.repeat(40)));
+      themes.forEach(t => {
+        console.log(`  ${chalk.hex(t.color)(t.color.padEnd(10))}  ${chalk.gray(t.name)}`);
+      });
+      console.log(chalk.gray('─'.repeat(40)));
+      console.log(chalk.gray(`\nUsage: re-shell docs generate spec.yaml --theme-color ${themes[0].color}\n`));
+    })
+  );
+
 // Deprecated create-mf command removed in v0.2.0
 // Enhanced with --yes flag in v0.2.5 for non-interactive mode
 
