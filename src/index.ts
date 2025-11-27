@@ -7871,6 +7871,170 @@ docsCommand
     })
   );
 
+// API Gateway Commands
+const gatewayCommand = program.command('gateway').description('API gateway integration for all supported backend frameworks');
+
+gatewayCommand
+  .command('generate <type> [output]')
+  .description('Generate gateway configuration file')
+  .option('--name <name>', 'Gateway name', 'api-gateway')
+  .option('--services <services>', 'Services (pipe-separated entries: id;name;url|id;name;url)')
+  .option('--routes <routes>', 'Routes (pipe-separated entries: id;path;methods;service|id;path;methods;service)')
+  .option('--rate-limit <limit>', 'Enable rate limiting with limit per window')
+  .option('--rate-window <seconds>', 'Rate limit window in seconds', '60')
+  .option('--cors', 'Enable CORS', false)
+  .option('--cors-origins <origins>', 'CORS allowed origins (comma-separated)', '*')
+  .option('--auth <type>', 'Authentication type (none, jwt, oauth2, api-key)', 'none')
+  .option('--dry-run', 'Preview without creating file', false)
+  .action(
+    createAsyncCommand(async (type, outputPath, options) => {
+      const {
+        getGatewayTemplate,
+        generateGatewayConfig,
+        generateGatewayDockerCompose,
+        formatGatewayConfig,
+        listGatewayTypes,
+      } = await import('./utils/api-gateway');
+
+      const template = getGatewayTemplate(type as any);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ Unsupported gateway type: ${type}\n`));
+        console.log(chalk.gray('Run "re-shell gateway list" to see supported types.\n'));
+        return;
+      }
+
+      // Build config
+      const config = {
+        name: options.name,
+        type: type as any,
+        services: options.services ? options.services.split('|').map((s: string) => {
+          const parts = s.split(';');
+          return { id: parts[0], name: parts[1], url: parts[2] };
+        }) : [{ id: 'default', name: 'default', url: 'http://localhost:3000' }],
+        routes: options.routes ? options.routes.split('|').map((r: string) => {
+          const parts = r.split(';');
+          return { id: parts[0], path: parts[1], method: parts[2].split(','), service: parts[3] };
+        }) : [{ id: 'default-route', path: '/api', method: ['GET', 'POST', 'PUT', 'DELETE'], service: 'default' }],
+        rateLimit: options.rateLimit ? { enabled: true, window: parseInt(options.rateWindow), limit: parseInt(options.rateLimit) } : undefined,
+        cors: options.cors ? { enabled: true, origins: options.corsOrigins.split(','), methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], headers: ['Content-Type', 'Authorization'], credentials: false, maxAge: 3600 } : undefined,
+        auth: { type: options.auth as any },
+      };
+
+      console.log(chalk.cyan('\n🚪 API Gateway Configuration\n'));
+      console.log(formatGatewayConfig(config));
+
+      const outputFile = outputPath || template.configPath;
+
+      if (options.dryRun) {
+        console.log(chalk.gray('\n--- Configuration Preview ---\n'));
+        console.log(chalk.gray(generateGatewayConfig(type as any, config)));
+        console.log(chalk.yellow('\nDry run - no file written.\n'));
+        return;
+      }
+
+      await fs.ensureDir(path.dirname(outputFile));
+      await fs.writeFile(outputFile, generateGatewayConfig(type as any, config), 'utf-8');
+
+      console.log(chalk.green(`\n✓ Gateway configuration generated!`));
+      console.log(chalk.gray(`Output: ${outputFile}`));
+      console.log(chalk.gray(`Format: ${template.format}`));
+    })
+  );
+
+gatewayCommand
+  .command('docker-compose <type> [output]')
+  .description('Generate docker-compose file for gateway')
+  .action(
+    createAsyncCommand(async (type, outputPath, options) => {
+      const { getGatewayTemplate } = await import('./utils/api-gateway');
+
+      const template = getGatewayTemplate(type as any);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ Unsupported gateway type: ${type}\n`));
+        return;
+      }
+
+      const { generateGatewayDockerCompose } = await import('./utils/api-gateway');
+      const dockerCompose = generateGatewayDockerCompose(type as any);
+      const outputFile = outputPath || './docker-compose.yml';
+
+      await fs.ensureDir(path.dirname(outputFile));
+      await fs.writeFile(outputFile, dockerCompose, 'utf-8');
+
+      console.log(chalk.cyan('\n🐳 Docker Compose Configuration\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(dockerCompose.split('\n').slice(0, 20).join('\n')));
+      if (dockerCompose.split('\n').length > 20) {
+        console.log(chalk.gray('...'));
+      }
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.green(`\n✓ Docker compose file generated!`));
+      console.log(chalk.gray(`Output: ${outputFile}\n`));
+    })
+  );
+
+gatewayCommand
+  .command('list')
+  .description('List all supported gateway types')
+  .action(
+    createAsyncCommand(async () => {
+      const { listGatewayTypes } = await import('./utils/api-gateway');
+
+      const types = listGatewayTypes();
+      console.log(chalk.cyan('\n🚪 Supported API Gateways\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      types.forEach(t => {
+        console.log(`${chalk.yellow(t.type.padEnd(20))}  ${chalk.gray(t.description)}`);
+      });
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(`\nUsage: re-shell gateway generate <type>\n`));
+    })
+  );
+
+gatewayCommand
+  .command('template <type>')
+  .description('Show template for gateway type')
+  .action(
+    createAsyncCommand(async (type, options) => {
+      const { getGatewayTemplate } = await import('./utils/api-gateway');
+
+      const template = getGatewayTemplate(type as any);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ Unsupported gateway type: ${type}\n`));
+        return;
+      }
+
+      console.log(chalk.cyan(`\n🚪 Gateway Template: ${type}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Description:')} ${template.description}`);
+      console.log(`${chalk.blue('Config Path:')} ${template.configPath}`);
+      console.log(`${chalk.blue('Format:')} ${template.format}`);
+      console.log(`${chalk.blue('Docs:')} ${template.docsUrl}`);
+      console.log(chalk.gray('─'.repeat(60)));
+
+      // Generate sample config
+      const sampleConfig = {
+        name: 'sample-gateway',
+        type: type as any,
+        services: [
+          { id: 'user-service', name: 'user-service', url: 'http://localhost:3001' },
+          { id: 'order-service', name: 'order-service', url: 'http://localhost:3002' },
+        ],
+        routes: [
+          { id: 'users', path: '/api/users', method: ['GET', 'POST'], service: 'user-service' },
+          { id: 'orders', path: '/api/orders', method: ['GET', 'POST'], service: 'order-service' },
+        ],
+        rateLimit: { enabled: true, window: 60, limit: 100 },
+        cors: { enabled: true, origins: ['*'], methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], headers: ['Content-Type', 'Authorization'], credentials: false, maxAge: 3600 },
+        auth: { type: 'none' as any },
+      };
+
+      console.log(chalk.gray('\n--- Sample Configuration ---\n'));
+      const { generateGatewayConfig } = await import('./utils/api-gateway');
+      console.log(chalk.gray(generateGatewayConfig(type as any, sampleConfig).split('\n').slice(0, 40).join('\n')));
+    })
+  );
+
 // Deprecated create-mf command removed in v0.2.0
 // Enhanced with --yes flag in v0.2.5 for non-interactive mode
 
