@@ -8035,6 +8035,220 @@ gatewayCommand
     })
   );
 
+// API Analytics Commands
+const analyticsCommand = program.command('analytics').description('API analytics and monitoring for all backend frameworks');
+
+analyticsCommand
+  .command('generate <provider> <framework> [output]')
+  .description('Generate analytics middleware for your backend framework')
+  .option('--name <name>', 'Application name', 'api-app')
+  .option('--custom-metrics <metrics>', 'Custom metrics (comma-separated: name,type,description|name,type,description)')
+  .option('--dashboard', 'Include dashboard configuration', false)
+  .option('--alerts', 'Include alert rules', false)
+  .action(
+    createAsyncCommand(async (provider, framework, outputPath, options) => {
+      const {
+        generateAnalyticsSetup,
+        listAnalyticsProviders,
+        listSupportedFrameworks,
+        getAnalyticsProvider,
+      } = await import('./utils/api-analytics');
+
+      const providers = listAnalyticsProviders();
+      const supportedFrameworks = listSupportedFrameworks();
+
+      if (!providers.find(p => p.provider === provider)) {
+        console.log(chalk.yellow(`\n❌ Unsupported provider: ${provider}\n`));
+        console.log(chalk.gray('Run "re-shell analytics list-providers" to see supported providers.\n'));
+        return;
+      }
+
+      if (!supportedFrameworks.find(f => f === framework)) {
+        console.log(chalk.yellow(`\n❌ Unsupported framework: ${framework}\n`));
+        console.log(chalk.gray('Run "re-shell analytics list-frameworks" to see supported frameworks.\n'));
+        return;
+      }
+
+      const metrics = options.customMetrics ? options.customMetrics.split('|').map((m: string) => {
+        const parts = m.split(',');
+        return { name: parts[0], type: parts[1], description: parts[2] };
+      }) : [];
+
+      const config = {
+        name: options.name,
+        provider: provider as any,
+        framework: framework as any,
+        metrics,
+        endpoints: [],
+        dashboard: options.dashboard,
+        alerts: options.alerts ? [{ name: 'HighErrorRate', condition: 'rate(http_requests_total{status=~"5.."}[5m]) > 0.05', threshold: 0.05, window: '5m', notify: [] }] : undefined,
+      };
+
+      const setup = generateAnalyticsSetup(config);
+
+      const outputFile = outputPath || `./analytics-${framework}.${provider === 'custom' ? 'ts' : 'ts'}`;
+
+      await fs.ensureDir(path.dirname(outputFile));
+      await fs.writeFile(outputFile, setup.middleware, 'utf-8');
+
+      console.log(chalk.cyan('\n📊 API Analytics Configuration\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Provider:')} ${provider}`);
+      console.log(`${chalk.blue('Framework:')} ${framework}`);
+      console.log(`${chalk.blue('Name:')} ${config.name}`);
+      console.log(`${chalk.blue('Custom Metrics:')} ${metrics.length}`);
+      console.log(`${chalk.blue('Dashboard:')} ${config.dashboard ? 'Yes' : 'No'}`);
+      console.log(`${chalk.blue('Alerts:')} ${config.alerts ? 'Yes' : 'No'}`);
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.green(`\n✓ Analytics middleware generated!`));
+      console.log(chalk.gray(`Output: ${outputFile}\n`));
+
+      // Generate additional files if requested
+      if (setup.prometheusConfig) {
+        const prometheusFile = './prometheus.yml';
+        await fs.writeFile(prometheusFile, setup.prometheusConfig, 'utf-8');
+        console.log(chalk.gray(`  ${chalk.gray('•')} ${prometheusFile}`));
+      }
+
+      if (setup.grafanaDashboard) {
+        const dashboardFile = './grafana-dashboard.json';
+        await fs.writeFile(dashboardFile, setup.grafanaDashboard, 'utf-8');
+        console.log(chalk.gray(`  ${chalk.gray('•')} ${dashboardFile}`));
+      }
+
+      if (setup.alertRules) {
+        const alertsFile = './alerts.yml';
+        await fs.writeFile(alertsFile, setup.alertRules, 'utf-8');
+        console.log(chalk.gray(`  ${chalk.gray('•')} ${alertsFile}`));
+      }
+
+      if (setup.dockerCompose) {
+        const composeFile = './docker-compose.yml';
+        await fs.writeFile(composeFile, setup.dockerCompose, 'utf-8');
+        console.log(chalk.gray(`  ${chalk.gray('•')} ${composeFile}`));
+      }
+
+      console.log('');
+    })
+  );
+
+analyticsCommand
+  .command('docker-compose <provider> [output]')
+  .description('Generate docker-compose file for analytics stack')
+  .action(
+    createAsyncCommand(async (provider, outputPath, options) => {
+      const { generateAnalyticsDockerCompose, getAnalyticsProvider } = await import('./utils/api-analytics');
+
+      const template = getAnalyticsProvider(provider as any);
+      if (!template) {
+        console.log(chalk.yellow(`\n❌ Unsupported provider: ${provider}\n`));
+        return;
+      }
+
+      const dockerCompose = generateAnalyticsDockerCompose(provider as any);
+      const outputFile = outputPath || './docker-compose.yml';
+
+      await fs.ensureDir(path.dirname(outputFile));
+      await fs.writeFile(outputFile, dockerCompose, 'utf-8');
+
+      console.log(chalk.cyan('\n🐳 Docker Compose Configuration\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(dockerCompose.split('\n').slice(0, 20).join('\n')));
+      if (dockerCompose.split('\n').length > 20) {
+        console.log(chalk.gray('...'));
+      }
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.green(`\n✓ Docker compose file generated!`));
+      console.log(chalk.gray(`Output: ${outputFile}\n`));
+    })
+  );
+
+analyticsCommand
+  .command('list-providers')
+  .description('List all supported analytics providers')
+  .action(
+    createAsyncCommand(async () => {
+      const { listAnalyticsProviders } = await import('./utils/api-analytics');
+
+      const providers = listAnalyticsProviders();
+      console.log(chalk.cyan('\n📊 Supported Analytics Providers\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      providers.forEach(p => {
+        console.log(`${chalk.yellow(p.provider.padEnd(20))}  ${chalk.gray(p.description)}`);
+      });
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(`\nUsage: re-shell analytics generate <provider> <framework>\n`));
+    })
+  );
+
+analyticsCommand
+  .command('list-frameworks')
+  .description('List all supported backend frameworks')
+  .action(
+    createAsyncCommand(async () => {
+      const { listSupportedFrameworks } = await import('./utils/api-analytics');
+
+      const frameworks = listSupportedFrameworks();
+      console.log(chalk.cyan('\n🔧 Supported Backend Frameworks\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      frameworks.forEach(f => {
+        console.log(`  ${chalk.gray('•')} ${chalk.yellow(f)}`);
+      });
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(`\nUsage: re-shell analytics generate <provider> <framework>\n`));
+    })
+  );
+
+analyticsCommand
+  .command('template <provider> <framework>')
+  .description('Show analytics template for provider and framework')
+  .action(
+    createAsyncCommand(async (provider, framework, options) => {
+      const {
+        generateAnalyticsMiddleware,
+        getAnalyticsProvider,
+        listAnalyticsProviders,
+        listSupportedFrameworks,
+      } = await import('./utils/api-analytics');
+
+      const providers = listAnalyticsProviders();
+      const supportedFrameworks = listSupportedFrameworks();
+
+      if (!providers.find(p => p.provider === provider)) {
+        console.log(chalk.yellow(`\n❌ Unsupported provider: ${provider}\n`));
+        return;
+      }
+
+      if (!supportedFrameworks.find(f => f === framework)) {
+        console.log(chalk.yellow(`\n❌ Unsupported framework: ${framework}\n`));
+        return;
+      }
+
+      const template = getAnalyticsProvider(provider as any);
+      console.log(chalk.cyan(`\n📊 Analytics Template: ${provider} + ${framework}\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Provider:')} ${template?.description || provider}`);
+      console.log(`${chalk.blue('Framework:')} ${framework}`);
+      console.log(`${chalk.blue('Format:')} TypeScript/JavaScript`);
+      console.log(chalk.gray('─'.repeat(60)));
+
+      const config = {
+        name: 'sample-app',
+        provider: provider as any,
+        framework: framework as any,
+        metrics: [
+          { name: 'api_requests_total', type: 'counter' as const, description: 'Total API requests' },
+          { name: 'api_request_duration', type: 'histogram' as const, description: 'API request duration' },
+        ],
+        endpoints: [],
+      };
+
+      console.log(chalk.gray('\n--- Sample Middleware ---\n'));
+      const middleware = generateAnalyticsMiddleware(config);
+      console.log(chalk.gray(middleware.split('\n').slice(0, 40).join('\n')));
+    })
+  );
+
 // Deprecated create-mf command removed in v0.2.0
 // Enhanced with --yes flag in v0.2.5 for non-interactive mode
 
