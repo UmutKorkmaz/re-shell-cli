@@ -8249,6 +8249,258 @@ analyticsCommand
     })
   );
 
+// TypeScript Client Generator Commands
+const clientCommand = program.command('client').description('Generate type-safe API clients from OpenAPI specifications');
+
+clientCommand
+  .command('generate <spec> [output]')
+  .description('Generate TypeScript API client from OpenAPI spec')
+  .option('--name <name>', 'Client class name')
+  .option('--base-url <url>', 'Base URL for API requests')
+  .option('--fetch', 'Use fetch instead of axios')
+  .option('--include-credentials', 'Include credentials in requests')
+  .option('--react-query', 'Also generate React Query hooks')
+  .action(
+    createAsyncCommand(async (specPath, outputPath, options) => {
+      const {
+        generateClient,
+        generateReactQueryHooks,
+        validateSpec,
+        listOperations,
+      } = await import('./utils/typescript-client');
+
+      // Resolve spec path
+      const resolvedSpecPath = path.resolve(specPath);
+
+      if (!fs.existsSync(resolvedSpecPath)) {
+        console.log(chalk.yellow(`\n❌ Spec file not found: ${specPath}\n`));
+        return;
+      }
+
+      // Read and validate spec
+      const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
+      let spec;
+      try {
+        spec = JSON.parse(specContent);
+      } catch {
+        try {
+          // Try YAML (basic, just for JSON-like YAML)
+          spec = JSON.parse(specContent.replace(/'/g, '"'));
+        } catch {
+          console.log(chalk.yellow(`\n❌ Failed to parse spec file. Please ensure it's valid JSON or YAML.\n`));
+          return;
+        }
+      }
+
+      const validation = validateSpec(spec);
+      if (!validation.valid) {
+        console.log(chalk.yellow(`\n❌ Invalid OpenAPI spec:\n`));
+        validation.errors.forEach(err => console.log(chalk.gray(`  • ${err}`)));
+        console.log('');
+        return;
+      }
+
+      // Determine output path
+      const outputFile = outputPath || './api-client.ts';
+
+      // Generate client
+      const fullOptions = {
+        spec,
+        clientName: options.name,
+        baseUrl: options.baseUrl,
+        useAxios: !options.fetch,
+        includeCredentials: options.includeCredentials,
+        includeRetry: false,
+        includeCache: false,
+        exportType: 'default' as const,
+        emitDeprecatedMethods: false,
+        useEnumTypes: false,
+      };
+
+      const clientCode = generateClient(spec, fullOptions);
+
+      await fs.ensureDir(path.dirname(outputFile));
+      await fs.writeFile(outputFile, clientCode, 'utf-8');
+
+      console.log(chalk.cyan('\n🔧 TypeScript API Client\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Spec:')} ${specPath}`);
+      console.log(`${chalk.blue('Output:')} ${outputFile}`);
+      console.log(`${chalk.blue('Client:')} ${options.name || 'Auto'}`);
+      console.log(`${chalk.blue('HTTP:')} ${options.fetch ? 'fetch' : 'axios'}`);
+      console.log(chalk.gray('─'.repeat(60)));
+
+      // List operations
+      const operations = listOperations(spec);
+      console.log(`\n${chalk.blue('Operations:')} ${operations.length}`);
+
+      operations.slice(0, 10).forEach(op => {
+        console.log(`  ${chalk.gray('•')} ${chalk.yellow(op.method.padEnd(6))} ${op.path}`);
+      });
+
+      if (operations.length > 10) {
+        console.log(`  ${chalk.gray(`... and ${operations.length - 10} more`)}`);
+      }
+
+      // Generate React Query hooks if requested
+      if (options.reactQuery) {
+        const clientName = options.name || `${toCamelCase(spec.info.title)}Client`;
+        const hooksCode = generateReactQueryHooks(spec, clientName);
+        const hooksFile = outputFile.replace('.ts', '-hooks.ts');
+        await fs.writeFile(hooksFile, hooksCode, 'utf-8');
+        console.log(`\n${chalk.gray('•')} ${hooksFile} (React Query hooks)`);
+      }
+
+      console.log(chalk.green(`\n✓ API client generated!\n`));
+    })
+  );
+
+clientCommand
+  .command('list <spec>')
+  .description('List all operations in OpenAPI spec')
+  .action(
+    createAsyncCommand(async (specPath, options) => {
+      const { validateSpec, listOperations } = await import('./utils/typescript-client');
+
+      const resolvedSpecPath = path.resolve(specPath);
+
+      if (!fs.existsSync(resolvedSpecPath)) {
+        console.log(chalk.yellow(`\n❌ Spec file not found: ${specPath}\n`));
+        return;
+      }
+
+      const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
+      let spec;
+      try {
+        spec = JSON.parse(specContent);
+      } catch {
+        console.log(chalk.yellow(`\n❌ Failed to parse spec file.\n`));
+        return;
+      }
+
+      const validation = validateSpec(spec);
+      if (!validation.valid) {
+        console.log(chalk.yellow(`\n❌ Invalid OpenAPI spec:\n`));
+        validation.errors.forEach(err => console.log(chalk.gray(`  • ${err}`)));
+        console.log('');
+        return;
+      }
+
+      const operations = listOperations(spec);
+
+      console.log(chalk.cyan('\n🔧 API Operations\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('API:')} ${spec.info.title}`);
+      console.log(`${chalk.blue('Version:')} ${spec.info.version}`);
+      console.log(`${chalk.blue('Operations:')} ${operations.length}`);
+      console.log(chalk.gray('─'.repeat(60)));
+
+      operations.forEach(op => {
+        console.log(`  ${chalk.yellow(op.method.padEnd(6))} ${chalk.gray(op.path.padEnd(30))} ${chalk.gray(op.description || '')}`);
+      });
+
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.gray(`\nUsage: re-shell client generate <spec>\n`));
+    })
+  );
+
+clientCommand
+  .command('validate <spec>')
+  .description('Validate OpenAPI specification')
+  .action(
+    createAsyncCommand(async (specPath, options) => {
+      const { validateSpec } = await import('./utils/typescript-client');
+
+      const resolvedSpecPath = path.resolve(specPath);
+
+      if (!fs.existsSync(resolvedSpecPath)) {
+        console.log(chalk.yellow(`\n❌ Spec file not found: ${specPath}\n`));
+        return;
+      }
+
+      const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
+      let spec;
+      try {
+        spec = JSON.parse(specContent);
+      } catch {
+        console.log(chalk.yellow(`\n❌ Failed to parse spec file.\n`));
+        return;
+      }
+
+      const validation = validateSpec(spec);
+
+      if (validation.valid) {
+        console.log(chalk.cyan('\n✅ OpenAPI Specification Valid\n'));
+        console.log(chalk.gray('─'.repeat(60)));
+        console.log(`${chalk.blue('API:')} ${spec.info.title}`);
+        console.log(`${chalk.blue('Version:')} ${spec.info.version}`);
+        console.log(`${chalk.blue('OpenAPI:')} ${spec.openapi || spec.swagger}`);
+        console.log(chalk.gray('─'.repeat(60)));
+        console.log(chalk.green('\n✓ Spec is valid and ready for client generation.\n'));
+      } else {
+        console.log(chalk.yellow('\n❌ OpenAPI Specification Invalid\n'));
+        console.log(chalk.gray('─'.repeat(60)));
+        validation.errors.forEach(err => console.log(chalk.red(`  ✗ ${err}`)));
+        console.log(chalk.gray('─'.repeat(60)));
+        console.log('');
+      }
+    })
+  );
+
+clientCommand
+  .command('types <spec> [output]')
+  .description('Generate only TypeScript types from OpenAPI spec')
+  .action(
+    createAsyncCommand(async (specPath, outputPath, options) => {
+      const { generateInterfaces, validateSpec } = await import('./utils/typescript-client');
+
+      const resolvedSpecPath = path.resolve(specPath);
+
+      if (!fs.existsSync(resolvedSpecPath)) {
+        console.log(chalk.yellow(`\n❌ Spec file not found: ${specPath}\n`));
+        return;
+      }
+
+      const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
+      let spec;
+      try {
+        spec = JSON.parse(specContent);
+      } catch {
+        console.log(chalk.yellow(`\n❌ Failed to parse spec file.\n`));
+        return;
+      }
+
+      const validation = validateSpec(spec);
+      if (!validation.valid) {
+        console.log(chalk.yellow(`\n❌ Invalid OpenAPI spec:\n`));
+        validation.errors.forEach(err => console.log(chalk.gray(`  • ${err}`)));
+        console.log('');
+        return;
+      }
+
+      const typesCode = generateInterfaces(spec);
+      const outputFile = outputPath || './api-types.ts';
+
+      await fs.ensureDir(path.dirname(outputFile));
+      await fs.writeFile(outputFile, typesCode, 'utf-8');
+
+      console.log(chalk.cyan('\n📝 TypeScript Types\n'));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Spec:')} ${specPath}`);
+      console.log(`${chalk.blue('Output:')} ${outputFile}`);
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(chalk.green(`\n✓ TypeScript types generated!\n`));
+    })
+  );
+
+// Helper function for CLI
+function toCamelCase(str: string): string {
+  return str
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (l, i) => i === 0 ? l.toLowerCase() : l.toUpperCase())
+    .replace(/\s/g, '');
+}
+
 // Deprecated create-mf command removed in v0.2.0
 // Enhanced with --yes flag in v0.2.5 for non-interactive mode
 
