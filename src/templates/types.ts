@@ -87,7 +87,8 @@ export type BackendFeature =
   | 'middleware'
   | 'streaming'
   | 'swagger'
-  | 'channels';
+  | 'channels'
+  | 'wasi';
 
 export type FrontendFeature =
   | 'routing'

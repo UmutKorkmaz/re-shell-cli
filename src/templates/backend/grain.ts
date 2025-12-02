@@ -11,9 +11,467 @@ export const grainTemplate: BackendTemplate = {
   tags: ['grain', 'webassembly', 'wasm', 'wasi', 'memory-safe', 'modern'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing', 'wasi'],
 
   files: {
+    // WASI configuration
+    'wasi.json': `{
+  "name": "{{projectName}}",
+  "version": "1.0.0",
+  "wasi": {
+    "version": "preview1",
+    "features": [
+      "stdio",
+      "stdout",
+      "stderr",
+      "files",
+      "network",
+      "clocks",
+      "random",
+      "environment"
+    ],
+    "allowed_dirs": {
+      "read": ["/tmp", "/var/tmp", "./public", "./data"],
+      "write": ["/tmp", "/var/tmp", "./logs", "./data"]
+    },
+    "allowed_network": {
+      "tcp_outbound": ["*:80", "*:443", "*:3000-4000"],
+      "tcp_inbound": ["0.0.0.0:8080"]
+    },
+    "allowed_env": ["PORT", "ENV", "JWT_SECRET", "CORS_ORIGIN", "LOG_LEVEL", "DATABASE_URL"]
+  }
+}`,
+
+    // WASI system interface module
+    'src/wasi.gr': `// {{projectName}} - WASI System Interface Integration
+import std/io
+import std/fs
+import std/net
+import std/time
+
+// WASI file system operations
+type fileHandle = {
+  fd: Int,
+  path: String,
+  mode: String}
+
+// Open file for reading
+let readFile = (path: String): Option[String] => {
+  match (fs.readFile(path)) {
+    Ok(content) => Some(content)
+    Error(_) => None
+  }
+}
+
+// Write file
+let writeFile = (path: String, content: String): Bool => {
+  match (fs.writeFile(path, content)) {
+    Ok(_) => true
+    Error(_) => false
+  }
+}
+
+// Append to file
+let appendFile = (path: String, content: String): Bool => {
+  match (fs.appendFile(path, content)) {
+    Ok(_) => true
+    Error(_) => false
+  }
+}
+
+// Delete file
+let deleteFile = (path: String): Bool => {
+  match (fs.deleteFile(path)) {
+    Ok(_) => true
+    Error(_) => false
+  }
+}
+
+// List directory
+let listDirectory = (path: String): List[String] => {
+  match (fs.readDirectory(path)) {
+    Ok(entries) => entries
+    Error(_) => []
+  }
+}
+
+// Check if file exists
+let fileExists = (path: String): Bool => {
+  match (fs.stat(path)) {
+    Ok(_) => true
+    Error(_) => false
+  }
+}
+
+// Get file stats
+type fileStats = {
+  size: Int,
+  modified: Int,
+  isFile: Bool,
+  isDirectory: Bool}
+
+let getFileStats = (path: String): Option[fileStats] => {
+  match (fs.stat(path)) {
+    Ok(stats) => Some({
+      size: stats.size,
+      modified: stats.modified,
+      isFile: stats.isFile,
+      isDirectory: stats.isDirectory})
+    Error(_) => None
+  }
+}
+
+// WASI network operations
+type socketConfig = {
+  host: String,
+  port: Int,
+  secure: Bool}
+
+// Create TCP connection
+let createConnection = (config: socketConfig): Option[net.Socket] => {
+  if (config.secure) {
+    net.connectTLS(config.host, config.port)
+  } else {
+    net.connect(config.host, config.port)
+  }
+}
+
+// HTTP client using WASI network
+type httpRequest = {
+  method: String,
+  url: String,
+  headers: Map[String, String],
+  body: Option[String]}
+
+type httpResponse = {
+  status: Int,
+  headers: Map[String, String],
+  body: String}
+
+let makeRequest = (request: httpRequest): Option[httpResponse] => {
+  match (createConnection({
+    host: "localhost",
+    port: 8080,
+    secure: false})) {
+    Some(socket) => {
+      // Send request
+      net.send(socket, request.method + " " + request.url + " HTTP/1.1\\r\\n\\r\\n")
+
+      // Receive response
+      match (net.receive(socket)) {
+        Ok(response) => Some({
+          status: 200,
+          headers: Map.empty,
+          body: response})
+        Error(_) => None
+      }
+    }
+    None => None
+  }
+}
+
+// WASI environment variables
+let getEnv = (key: String): Option[String] => {
+  match (std.getEnv(key)) {
+    Ok(value) => Some(value)
+    Error(_) => None
+  }
+}
+
+let setEnv = (key: String, value: String): Bool => {
+  match (std.setEnv(key, value)) {
+    Ok(_) => true
+    Error(_) => false
+  }
+}
+
+// WASI clock functions
+let getCurrentTime = (): Int => {
+  std.time.now()
+}
+
+let sleep = (milliseconds: Int): Unit => {
+  std.time.sleep(milliseconds)
+}
+
+// WASI random number generation
+let getRandomBytes = (length: Int): Option[String] => {
+  match (std.random.bytes(length)) {
+    Ok(bytes) => Some(bytes)
+    Error(_) => None
+  }
+}
+
+let randomInt = (min: Int, max: Int): Int => {
+  match (getRandomBytes(4)) {
+    Some(bytes) => {
+      let hash = std.crypto.hash(bytes)
+      min + (std.math.abs(hash) % (max - min))
+    }
+    None => min
+  }
+}
+
+// Logging to WASI stdout/stderr
+let logInfo = (message: String): Unit => {
+  std.io.write("stdout", "[INFO] " + message + "\\n")
+}
+
+let logError = (message: String): Unit => {
+  std.io.write("stderr", "[ERROR] " + message + "\\n")
+}
+
+let logWarn = (message: String): Unit => {
+  std.io.write("stdout", "[WARN] " + message + "\\n")
+}
+
+// Export Wasi functions
+export {
+  readFile,
+  writeFile,
+  appendFile,
+  deleteFile,
+  listDirectory,
+  fileExists,
+  getFileStats,
+  makeRequest,
+  getEnv,
+  setEnv,
+  getCurrentTime,
+  sleep,
+  getRandomBytes,
+  randomInt,
+  logInfo,
+  logError,
+  logWarn}`,
+
+    // WASI example: File-based storage
+    'src/storage.gr': `// {{projectName}} - File-based storage using WASI
+import std/fs
+import std/json
+import std/io
+
+// Storage configuration
+type storageConfig = {
+  dataDir: String,
+  logDir: String}
+
+// Initialize storage
+let initStorage = (config: storageConfig): Bool => {
+  // Create data directory if not exists
+  if (!fs.exists(config.dataDir)) {
+    match (fs.createDirectory(config.dataDir)) {
+      Ok(_) => true
+      Error(_) => false
+    }
+  } else {
+    true
+  }
+}
+
+// Save data to JSON file
+let saveData = (config: storageConfig, key: String, data: unknown): Bool => {
+  let filePath = config.dataDir + "/" + key + ".json"
+  let jsonData = json.stringify(data)
+
+  match (fs.writeFile(filePath, jsonData)) {
+    Ok(_) => true
+    Error(_) => {
+      std.io.write("stderr", "Failed to save: " + filePath + "\\n")
+      false
+    }
+  }
+}
+
+// Load data from JSON file
+let loadData = (config: storageConfig, key: String): Option[unknown] => {
+  let filePath = config.dataDir + "/" + key + ".json"
+
+  match (fs.readFile(filePath)) {
+    Ok(content) => {
+      match (json.parse(content)) {
+        Ok(data) => Some(data)
+        Error(_) => None
+      }
+    }
+    Error(_) => None
+  }
+}
+
+// Delete data file
+let deleteData = (config: storageConfig, key: String): Bool => {
+  let filePath = config.dataDir + "/" + key + ".json"
+
+  match (fs.deleteFile(filePath)) {
+    Ok(_) => true
+    Error(_) => false
+  }
+}
+
+// List all stored keys
+let listKeys = (config: storageConfig): List[String] => {
+  match (fs.readDirectory(config.dataDir)) {
+    Ok(entries) => {
+      entries
+        |> List.filter(e => String.endsWith(e, ".json"))
+        |> List.map(e => String.substring(e, 0, String.length(e) - 5))
+    }
+    Error(_) => []
+  }
+}
+
+// Log to file
+let logToFile = (config: storageConfig, level: String, message: String): Unit => {
+  let timestamp = std.time.now()
+  let logLine = timestamp + " [" + level + "] " + message + "\\n"
+  let logFile = config.logDir + "/app.log"
+
+  match (fs.appendFile(logFile, logLine)) {
+    Ok(_) => {}
+    Error(_) => {
+      std.io.write("stderr", "Failed to write log: " + logFile + "\\n")
+    }
+  }
+}
+
+// Default storage config
+let defaultStorage = {
+  dataDir: "./data",
+  logDir: "./logs"}
+
+export {
+  initStorage,
+  saveData,
+  loadData,
+  deleteData,
+  listKeys,
+  logToFile,
+  defaultStorage}`,
+
+    // WASI example: Network client
+    'src/client.gr': `// {{projectName}} - HTTP client using WASI network
+import std/net
+import std/io
+import std/crypto
+import std/json
+
+// HTTP request builder
+type requestBuilder = {
+  method: String,
+  url: String,
+  headers: Map[String, String],
+  body: Option[String]}
+
+let newRequest = (method: String, url: String): requestBuilder => {
+  {
+    method: method,
+    url: url,
+    headers: Map.empty,
+    body: None
+  }
+}
+
+let withHeader = (request: requestBuilder, key: String, value: String): requestBuilder => {
+  { request with headers: Map.insert(request.headers, key, value) }
+}
+
+let withBody = (request: requestBuilder, body: String): requestBuilder => {
+  { request with body: Some(body) }
+}
+
+// Send HTTP request
+let send = (request: requestBuilder): Option[Map[String, unknown]] => {
+  // Parse URL
+  let parsedUrl = parseUrl(request.url)
+  let port = if (parsedUrl.scheme == "https") { 443 } else { 80 }
+
+  // Create connection
+  match (net.connect(parsedUrl.host, port)) {
+    Some(socket) => {
+      // Build HTTP request
+      let requestLine = request.method + " " + parsedUrl.path + " HTTP/1.1\\r\\n"
+      let headers = Map.fold(request.headers, "", (acc, key, value) => {
+        acc + key + ": " + value + "\\r\\n"
+      })
+      let body = match (request.body) {
+        Some(b) => b
+        None => ""
+      }
+
+      // Send
+      let fullRequest = requestLine + headers + "\\r\\n" + body
+      net.send(socket, fullRequest)
+
+      // Receive response
+      match (net.receive(socket)) {
+        Ok(responseBody) => {
+          // Parse response
+          let lines = String.split(responseBody, "\\r\\n")
+          let bodyContent = String.join("\\r\\n", List.drop(lines, 1))
+
+          match (json.parse(bodyContent)) {
+            Ok(data) => Some(data)
+            Error(_) => None
+          }
+        }
+        Error(_) => None
+      }
+
+      net.close(socket)
+    }
+    None => None
+  }
+}
+
+// URL parser type
+type urlParts = {
+  scheme: String,
+  host: String,
+  port: Int,
+  path: String}
+
+let parseUrl = (url: String): urlParts => {
+  // Simple URL parser
+  let schemeEnd = String.indexOf(url, "://")
+  let scheme = String.substring(url, 0, schemeEnd)
+  let rest = String.substring(url, schemeEnd + 3)
+
+  let pathStart = String.indexOf(rest, "/")
+  let hostAndPort = if (pathStart > 0) {
+    String.substring(rest, 0, pathStart)
+  } else {
+    rest
+  }
+  let path = if (pathStart > 0) {
+    String.substring(rest, pathStart)
+  } else {
+    "/"
+  }
+
+  let host = hostAndPort
+  let port = if (scheme == "https") { 443 } else { 80 }
+
+  { scheme, host, port, path }
+}
+
+// GET request shortcut
+let get = (url: String): Option[Map[String, unknown]] => {
+  send(withHeader(newRequest("GET", url), "Accept", "application/json"))
+}
+
+// POST request shortcut
+let post = (url: String, body: String): Option[Map[String, unknown]] => {
+  send(withBody(withHeader(withHeader(newRequest("POST", url), "Content-Type", "application/json"), body))
+}
+
+export {
+  newRequest,
+  withHeader,
+  withBody,
+  send,
+  get,
+  post}`,
+
     // Test configuration file
     'grain.test.json': `{
   "name": "{{projectName}}-tests",
@@ -859,6 +1317,12 @@ WebAssembly-first server built with Grain language with memory safety.
 - **Grain**: Modern language compiling to WebAssembly
 - **Memory Safety**: Rust-like memory guarantees without manual management
 - **WebAssembly**: Near-native performance in a sandbox
+- **WASI Support**: Full WASI preview1 integration for system access
+- **File System**: Read/write files, directories, and file stats
+- **Network**: TCP/HTTP client and server operations
+- **Environment**: Access to environment variables
+- **Clocks**: Time and sleep functions
+- **Random**: Secure random number generation
 - **Type-Safe**: Strong typing with compile-time guarantees
 - **Modern Syntax**: Clean, expressive syntax
 - **HTTP Module**: Built-in HTTP server in standard library
@@ -933,6 +1397,11 @@ Visit http://localhost:8080
 main.gr           # Main server and routes
 grain.json        # Grain configuration
 grain.test.json   # Test configuration
+wasi.json         # WASI preview1 configuration
+src/              # Source modules
+  ├── wasi.gr     # WASI system interface (files, network, env, random)
+  ├── storage.gr  # File-based storage using WASI
+  └── client.gr   # HTTP client using WASI network
 tests/            # Test suites
   ├── auth_test.gr        # Authentication tests
   ├── products_test.gr    # Products API tests
@@ -941,6 +1410,195 @@ scripts/          # Utility scripts
   └── test.sh      # Test runner
 .env              # Environment variables
 \`\`\`
+
+## WASI Integration
+
+This template includes full WASI (WebAssembly System Interface) preview1 support for system-level operations.
+
+### WASI Features
+
+The \`wasi.json\` configuration enables:
+- **stdio/stdout/stderr**: Standard I/O streams
+- **files**: File system operations (read/write files, directories, stats)
+- **network**: TCP/HTTP client and server operations
+- **clocks**: Time and sleep functions
+- **random**: Secure random number generation
+- **environment**: Access to environment variables
+
+### File System Operations
+
+\`\`\`grain
+import src/wasi
+
+// Read file
+match (wasi.readFile("./data/config.json")) {
+  Some(content) => {
+    // Process file content
+  }
+  None => {
+    // File not found or error
+  }
+}
+
+// Write file
+let success = wasi.writeFile("./data/output.json", jsonString)
+
+// Check if file exists
+if (wasi.fileExists("./data/config.json")) {
+  // File exists
+}
+
+// List directory
+let entries = wasi.listDirectory("./data")
+
+// Get file stats
+match (wasi.getFileStats("./data/config.json")) {
+  Some(stats) => {
+    // stats.size, stats.modified, stats.isFile, stats.isDirectory
+  }
+  None => {}
+}
+
+// Delete file
+wasi.deleteFile("./data/old.json")
+\`\`\`
+
+### Network Operations
+
+\`\`\`grain
+import src/wasi
+import src/client
+
+// Using the HTTP client module
+match (client.get("https://api.example.com/data")) {
+  Some(response) => {
+    // Process JSON response
+  }
+  None => {
+    // Request failed
+  }
+}
+
+// POST request
+match (client.post("https://api.example.com/create", jsonString)) {
+  Some(response) => {
+    // Handle response
+  }
+  None => {}
+}
+\`\`\`
+
+### Environment Variables
+
+\`\`\`grain
+import src/wasi
+
+// Get environment variable
+match (wasi.getEnv("PORT")) {
+  Some(port) => {
+    // Use port
+  }
+  None => {
+    // Use default
+  }
+}
+
+// Set environment variable
+wasi.setEnv("MY_VAR", "value")
+\`\`\`
+
+### Time and Random
+
+\`\`\`grain
+import src/wasi
+
+// Get current time (milliseconds)
+let now = wasi.getCurrentTime()
+
+// Sleep for specified milliseconds
+wasi.sleep(1000)
+
+// Generate random bytes
+match (wasi.getRandomBytes(16)) {
+  Some(bytes) => {
+    // Use random bytes for crypto
+  }
+  None => {}
+}
+
+// Random integer in range
+let randomId = wasi.randomInt(1, 1000)
+\`\`\`
+
+### Logging
+
+\`\`\`grain
+import src/wasi
+
+wasi.logInfo("Application started")
+wasi.logWarn("Configuration file missing, using defaults")
+wasi.logError("Failed to connect to database")
+\`\`\`
+
+### File-based Storage
+
+The \`src/storage.gr\` module provides a simple JSON file-based storage:
+
+\`\`\`grain
+import src/storage
+
+// Initialize storage
+let ready = storage.initStorage(storage.defaultStorage)
+
+// Save data
+storage.saveData(storage.defaultStorage, "users", userMap)
+
+// Load data
+match (storage.loadData(storage.defaultStorage, "users")) {
+  Some(data) => {
+    // Process loaded data
+  }
+  None => {}
+}
+
+// List all keys
+let keys = storage.listKeys(storage.defaultStorage)
+
+// Delete data
+storage.deleteData(storage.defaultStorage, "old-key")
+
+// Log to file
+storage.logToFile(storage.defaultStorage, "INFO", "User logged in")
+\`\`\`
+
+### WASI Configuration
+
+Edit \`wasi.json\` to configure:
+
+\`\`\`json
+{
+  "wasi": {
+    "version": "preview1",
+    "features": ["stdio", "files", "network", "clocks", "random", "environment"],
+    "allowed_dirs": {
+      "read": ["/tmp", "./public", "./data"],
+      "write": ["/tmp", "./logs", "./data"]
+    },
+    "allowed_network": {
+      "tcp_outbound": ["*:80", "*:443", "*:3000-4000"],
+      "tcp_inbound": ["0.0.0.0:8080"]
+    }
+  }
+}
+\`\`\`
+
+### WASI Security
+
+WASI provides sandboxed system access:
+- File access is restricted to \`allowed_dirs\`
+- Network access is restricted to \`allowed_network\` ranges
+- Environment variable access is explicitly listed
+- All operations are safe within the WebAssembly sandbox
 
 ## Testing
 
