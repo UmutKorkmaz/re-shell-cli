@@ -88,7 +88,9 @@ export type BackendFeature =
   | 'streaming'
   | 'swagger'
   | 'channels'
-  | 'wasi';
+  | 'wasi'
+  | 'simd'
+  | 'performance';
 
 export type FrontendFeature =
   | 'routing'
