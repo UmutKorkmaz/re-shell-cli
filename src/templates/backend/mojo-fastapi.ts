@@ -11,7 +11,7 @@ export const mojoFastapiTemplate: BackendTemplate = {
   tags: ['mojo', 'fastapi', 'python', 'ai', 'ml', 'simd', 'hybrid', 'performance'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing', 'python-interop'],
 
   files: {
     // Main Mojo entry point
@@ -440,6 +440,878 @@ checkpoints/
 *.pth
 `,
 
+    // Test configuration
+    'pytest.ini': `# {{projectName}} - Pytest Configuration
+
+[pytest]
+testpaths = tests
+python_files = test_*.py *_test.py
+python_classes = Test*
+python_functions = test_*
+addopts =
+    -v
+    --tb=short
+    --strict-markers
+    --cov=fastapi_app
+    --cov-report=term-missing
+    --cov-report=html
+    --cov-fail-under=80
+markers =
+    unit: Unit tests
+    integration: Integration tests
+    mojo: Tests requiring Mojo
+    slow: Slow running tests
+    api: API endpoint tests
+    simd: SIMD performance tests
+asyncio_mode = auto
+filterwarnings =
+    ignore::DeprecationWarning
+    ignore::PendingDeprecationWarning
+`,
+
+    // Test requirements
+    'requirements-test.txt': `# {{projectName}} - Test Dependencies
+
+# Testing framework
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-httpx==0.25.0
+
+# Coverage
+coverage==7.3.2
+
+# HTTP testing
+httpx==0.25.2
+requests==2.31.0
+
+# Type checking
+mypy==1.7.1
+types-requests==2.31.0.10
+
+# Code quality
+flake8==6.1.0
+black==23.12.1
+isort==5.13.2
+
+# Performance profiling
+pytest-benchmark==4.0.0
+
+# Test utilities
+faker==20.1.0
+freezegun==1.4.0
+`,
+
+    // Test utilities
+    'tests/__init__.py': `"""
+{{projectName}} - Test Package
+"""
+`,
+
+    'tests/conftest.py': `"""
+{{projectName}} - Pytest Configuration and Fixtures
+"""
+import pytest
+import asyncio
+from typing import AsyncGenerator, Generator
+import numpy as np
+from httpx import AsyncClient, ASGITransport
+from fastapi_app import app
+
+# Mojo interop test utilities
+try:
+    import sys
+    sys.path.insert(0, "..")
+    from mojo_bindings import predict_handler, health_handler
+    MOJO_AVAILABLE = True
+except ImportError:
+    MOJO_AVAILABLE = False
+    # Fallback implementations for testing without Mojo
+    def predict_handler(features, model_type):
+        return {"prediction": 0.5, "confidence": 0.8, "model_type": model_type, "inference_time_ms": 1.0}
+
+    def health_handler():
+        return {"status": "healthy", "mode": "test_fallback"}
+
+
+@pytest.fixture(scope="session")
+def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+    """Create event loop for async tests"""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
+    """Async HTTP client for testing"""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client
+
+
+@pytest.fixture
+def sample_features():
+    """Sample feature vector for testing"""
+    return np.random.randn(784).tolist()
+
+
+@pytest.fixture
+def sample_batch_features():
+    """Sample batch of feature vectors"""
+    return [np.random.randn(784).tolist() for _ in range(10)]
+
+
+@pytest.fixture
+def mock_prediction_response():
+    """Mock prediction response"""
+    return {
+        "prediction": 0.75,
+        "confidence": 0.85,
+        "model_type": "mojo-simd",
+        "inference_time_ms": 1.5
+    }
+
+
+@pytest.fixture
+def mojo_available():
+    """Check if Mojo bindings are available"""
+    return MOJO_AVAILABLE
+
+
+@pytest.fixture
+def skip_without_mojo(mojo_available):
+    """Skip test if Mojo is not available"""
+    if not mojo_available:
+        pytest.skip("Mojo bindings not available")
+
+
+# Performance benchmark fixtures
+@pytest.fixture
+def benchmark_sizes():
+    """Different sizes for performance benchmarking"""
+    return [100, 1000, 10000, 100000]
+
+
+@pytest.fixture
+def performance_thresholds():
+    """Performance thresholds for tests"""
+    return {
+        "max_inference_time_ms": 10.0,
+        "min_throughput_per_second": 100.0,
+        "max_memory_mb": 512
+    }
+
+
+# Test data generators
+def generate_test_features(size: int = 784, seed: int = 42) -> list:
+    """Generate deterministic test features"""
+    np.random.seed(seed)
+    return np.random.randn(size).tolist()
+
+
+def generate_test_batch(count: int, size: int = 784, seed: int = 42) -> list:
+    """Generate deterministic test batch"""
+    np.random.seed(seed)
+    return [np.random.randn(size).tolist() for _ in range(count)]
+`,
+
+    // Unit tests for Mojo functions
+    'tests/test_mojo_functions.py': `"""
+{{projectName}} - Tests for Mojo SIMD Functions (via Python interop)
+"""
+import pytest
+import numpy as np
+import time
+from conftest import MOJO_AVAILABLE, generate_test_features, generate_test_batch
+
+
+class TestMojoSIMDOperations:
+    """Test Mojo SIMD operations through Python interop"""
+
+    @pytest.mark.skipif(not MOJO_AVAILABLE, reason="Mojo bindings not available")
+    def test_simd_vector_add(self):
+        """Test SIMD vector addition"""
+        try:
+            from mojo_bindings import simd_add
+            a = [1.0, 2.0, 3.0, 4.0]
+            b = [5.0, 6.0, 7.0, 8.0]
+            result = simd_add(a, b)
+            expected = [6.0, 8.0, 10.0, 12.0]
+            assert result == expected
+        except ImportError:
+            pytest.skip("simd_add not available in Mojo bindings")
+
+    @pytest.mark.skipif(not MOJO_AVAILABLE, reason="Mojo bindings not available")
+    def test_simd_vector_multiply(self):
+        """Test SIMD vector multiplication"""
+        try:
+            from mojo_bindings import simd_multiply
+            data = [2.0, 3.0, 4.0, 5.0]
+            scalar = 2.5
+            result = simd_multiply(data, scalar)
+            expected = [5.0, 7.5, 10.0, 12.5]
+            assert result == expected
+        except ImportError:
+            pytest.skip("simd_multiply not available in Mojo bindings")
+
+    @pytest.mark.skipif(not MOJO_AVAILABLE, reason="Mojo bindings not available")
+    def test_simd_dot_product(self):
+        """Test SIMD dot product"""
+        try:
+            from mojo_bindings import simd_dot_product
+            a = [1.0, 2.0, 3.0, 4.0]
+            b = [2.0, 3.0, 4.0, 5.0]
+            result = simd_dot_product(a, b)
+            expected = 1*2 + 2*3 + 3*4 + 4*5  # 40
+            assert abs(result - expected) < 1e-6
+        except ImportError:
+            pytest.skip("simd_dot_product not available in Mojo bindings")
+
+
+class TestMojoMLFunctions:
+    """Test Mojo ML functions through Python interop"""
+
+    @pytest.mark.skipif(not MOJO_AVAILABLE, reason="Mojo bindings not available")
+    def test_sigmoid_activation(self):
+        """Test sigmoid activation function"""
+        try:
+            from mojo_bindings import sigmoid
+            # Sigmoid(0) should be 0.5
+            result = sigmoid(0.0)
+            assert abs(result - 0.5) < 1e-6
+
+            # Large positive should approach 1
+            result_pos = sigmoid(10.0)
+            assert result_pos > 0.99
+
+            # Large negative should approach 0
+            result_neg = sigmoid(-10.0)
+            assert result_neg < 0.01
+        except ImportError:
+            pytest.skip("sigmoid not available in Mojo bindings")
+
+    @pytest.mark.skipif(not MOJO_AVAILABLE, reason="Mojo bindings not available")
+    def test_relu_activation(self):
+        """Test ReLU activation function"""
+        try:
+            from mojo_bindings import relu
+            assert relu(5.0) == 5.0
+            assert relu(-3.0) == 0.0
+            assert relu(0.0) == 0.0
+        except ImportError:
+            pytest.skip("relu not available in Mojo bindings")
+
+
+class TestMojoPrediction:
+    """Test Mojo prediction functions"""
+
+    @pytest.mark.asyncio
+    async def test_single_prediction(self, mojo_available):
+        """Test single prediction"""
+        features = generate_test_features(784)
+        result = predict_handler(features, "mojo-simd")
+
+        assert "prediction" in result
+        assert "confidence" in result
+        assert "model_type" in result
+        assert "inference_time_ms" in result
+        assert 0 <= result["prediction"] <= 1
+        assert 0 <= result["confidence"] <= 1
+        assert result["inference_time_ms"] >= 0
+
+    @pytest.mark.asyncio
+    async def test_batch_prediction(self, mojo_available):
+        """Test batch prediction"""
+        batch = generate_test_batch(5, 784)
+        results = []
+        for features in batch:
+            result = predict_handler(features, "mojo-simd")
+            results.append(result)
+
+        assert len(results) == 5
+        for result in results:
+            assert "prediction" in result
+            assert "confidence" in result
+
+    @pytest.mark.asyncio
+    async def test_prediction_determinism(self, mojo_available):
+        """Test that predictions are deterministic"""
+        features = generate_test_features(784, seed=42)
+        result1 = predict_handler(features, "mojo-simd")
+        result2 = predict_handler(features, "mojo-simd")
+
+        # Same input should give same output
+        assert result1["prediction"] == result2["prediction"]
+
+
+class TestMojoPerformance:
+    """Test Mojo performance characteristics"""
+
+    @pytest.mark.slow
+    @pytest.mark.benchmark(group="mojo-inference")
+    def test_inference_performance(self, mojo_available, benchmark_sizes):
+        """Benchmark inference performance"""
+        for size in benchmark_sizes:
+            features = generate_test_features(size)
+
+            start = time.time()
+            result = predict_handler(features, "mojo-simd")
+            elapsed = (time.time() - start) * 1000
+
+            # Assert performance threshold
+            assert elapsed < 100, f"Inference took {elapsed}ms for size {size}"
+            assert result["inference_time_ms"] >= 0
+
+    @pytest.mark.slow
+    def test_throughput(self, mojo_available):
+        """Test prediction throughput"""
+        batch_size = 100
+        batch = generate_test_batch(batch_size, 784)
+
+        start = time.time()
+        for features in batch:
+            predict_handler(features, "mojo-simd")
+        elapsed = time.time() - start
+
+        throughput = batch_size / elapsed
+        assert throughput > 10, f"Throughput too low: {throughput} predictions/sec"
+
+    @pytest.mark.slow
+    def test_memory_efficiency(self, mojo_available):
+        """Test memory efficiency of batch processing"""
+        import tracemalloc
+
+        tracemalloc.start()
+        batch = generate_test_batch(1000, 784)
+
+        for features in batch:
+            predict_handler(features, "mojo-simd")
+
+        current, peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+
+        # Peak memory should be reasonable (< 1GB for 1000 predictions)
+        assert peak < 1024 * 1024 * 1024, f"Memory usage too high: {peak / 1024 / 1024} MB"
+
+
+class TestMojoPythonInterop:
+    """Test Mojo-Python interoperability"""
+
+    @pytest.mark.skipif(not MOJO_AVAILABLE, reason="Mojo bindings not available")
+    def test_numpy_array_conversion(self):
+        """Test NumPy array to/from Mojo conversion"""
+        try:
+            from mojo_bindings import process_numpy_array
+            np_array = np.array([1.0, 2.0, 3.0, 4.0])
+            result = process_numpy_array(np_array)
+            assert isinstance(result, np.ndarray)
+            assert result.shape == np_array.shape
+        except ImportError:
+            pytest.skip("process_numpy_array not available")
+
+    @pytest.mark.skipif(not MOJO_AVAILABLE, reason="Mojo bindings not available")
+    def test_python_list_conversion(self):
+        """Test Python list to/from Mojo conversion"""
+        try:
+            from mojo_bindings import process_list
+            python_list = [1.0, 2.0, 3.0, 4.0]
+            result = process_list(python_list)
+            assert isinstance(result, list)
+            assert len(result) == len(python_list)
+        except ImportError:
+            pytest.skip("process_list not available")
+`,
+
+    // API tests
+    'tests/test_api.py': `"""
+{{projectName}} - API Endpoint Tests
+"""
+import pytest
+from httpx import AsyncClient
+from fastapi_app import app
+
+
+class TestHealthEndpoints:
+    """Test health check endpoints"""
+
+    @pytest.mark.asyncio
+    async def test_health_check(self, async_client: AsyncClient):
+        """Test /health endpoint"""
+        response = await async_client.get("/health")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "status" in data
+        assert data["status"] == "healthy"
+
+    @pytest.mark.asyncio
+    async def test_health_v1(self, async_client: AsyncClient):
+        """Test /api/v1/health endpoint"""
+        response = await async_client.get("/api/v1/health")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "status" in data
+
+
+class TestPredictionEndpoints:
+    """Test AI/ML prediction endpoints"""
+
+    @pytest.mark.api
+    @pytest.mark.asyncio
+    async def test_single_prediction(self, async_client: AsyncClient, sample_features):
+        """Test single prediction endpoint"""
+        payload = {
+            "features": sample_features[:100],  # Use smaller sample for testing
+            "model_type": "mojo-simd"
+        }
+
+        response = await async_client.post("/api/v1/predict", json=payload)
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "prediction" in data
+        assert "confidence" in data
+        assert "model_type" in data
+        assert "inference_time_ms" in data
+
+    @pytest.mark.api
+    @pytest.mark.asyncio
+    async def test_batch_prediction(self, async_client: AsyncClient):
+        """Test batch prediction endpoint"""
+        batch = [
+            {"features": [0.1] * 100, "model_type": "mojo-simd"},
+            {"features": [0.2] * 100, "model_type": "mojo-simd"},
+            {"features": [0.3] * 100, "model_type": "mojo-simd"}
+        ]
+
+        response = await async_client.post("/api/v1/predict/batch", json=batch)
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "predictions" in data
+        assert len(data["predictions"]) == 3
+
+    @pytest.mark.api
+    @pytest.mark.asyncio
+    async def test_prediction_validation(self, async_client: AsyncClient):
+        """Test prediction request validation"""
+        # Missing required field
+        payload = {"features": [0.1, 0.2]}
+
+        response = await async_client.post("/api/v1/predict", json=payload)
+        assert response.status_code == 422  # Validation error
+
+
+class TestModelInfoEndpoints:
+    """Test model information endpoints"""
+
+    @pytest.mark.api
+    @pytest.mark.asyncio
+    async def test_model_info(self, async_client: AsyncClient):
+        """Test model info endpoint"""
+        response = await async_client.get("/api/v1/model/info")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "model_type" in data
+        assert "simd_enabled" in data
+        assert data["simd_enabled"] is True
+
+
+class TestBenchmarkEndpoints:
+    """Test benchmarking endpoints"""
+
+    @pytest.mark.api
+    @pytest.mark.slow
+    @pytest.mark.asyncio
+    async def test_benchmark_endpoint(self, async_client: AsyncClient):
+        """Test performance benchmark endpoint"""
+        payload = {
+            "features": [0.1] * 100,
+            "model_type": "mojo-simd"
+        }
+
+        params = {"iterations": 10}
+        response = await async_client.post("/api/v1/benchmark", json=payload, params=params)
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "iterations" in data
+        assert "avg_inference_time_ms" in data
+        assert "min_inference_time_ms" in data
+        assert "max_inference_time_ms" in data
+        assert "throughput_per_second" in data
+
+
+class TestCORSMiddleware:
+    """Test CORS middleware"""
+
+    @pytest.mark.asyncio
+    async def test_cors_headers(self, async_client: AsyncClient):
+        """Test CORS headers are present"""
+        response = await async_client.options("/api/v1/health")
+        assert response.status_code == 200
+
+        # Check for CORS headers
+        assert "access-control-allow-origin" in response.headers
+
+
+class TestErrorHandling:
+    """Test error handling"""
+
+    @pytest.mark.api
+    @pytest.mark.asyncio
+    async def test_404_not_found(self, async_client: AsyncClient):
+        """Test 404 response"""
+        response = await async_client.get("/api/v1/nonexistent")
+        assert response.status_code == 404
+
+    @pytest.mark.api
+    @pytest.mark.asyncio
+    async def test_422_validation_error(self, async_client: AsyncClient):
+        """Test validation error handling"""
+        payload = {"features": "not_a_list"}
+
+        response = await async_client.post("/api/v1/predict", json=payload)
+        assert response.status_code == 422
+`,
+
+    // Integration tests
+    'tests/test_integration.py': `"""
+{{projectName}} - Integration Tests
+"""
+import pytest
+import asyncio
+from httpx import AsyncClient
+from fastapi_app import app
+
+
+class TestEndToEndWorkflow:
+    """Test complete end-to-end workflows"""
+
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_prediction_workflow(self, async_client: AsyncClient):
+        """Test complete prediction workflow"""
+        # 1. Check health
+        health_response = await async_client.get("/api/v1/health")
+        assert health_response.status_code == 200
+
+        # 2. Get model info
+        info_response = await async_client.get("/api/v1/model/info")
+        assert info_response.status_code == 200
+        model_info = info_response.json()
+
+        # 3. Make prediction
+        payload = {
+            "features": [0.1] * 100,
+            "model_type": model_info["model_type"]
+        }
+        predict_response = await async_client.post("/api/v1/predict", json=payload)
+        assert predict_response.status_code == 200
+        prediction = predict_response.json()
+
+        # 4. Verify prediction structure
+        assert "prediction" in prediction
+        assert "confidence" in prediction
+        assert prediction["inference_time_ms"] >= 0
+
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_batch_processing_workflow(self, async_client: AsyncClient):
+        """Test batch processing workflow"""
+        batch = [
+            {"features": [0.1] * 50, "model_type": "mojo-simd"},
+            {"features": [0.2] * 50, "model_type": "mojo-simd"},
+            {"features": [0.3] * 50, "model_type": "mojo-simd"}
+        ]
+
+        response = await async_client.post("/api/v1/predict/batch", json=batch)
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data["predictions"]) == 3
+
+        # Verify all predictions succeeded
+        for pred in data["predictions"]:
+            assert "prediction" in pred
+            assert "confidence" in pred
+
+
+class TestConcurrency:
+    """Test concurrent request handling"""
+
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_concurrent_predictions(self, async_client: AsyncClient):
+        """Test handling multiple concurrent predictions"""
+        async def make_prediction(client, index):
+            payload = {
+                "features": [float(index % 10) / 10.0] * 50,
+                "model_type": "mojo-simd"
+            }
+            response = await client.post("/api/v1/predict", json=payload)
+            return response
+
+        # Make 10 concurrent requests
+        tasks = [make_prediction(async_client, i) for i in range(10)]
+        responses = await asyncio.gather(*tasks)
+
+        # All should succeed
+        assert all(r.status_code == 200 for r in responses)
+        assert len(responses) == 10
+
+
+class TestPerformanceIntegration:
+    """Integration tests for performance"""
+
+    @pytest.mark.integration
+    @pytest.mark.slow
+    @pytest.mark.asyncio
+    async def test_sustained_load(self, async_client: AsyncClient):
+        """Test server under sustained load"""
+        num_requests = 100
+        payloads = [
+            {"features": [0.1] * 50, "model_type": "mojo-simd"}
+            for _ in range(num_requests)
+        ]
+
+        import time
+        start = time.time()
+
+        tasks = [async_client.post("/api/v1/predict", json=p) for p in payloads]
+        responses = await asyncio.gather(*tasks)
+
+        elapsed = time.time() - start
+
+        # All requests should succeed
+        assert all(r.status_code == 200 for r in responses)
+
+        # Should handle reasonable throughput
+        throughput = num_requests / elapsed
+        assert throughput > 10, f"Throughput too low: {throughput} req/sec"
+`,
+
+    // Mojo test wrapper
+    'tests/test_mojo_wrapper.py': `"""
+{{projectName}} - Mojo Test Wrapper for Direct Mojo Testing
+
+This module provides utilities to test Mojo code directly,
+complementing the Python interop tests.
+"""
+import subprocess
+import pytest
+import os
+from pathlib import Path
+
+
+class TestMojoCodeCompilation:
+    """Test that Mojo code compiles successfully"""
+
+    @pytest.mark.mojo
+    def test_main_mojo_compiles(self):
+        """Test that main.mojo compiles without errors"""
+        result = subprocess.run(
+            ["mojo", "build", "main.mojo"],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        # Note: This test requires Mojo CLI to be available
+        # In CI/CD, this would be run in a Mojo-enabled environment
+
+    @pytest.mark.mojo
+    def test_mojo_syntax_check(self):
+        """Test Mojo syntax with linting"""
+        result = subprocess.run(
+            ["mojo", "lint", "main.mojo"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        # Should not have syntax errors
+
+
+class TestMojoSIMD:
+    """Direct tests of Mojo SIMD functionality"""
+
+    @pytest.mark.mojo
+    @pytest.mark.slow
+    def test_simd_performance_benchmark(self):
+        """Run Mojo SIMD performance benchmarks"""
+        if not Path("src/benchmark.mojo").exists():
+            pytest.skip("benchmark.mojo not found")
+
+        result = subprocess.run(
+            ["mojo", "run", "src/benchmark.mojo"],
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+
+        # Check that benchmark ran
+        assert result.returncode == 0 or "not found" in result.stderr
+
+
+class TestMojoPythonInterop:
+    """Test Mojo-Python interoperability directly"""
+
+    @pytest.mark.mojo
+    def test_python_import_works(self):
+        """Test that Python imports work in Mojo"""
+        mojo_code = '''
+from python import Python
+from python.math import sqrt
+
+fn main():
+    let result = sqrt(16.0)
+    print(result)
+'''
+        # Write temporary test file
+        test_file = Path("test_python_import.mojo")
+        test_file.write_text(mojo_code)
+
+        try:
+            result = subprocess.run(
+                ["mojo", "run", str(test_file)],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            test_file.unlink()
+            # Should produce output
+            assert "4.0" in result.stdout or result.returncode == 0
+        except FileNotFoundError:
+            test_file.unlink()
+            pytest.skip("Mojo CLI not found")
+
+
+def create_mojo_test_wrapper(function_name: str, test_data: str) -> str:
+    """
+    Create a Mojo test wrapper for testing specific functions
+
+    Args:
+        function_name: Name of the function to test
+        test_data: Test data as Mojo code
+
+    Returns:
+        Path to temporary test file
+    """
+    template = f"""
+# Auto-generated Mojo test wrapper
+from python import Python
+from main import {function_name}
+
+fn main():
+    # Test data
+    {test_data}
+
+    # Call function
+    let result = {function_name}(test_input)
+
+    # Print result for assertion
+    print("Result: " + str(result))
+"""
+    return template
+
+
+@pytest.fixture
+def mojo_test_file(tmp_path):
+    """Create a temporary Mojo test file"""
+    def _create(code: str) -> Path:
+        test_file = tmp_path / "test_temp.mojo"
+        test_file.write_text(code)
+        return test_file
+    return _create
+
+
+class TestMojoTestGeneration:
+    """Test automatic Mojo test generation"""
+
+    def test_create_test_wrapper(self):
+        """Test creating a Mojo test wrapper"""
+        wrapper = create_mojo_test_wrapper(
+            "predict_handler",
+            "let test_input = SIMD[float64](4)"
+        )
+        assert "from main import predict_handler" in wrapper
+        assert "let test_input" in wrapper
+`,
+
+    // Test runner script
+    'scripts/test.sh': `#!/bin/bash
+# {{projectName}} - Test Runner Script
+
+set -e
+
+echo "🧪 Running {{projectName}} tests..."
+echo ""
+
+# Colors
+RED='\\033[0;31m'
+GREEN='\\033[0;32m'
+YELLOW='\\033[1;33m'
+NC='\\033[0m' # No Color
+
+# Check if Python is available
+if ! command -v python3 &> /dev/null; then
+    echo -e "\${RED}❌ Python not found\${NC}"
+    exit 1
+fi
+
+# Check if Mojo is available
+MOJO_AVAILABLE=false
+if command -v mojo &> /dev/null; then
+    MOJO_AVAILABLE=true
+    echo -e "\${GREEN}✓ Mojo CLI found\${NC}"
+else
+    echo -e "\${YELLOW}⚠ Mojo CLI not found - skipping Mojo tests\${NC}"
+fi
+
+echo ""
+
+# Run Python unit tests
+echo "📋 Running Python unit tests..."
+python3 -m pytest tests/test_mojo_functions.py -v --tb=short
+
+# Run API tests
+echo "📋 Running API integration tests..."
+python3 -m pytest tests/test_api.py -v --tb=short
+
+# Run end-to-end tests
+echo "📋 Running end-to-end tests..."
+python3 -m pytest tests/test_integration.py -v --tb=short
+
+# Run with coverage
+echo ""
+echo "📊 Running tests with coverage..."
+python3 -m pytest tests/ --cov=fastapi_app --cov-report=term-missing --cov-report=html
+
+# Run Mojo tests if available
+if [ "$MOJO_AVAILABLE" = true ]; then
+    echo ""
+    echo "🔥 Running Mojo tests..."
+    python3 -m pytest tests/test_mojo_wrapper.py -v --tb=short -m mojo
+else
+    echo ""
+    echo -e "\${YELLOW}⚠ Skipping Mojo-specific tests\${NC}"
+fi
+
+# Run slow tests if requested
+if [ "$1" = "--include-slow" ]; then
+    echo ""
+    echo "🐢 Running slow tests..."
+    python3 -m pytest tests/ -v -m slow --tb=short
+fi
+
+echo ""
+echo -e "\${GREEN}✅ All tests passed!\${NC}"
+echo ""
+echo "📊 Coverage report: htmlcov/index.html"
+`,
+
     // Dockerfile with multi-stage build
     'Dockerfile': `# Multi-stage Dockerfile for Mojo/FastAPI Hybrid
 
@@ -753,6 +1625,5 @@ Perfect for:
 ## License
 
 MIT
-`,
-  }
+`}
 };

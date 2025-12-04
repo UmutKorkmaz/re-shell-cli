@@ -90,7 +90,8 @@ export type BackendFeature =
   | 'channels'
   | 'wasi'
   | 'simd'
-  | 'performance';
+  | 'performance'
+  | 'python-interop';
 
 export type FrontendFeature =
   | 'routing'
