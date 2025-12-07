@@ -91,7 +91,8 @@ export type BackendFeature =
   | 'wasi'
   | 'simd'
   | 'performance'
-  | 'python-interop';
+  | 'python-interop'
+  | 'grpc';
 
 export type FrontendFeature =
   | 'routing'
