@@ -92,7 +92,12 @@ export type BackendFeature =
   | 'simd'
   | 'performance'
   | 'python-interop'
-  | 'grpc';
+  | 'grpc'
+  | 'caching'
+  | 'sessions'
+  | 'pubsub'
+  | 'connection-pooling'
+  | 'monitoring';
 
 export type FrontendFeature =
   | 'routing'

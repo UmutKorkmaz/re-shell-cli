@@ -4,6 +4,25 @@ import { djangoEnhancedTemplate } from './django-enhanced';
 import { tornadoTemplate } from './tornado-py';
 import { sanicTemplate } from './sanic-py';
 import { starletteTemplate } from './starlette';
+import { dockerComposeTemplate } from './docker-compose-microservices';
+import { serviceDiscoveryTemplate } from './service-discovery';
+import { istioServiceMeshTemplate } from './istio-service-mesh';
+import { linkerdServiceMeshTemplate } from './linkerd-service-mesh';
+import { envoyProxyTemplate } from './envoy-proxy';
+import { nginxIngressTemplate } from './nginx-ingress';
+import { traefikProxyTemplate } from './traefik-proxy';
+import { haproxyTemplate } from './haproxy-lb';
+import { volumeManagementTemplate } from './volume-management';
+import { serviceCommunicationTemplate } from './service-communication';
+import { secretsManagementTemplate } from './secrets-management';
+import { serviceAuthTemplate } from './service-auth';
+import { serviceObservabilityTemplate } from './service-observability';
+import { circuitBreakerTemplate } from './circuit-breaker';
+import { deploymentStrategiesTemplate } from './deployment-strategies';
+import { serviceDependenciesTemplate } from './service-dependencies';
+import { apiGatewayTemplate } from './api-gateway';
+import { corsConfigTemplate } from './cors-config';
+import { redisIntegrationTemplate } from './redis-integration';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -163,6 +182,9 @@ import { apolloServerTemplate } from './apollo-server';
 import { graphqlYogaTemplate } from './graphql-yoga';
 import { BackendTemplate } from '../types';
 
+// Re-export BackendTemplate type for external use
+export type { BackendTemplate } from '../types';
+
 export const backendTemplates: Record<string, BackendTemplate> = {
   // Node.js/TypeScript
   'express': expressTemplate,
@@ -190,6 +212,25 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'hyper-express': hyperExpressTemplate,
   'apollo-server': apolloServerTemplate,
   'graphql-yoga': graphqlYogaTemplate,
+  'docker-compose-microservices': dockerComposeTemplate,
+  'service-discovery': serviceDiscoveryTemplate,
+  'istio-service-mesh': istioServiceMeshTemplate,
+  'linkerd-service-mesh': linkerdServiceMeshTemplate,
+  'envoy-proxy': envoyProxyTemplate,
+  'nginx-ingress': nginxIngressTemplate,
+  'traefik-proxy': traefikProxyTemplate,
+  'haproxy-lb': haproxyTemplate,
+  'volume-management': volumeManagementTemplate,
+  'service-communication': serviceCommunicationTemplate,
+  'secrets-management': secretsManagementTemplate,
+  'service-auth': serviceAuthTemplate,
+  'service-observability': serviceObservabilityTemplate,
+  'circuit-breaker': circuitBreakerTemplate,
+  'deployment-strategies': deploymentStrategiesTemplate,
+  'service-dependencies': serviceDependenciesTemplate,
+  'api-gateway': apiGatewayTemplate,
+  'cors-config': corsConfigTemplate,
+  'redis-integration': redisIntegrationTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
@@ -329,8 +370,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   // Perl
   'mojolicious': mojoliciousTemplate,
   'dancer2': dancer2Template,
-  'catalyst': catalystTemplate,
-};
+  'catalyst': catalystTemplate};
 
 export function getBackendTemplate(id: string): BackendTemplate | undefined {
   return backendTemplates[id];
@@ -527,3 +567,22 @@ export { unisonTemplate } from './unison';
 export { mojoliciousTemplate } from './mojolicious-perl';
 export { dancer2Template } from './dancer2-perl';
 export { catalystTemplate } from './catalyst-perl';
+// Infrastructure
+export { dockerComposeTemplate } from './docker-compose-microservices';
+export { serviceDiscoveryTemplate } from './service-discovery';
+export { istioServiceMeshTemplate } from './istio-service-mesh';
+export { linkerdServiceMeshTemplate } from './linkerd-service-mesh';
+export { envoyProxyTemplate } from './envoy-proxy';
+export { nginxIngressTemplate } from './nginx-ingress';
+export { traefikProxyTemplate } from './traefik-proxy';
+export { haproxyTemplate } from './haproxy-lb';
+export { volumeManagementTemplate } from './volume-management';
+export { serviceCommunicationTemplate } from './service-communication';
+export { secretsManagementTemplate } from './secrets-management';
+export { serviceAuthTemplate } from './service-auth';
+export { serviceObservabilityTemplate } from './service-observability';
+export { circuitBreakerTemplate } from './circuit-breaker';
+export { deploymentStrategiesTemplate } from './deployment-strategies';
+export { serviceDependenciesTemplate } from './service-dependencies';
+export { apiGatewayTemplate } from './api-gateway';
+export { corsConfigTemplate } from './cors-config';
