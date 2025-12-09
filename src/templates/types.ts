@@ -97,7 +97,10 @@ export type BackendFeature =
   | 'sessions'
   | 'pubsub'
   | 'connection-pooling'
-  | 'monitoring';
+  | 'monitoring'
+  | 'jsonb'
+  | 'fulltext'
+  | 'extensions';
 
 export type FrontendFeature =
   | 'routing'

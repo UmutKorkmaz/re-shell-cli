@@ -23,6 +23,7 @@ import { serviceDependenciesTemplate } from './service-dependencies';
 import { apiGatewayTemplate } from './api-gateway';
 import { corsConfigTemplate } from './cors-config';
 import { redisIntegrationTemplate } from './redis-integration';
+import { postgresConfigTemplate } from './postgres-config';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -231,6 +232,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'api-gateway': apiGatewayTemplate,
   'cors-config': corsConfigTemplate,
   'redis-integration': redisIntegrationTemplate,
+  'postgres-config': postgresConfigTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
@@ -586,3 +588,5 @@ export { deploymentStrategiesTemplate } from './deployment-strategies';
 export { serviceDependenciesTemplate } from './service-dependencies';
 export { apiGatewayTemplate } from './api-gateway';
 export { corsConfigTemplate } from './cors-config';
+export { redisIntegrationTemplate } from './redis-integration';
+export { postgresConfigTemplate } from './postgres-config';
