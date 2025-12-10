@@ -99,6 +99,7 @@ export type BackendFeature =
   | 'connection-pooling'
   | 'monitoring'
   | 'jsonb'
+  | 'json'
   | 'fulltext'
   | 'extensions';
 
