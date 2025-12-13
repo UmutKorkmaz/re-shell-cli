@@ -26,6 +26,7 @@ import { redisIntegrationTemplate } from './redis-integration';
 import { postgresConfigTemplate } from './postgres-config';
 import { mysqlConfigTemplate } from './mysql-config';
 import { mongodbConfigTemplate } from './mongodb-config';
+import { couchdbConfigTemplate } from './couchdb-config';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -237,6 +238,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'postgres-config': postgresConfigTemplate,
   'mysql-config': mysqlConfigTemplate,
   'mongodb-config': mongodbConfigTemplate,
+  'couchdb-config': couchdbConfigTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
@@ -596,3 +598,4 @@ export { redisIntegrationTemplate } from './redis-integration';
 export { postgresConfigTemplate } from './postgres-config';
 export { mysqlConfigTemplate } from './mysql-config';
 export { mongodbConfigTemplate } from './mongodb-config';
+export { couchdbConfigTemplate } from './couchdb-config';
