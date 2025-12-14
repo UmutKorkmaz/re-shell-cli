@@ -27,6 +27,7 @@ import { postgresConfigTemplate } from './postgres-config';
 import { mysqlConfigTemplate } from './mysql-config';
 import { mongodbConfigTemplate } from './mongodb-config';
 import { couchdbConfigTemplate } from './couchdb-config';
+import { influxdbConfigTemplate } from './influxdb-config';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -239,6 +240,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'mysql-config': mysqlConfigTemplate,
   'mongodb-config': mongodbConfigTemplate,
   'couchdb-config': couchdbConfigTemplate,
+  'influxdb-config': influxdbConfigTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
@@ -599,3 +601,4 @@ export { postgresConfigTemplate } from './postgres-config';
 export { mysqlConfigTemplate } from './mysql-config';
 export { mongodbConfigTemplate } from './mongodb-config';
 export { couchdbConfigTemplate } from './couchdb-config';
+export { influxdbConfigTemplate } from './influxdb-config';
