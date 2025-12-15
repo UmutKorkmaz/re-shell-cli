@@ -28,6 +28,7 @@ import { mysqlConfigTemplate } from './mysql-config';
 import { mongodbConfigTemplate } from './mongodb-config';
 import { couchdbConfigTemplate } from './couchdb-config';
 import { influxdbConfigTemplate } from './influxdb-config';
+import { neo4jConfigTemplate } from './neo4j-config';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -241,6 +242,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'mongodb-config': mongodbConfigTemplate,
   'couchdb-config': couchdbConfigTemplate,
   'influxdb-config': influxdbConfigTemplate,
+  'neo4j-config': neo4jConfigTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
@@ -602,3 +604,4 @@ export { mysqlConfigTemplate } from './mysql-config';
 export { mongodbConfigTemplate } from './mongodb-config';
 export { couchdbConfigTemplate } from './couchdb-config';
 export { influxdbConfigTemplate } from './influxdb-config';
+export { neo4jConfigTemplate } from './neo4j-config';
