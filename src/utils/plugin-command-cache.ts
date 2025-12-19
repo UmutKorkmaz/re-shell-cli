@@ -626,8 +626,8 @@ export class PluginCommandCacheManager extends EventEmitter {
     try {
       const entryPath = path.join(this.config.diskCachePath, `${key}.cache`);
       if (await fs.pathExists(entryPath)) {
-        let data = await fs.readFile(entryPath);
-        
+        let data = await fs.readFile(entryPath) as Buffer;
+
         // Decrypt if enabled
         if (this.config.encryptionEnabled && this.encryptionKey) {
           data = this.decrypt(data);
@@ -653,7 +653,7 @@ export class PluginCommandCacheManager extends EventEmitter {
     if (!this.config.diskCachePath) return;
 
     try {
-      let data = Buffer.from(JSON.stringify(entry));
+      let data: Uint8Array = Buffer.from(JSON.stringify(entry));
 
       // Compress if enabled
       if (this.config.compressionEnabled) {
@@ -663,7 +663,7 @@ export class PluginCommandCacheManager extends EventEmitter {
 
       // Encrypt if enabled
       if (this.config.encryptionEnabled && this.encryptionKey) {
-        data = this.encrypt(data);
+        data = this.encrypt(Buffer.from(data));
       }
 
       const entryPath = path.join(this.config.diskCachePath, `${key}.cache`);
@@ -726,25 +726,25 @@ export class PluginCommandCacheManager extends EventEmitter {
   // Encrypt data
   private encrypt(data: Buffer): Buffer {
     if (!this.encryptionKey) return data;
-    
+
     const algorithm = 'aes-256-gcm';
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipher(algorithm, this.encryptionKey);
-    
+
     const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
     return Buffer.concat([iv, encrypted]);
   }
 
   // Decrypt data
-  private decrypt(data: Buffer): Buffer {
-    if (!this.encryptionKey) return data;
-    
+  private decrypt(data: Uint8Array): Buffer {
+    if (!this.encryptionKey) return Buffer.from(data);
+
     const algorithm = 'aes-256-gcm';
     const iv = data.slice(0, 16);
     const encrypted = data.slice(16);
     const decipher = crypto.createDecipher(algorithm, this.encryptionKey);
-    
-    return Buffer.concat([decipher.update(encrypted), decipher.final()]);
+
+    return Buffer.concat([decipher.update(Buffer.from(encrypted)), decipher.final()]);
   }
 
   // Calculate object size

@@ -8,7 +8,7 @@ export const luaHttpTemplate: BackendTemplate = {
   language: 'lua',
   framework: 'lua-http',
   version: '0.4',
-  tags: ['lua', 'http', 'async', 'http2', 'websocket', 'coroutines', 'pure-lua'],
+  tags: ['lua', 'http', 'http2', 'websockets', 'coroutines', 'pure-lua'],
   port: 8080,
   dependencies: {},
   features: ['authentication', 'websockets', 'logging', 'validation', 'testing', 'docker'],
@@ -182,8 +182,7 @@ local routes = {
     ["GET /api/products/:id"] = products.get,
     ["POST /api/products"] = products.create,
     ["PUT /api/products/:id"] = products.update,
-    ["DELETE /api/products/:id"] = products.delete,
-}
+    ["DELETE /api/products/:id"] = products.delete}
 
 -- Pattern matching for routes
 local function match_route(method, path)

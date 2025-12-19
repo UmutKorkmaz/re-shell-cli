@@ -8,10 +8,10 @@ export const angel3Template: BackendTemplate = {
   language: 'dart',
   framework: 'angel3',
   version: '8.0.0',
-  tags: ['dart', 'angel3', 'api', 'rest', 'orm', 'real-time', 'graphql', 'full-stack'],
+  tags: ['dart', 'angel3', 'api', 'rest', 'database', 'websockets', 'graphql', 'full-stack'],
   port: 3000,
   dependencies: {},
-  features: ['orm', 'real-time', 'graphql', 'authentication', 'dependency-injection', 'hot-reload'],
+  features: ['database', 'websockets', 'graphql', 'authentication', 'middleware'],
   
   files: {
     // Dart project configuration
@@ -114,8 +114,7 @@ void main() async {
     return app;
   }, [
     Directory('lib'),
-    Directory('config'),
-  ]);
+    Directory('config')]);
 
   await hot.startServer('127.0.0.1', 3000);
 }`,
@@ -167,8 +166,7 @@ Future configureServer(Angel app) async {
         ..json({
           'error': e.message,
           'statusCode': e.statusCode,
-          'details': e.errors,
-        });
+          'details': e.errors});
     } else {
       return await oldErrorHandler(e, req, res);
     }
@@ -212,8 +210,7 @@ Future configureServer(Angel app) async {
     'db_port': int.parse(env['DB_PORT'] ?? '5432'),
     'db_name': env['DB_NAME'] ?? '{{projectName}}',
     'db_user': env['DB_USER'] ?? 'postgres',
-    'db_password': env['DB_PASSWORD'] ?? '',
-  });
+    'db_password': env['DB_PASSWORD'] ?? ''});
 }`,
 
     'config/default.yaml': `# Default configuration
@@ -432,8 +429,7 @@ class JwtAuthStrategy extends AuthStrategy<User> {
   
   JwtAuthStrategy({
     required this.secretOrPublicKey,
-    required this.verify,
-  });
+    required this.verify});
   
   @override
   Future<User?> authenticate(RequestContext req, ResponseContext res,
@@ -492,16 +488,15 @@ Future configureServer(Angel app) async {
   ws.onConnection.listen((socket) {
     socket.request.container.registerSingleton<WebSocketContext>(socket);
     
-    print('WebSocket client connected: ${socket.id}');
+    print('WebSocket client connected: \${socket.id}');
     
     socket.send('connected', {
       'id': socket.id,
-      'message': 'Welcome to {{projectName}} WebSocket server!',
-    });
+      'message': 'Welcome to {{projectName}} WebSocket server!'});
   });
   
   ws.onDisconnection.listen((socket) {
-    print('WebSocket client disconnected: ${socket.id}');
+    print('WebSocket client disconnected: \${socket.id}');
   });
   
   // Register WebSocket actions
@@ -514,8 +509,7 @@ Future configureServer(Angel app) async {
       'type': 'broadcast',
       'from': socket.id,
       'data': data,
-      'timestamp': DateTime.now().toIso8601String(),
-    });
+      'timestamp': DateTime.now().toIso8601String()});
   });
 }`,
 
@@ -600,8 +594,7 @@ extension UserExtension on User {
       'id': id,
       'email': email,
       'name': name,
-      'createdAt': createdAt.toIso8601String(),
-    };
+      'createdAt': createdAt.toIso8601String()};
   }
 }
 
@@ -781,8 +774,7 @@ Future configureServer(Angel app) async {
   // Todo service - protected
   app.use('/api/todos', chain([
     requireAuth<User>(),
-    TodoService(),
-  ]));
+    TodoService()]));
   
   // Token service
   app.use('/api/tokens', TokenService());
@@ -1120,8 +1112,7 @@ class AuthController extends Controller {
     
     // Create user
     var user = await _userService.create(req.bodyAsMap, {
-      'executor': req.container.make<QueryExecutor>(),
-    });
+      'executor': req.container.make<QueryExecutor>()});
     
     // Generate tokens
     var accessToken = _generateAccessToken(user);
@@ -1130,8 +1121,7 @@ class AuthController extends Controller {
     return {
       'user': user.toPublic(),
       'accessToken': accessToken,
-      'refreshToken': refreshToken.token,
-    };
+      'refreshToken': refreshToken.token};
   }
   
   @Expose('/login', method: 'POST')
@@ -1154,8 +1144,7 @@ class AuthController extends Controller {
     return {
       'user': user.toPublic(),
       'accessToken': accessToken,
-      'refreshToken': refreshToken.token,
-    };
+      'refreshToken': refreshToken.token};
   }
   
   @Expose('/refresh', method: 'POST')
@@ -1175,8 +1164,7 @@ class AuthController extends Controller {
     
     // Get user
     var user = await _userService.read(token.userId, {
-      'executor': req.container.make<QueryExecutor>(),
-    });
+      'executor': req.container.make<QueryExecutor>()});
     
     // Delete old token
     await _tokenService.deleteByToken(refreshTokenValue);
@@ -1187,8 +1175,7 @@ class AuthController extends Controller {
     
     return {
       'accessToken': accessToken,
-      'refreshToken': newRefreshToken.token,
-    };
+      'refreshToken': newRefreshToken.token};
   }
   
   @Expose('/logout', method: 'POST', middleware: [requireAuth])
@@ -1212,8 +1199,7 @@ class AuthController extends Controller {
       expiry: DateTime.now().add(const Duration(minutes: 15)),
       otherClaims: {
         'email': user.email,
-        'name': user.name,
-      },
+        'name': user.name},
     );
     
     return issueJwtHS256(claimSet, _jwtSecret);
@@ -1234,9 +1220,7 @@ class HealthController extends Controller {
       'timestamp': DateTime.now().toIso8601String(),
       'version': app?.configuration['version'] ?? '1.0.0',
       'checks': {
-        'database': dbHealthy,
-      },
-    };
+        'database': dbHealthy}};
   }
   
   Future<bool> _checkDatabase(RequestContext req) async {
@@ -1274,9 +1258,7 @@ Future configureServer(Angel app) async {
         'health': '/health',
         'api': '/api',
         'graphql': '/graphql',
-        'websocket': '/ws',
-      },
-    });
+        'websockets': '/ws'}});
   });
   
   // Protected API info
@@ -1284,8 +1266,7 @@ Future configureServer(Angel app) async {
     var user = req.container.make<User>();
     return res.json({
       'message': 'Welcome to the protected API',
-      'user': user.toPublic(),
-    });
+      'user': user.toPublic()});
   });
 }`,
 
@@ -1303,8 +1284,7 @@ GraphQLSchema createGraphQLSchema(Angel app) {
       field('email', graphQLString.nonNullable()),
       field('name', graphQLString.nonNullable()),
       field('createdAt', graphQLString.nonNullable()),
-      field('todos', listOf(todoType)),
-    ],
+      field('todos', listOf(todoType))],
   );
   
   var todoType = objectType(
@@ -1315,8 +1295,7 @@ GraphQLSchema createGraphQLSchema(Angel app) {
       field('description', graphQLString),
       field('completed', graphQLBoolean.nonNullable()),
       field('createdAt', graphQLString.nonNullable()),
-      field('updatedAt', graphQLString.nonNullable()),
-    ],
+      field('updatedAt', graphQLString.nonNullable())],
   );
   
   var queryType = objectType(
@@ -1341,11 +1320,9 @@ GraphQLSchema createGraphQLSchema(Angel app) {
           
           return await todoService?.index({
             'user': user,
-            'executor': req?.container.make<QueryExecutor>(),
-          });
+            'executor': req?.container.make<QueryExecutor>()});
         },
-      ),
-    ],
+      )],
   );
   
   var mutationType = objectType(
@@ -1356,8 +1333,7 @@ GraphQLSchema createGraphQLSchema(Angel app) {
         todoType,
         inputs: [
           GraphQLFieldInput('title', graphQLString.nonNullable()),
-          GraphQLFieldInput('description', graphQLString),
-        ],
+          GraphQLFieldInput('description', graphQLString)],
         resolve: (_, args) async {
           var req = _.get<RequestContext>('req');
           var user = req?.container.make<User>();
@@ -1365,11 +1341,9 @@ GraphQLSchema createGraphQLSchema(Angel app) {
           
           return await todoService?.create(args, {
             'user': user,
-            'executor': req?.container.make<QueryExecutor>(),
-          });
+            'executor': req?.container.make<QueryExecutor>()});
         },
-      ),
-    ],
+      )],
   );
   
   return graphQLSchema(
@@ -1534,8 +1508,7 @@ void main() {
       var response = await client.post('/auth/register', body: {
         'email': 'test@example.com',
         'password': 'password123',
-        'name': 'Test User',
-      });
+        'name': 'Test User'});
 
       expect(response, hasStatus(200));
       expect(response.body['user']['email'], equals('test@example.com'));
@@ -1548,14 +1521,12 @@ void main() {
       await client.post('/auth/register', body: {
         'email': 'login@example.com',
         'password': 'password123',
-        'name': 'Login User',
-      });
+        'name': 'Login User'});
 
       // Then login
       var response = await client.post('/auth/login', body: {
         'email': 'login@example.com',
-        'password': 'password123',
-      });
+        'password': 'password123'});
 
       expect(response, hasStatus(200));
       expect(response.body['user']['email'], equals('login@example.com'));
@@ -1565,8 +1536,7 @@ void main() {
     test('cannot login with invalid credentials', () async {
       var response = await client.post('/auth/login', body: {
         'email': 'wrong@example.com',
-        'password': 'wrongpassword',
-      });
+        'password': 'wrongpassword'});
 
       expect(response, hasStatus(401));
     });
@@ -1892,6 +1862,4 @@ builders:
         - ".g.dart"
     auto_apply: dependents
     build_to: source
-    applies_builders: ["source_gen|combining_builder"]`,
-  },
-};
+    applies_builders: ["source_gen|combining_builder"]`}};

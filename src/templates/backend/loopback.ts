@@ -8,10 +8,10 @@ export const loopbackTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'loopback',
   version: '4.0.0',
-  tags: ['nodejs', 'loopback', 'api', 'rest', 'microservices', 'openapi', 'typescript'],
+  tags: ['nodejs', 'loopback', 'api', 'rest', 'microservices', 'swagger', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['dependency-injection', 'decorators', 'openapi', 'repositories', 'datasources', 'authentication', 'authorization'],
+  features: ['middleware', 'rest-api', 'swagger', 'database', 'database', 'authentication', 'authorization'],
   
   files: {
     // Package configuration
@@ -151,16 +151,14 @@ export const loopbackTemplate: BackendTemplate = {
 import {ApplicationConfig} from '@loopback/core';
 import {
   RestExplorerBindings,
-  RestExplorerComponent,
-} from '@loopback/rest-explorer';
+  RestExplorerComponent} from '@loopback/rest-explorer';
 import {RepositoryMixin} from '@loopback/repository';
 import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import {AuthenticationComponent} from '@loopback/authentication';
 import {
   JWTAuthenticationComponent,
-  UserServiceBindings,
-} from '@loopback/authentication-jwt';
+  UserServiceBindings} from '@loopback/authentication-jwt';
 import {AuthorizationComponent} from '@loopback/authorization';
 import {HealthComponent, HealthBindings} from '@loopback/health';
 import {MetricsComponent} from '@loopback/metrics';
@@ -191,8 +189,7 @@ export class {{projectName}}Application extends BootMixin(
 
     // Customize @loopback/rest-explorer configuration here
     this.configure(RestExplorerBindings.COMPONENT).to({
-      path: '/explorer',
-    });
+      path: '/explorer'});
     this.component(RestExplorerComponent);
 
     // Configure authentication
@@ -208,8 +205,7 @@ export class {{projectName}}Application extends BootMixin(
     this.configure(HealthBindings.COMPONENT).to({
       healthPath: '/health',
       readyPath: '/ready',
-      livePath: '/live',
-    });
+      livePath: '/live'});
     this.component(HealthComponent);
 
     // Configure metrics
@@ -218,8 +214,7 @@ export class {{projectName}}Application extends BootMixin(
     // Configure logging
     this.configure(LoggingBindings.COMPONENT).to({
       enableFluent: false,
-      enableHttpAccessLog: true,
-    });
+      enableHttpAccessLog: true});
     this.component(LoggingComponent);
 
     // Configure cron jobs
@@ -232,34 +227,27 @@ export class {{projectName}}Application extends BootMixin(
         // Customize ControllerBooter Conventions here
         dirs: ['controllers'],
         extensions: ['.controller.js'],
-        nested: true,
-      },
+        nested: true},
       repositories: {
-        dirs: ['repositories'],
+        dirs: ['database'],
         extensions: ['.repository.js'],
-        nested: true,
-      },
+        nested: true},
       datasources: {
-        dirs: ['datasources'],
+        dirs: ['database'],
         extensions: ['.datasource.js'],
-        nested: true,
-      },
+        nested: true},
       services: {
         dirs: ['services'],
         extensions: ['.service.js'],
-        nested: true,
-      },
+        nested: true},
       interceptors: {
         dirs: ['interceptors'],
         extensions: ['.interceptor.js'],
-        nested: true,
-      },
+        nested: true},
       observers: {
         dirs: ['observers'],
         extensions: ['.observer.js'],
-        nested: true,
-      },
-    };
+        nested: true}};
   }
 
   private addSecurityScheme(): void {
@@ -268,14 +256,11 @@ export class {{projectName}}Application extends BootMixin(
       info: {
         title: '{{projectName}} API',
         version: '1.0.0',
-        description: 'LoopBack 4 API with comprehensive features',
-      },
+        description: 'LoopBack 4 API with comprehensive features'},
       paths: {},
       components: {
-        securitySchemes: SECURITY_SCHEME_SPEC,
-      },
-      servers: [{url: '/'}],
-    });
+        securitySchemes: SECURITY_SCHEME_SPEC},
+      servers: [{url: '/'}]});
   }
 }`,
 
@@ -310,15 +295,11 @@ if (require.main === module) {
       gracePeriodForClose: 5000, // 5 seconds
       openApiSpec: {
         // useful when used with OpenAPI-to-GraphQL to locate your application
-        setServersFromRequest: true,
-      },
+        setServersFromRequest: true},
       // Configure CORS
       cors: {
         origin: process.env.CORS_ORIGINS?.split(',') || '*',
-        credentials: true,
-      },
-    },
-  };
+        credentials: true}}};
   main(config).catch(err => {
     console.error('Cannot start the application.', err);
     process.exit(1);
@@ -336,8 +317,7 @@ import {
   RequestContext,
   RestBindings,
   Send,
-  SequenceHandler,
-} from '@loopback/rest';
+  SequenceHandler} from '@loopback/rest';
 import {AuthenticationBindings, AuthenticateFn} from '@loopback/authentication';
 import {AuthorizationBindings, AuthorizeFn} from '@loopback/authorization';
 
@@ -404,8 +384,7 @@ export class MySequence implements SequenceHandler {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
-} from '@loopback/repository';
+  Where} from '@loopback/repository';
 import {
   post,
   param,
@@ -417,8 +396,7 @@ import {
   requestBody,
   response,
   RestBindings,
-  Request,
-} from '@loopback/rest';
+  Request} from '@loopback/rest';
 import {User} from '../models';
 import {UserRepository} from '../repositories';
 import {authenticate} from '@loopback/authentication';
@@ -435,19 +413,14 @@ export class UserController {
   @post('/users')
   @response(200, {
     description: 'User model instance',
-    content: {'application/json': {schema: getModelSchemaRef(User)}},
-  })
+    content: {'application/json': {schema: getModelSchemaRef(User)}}})
   async create(
     @requestBody({
       content: {
         'application/json': {
           schema: getModelSchemaRef(User, {
             title: 'NewUser',
-            exclude: ['id'],
-          }),
-        },
-      },
-    })
+            exclude: ['id']})}}})
     user: Omit<User, 'id'>,
   ): Promise<User> {
     return this.userRepository.create(user);
@@ -456,8 +429,7 @@ export class UserController {
   @get('/users/count')
   @response(200, {
     description: 'User model count',
-    content: {'application/json': {schema: CountSchema}},
-  })
+    content: {'application/json': {schema: CountSchema}}})
   @authenticate('jwt')
   @authorize({allowedRoles: ['admin']})
   async count(
@@ -473,11 +445,7 @@ export class UserController {
       'application/json': {
         schema: {
           type: 'array',
-          items: getModelSchemaRef(User, {includeRelations: true}),
-        },
-      },
-    },
-  })
+          items: getModelSchemaRef(User, {includeRelations: true})}}}})
   @authenticate('jwt')
   @authorize({allowedRoles: ['admin']})
   async find(
@@ -489,18 +457,14 @@ export class UserController {
   @patch('/users')
   @response(200, {
     description: 'User PATCH success count',
-    content: {'application/json': {schema: CountSchema}},
-  })
+    content: {'application/json': {schema: CountSchema}}})
   @authenticate('jwt')
   @authorize({allowedRoles: ['admin']})
   async updateAll(
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(User, {partial: true}),
-        },
-      },
-    })
+          schema: getModelSchemaRef(User, {partial: true})}}})
     user: User,
     @param.where(User) where?: Where<User>,
   ): Promise<Count> {
@@ -512,10 +476,7 @@ export class UserController {
     description: 'User model instance',
     content: {
       'application/json': {
-        schema: getModelSchemaRef(User, {includeRelations: true}),
-      },
-    },
-  })
+        schema: getModelSchemaRef(User, {includeRelations: true})}}})
   @authenticate('jwt')
   async findById(
     @param.path.string('id') id: string,
@@ -529,10 +490,7 @@ export class UserController {
     description: 'Current user profile',
     content: {
       'application/json': {
-        schema: getModelSchemaRef(User, {includeRelations: true}),
-      },
-    },
-  })
+        schema: getModelSchemaRef(User, {includeRelations: true})}}})
   @authenticate('jwt')
   async getCurrentUser(
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
@@ -543,18 +501,14 @@ export class UserController {
 
   @patch('/users/{id}')
   @response(204, {
-    description: 'User PATCH success',
-  })
+    description: 'User PATCH success'})
   @authenticate('jwt')
   async updateById(
     @param.path.string('id') id: string,
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(User, {partial: true}),
-        },
-      },
-    })
+          schema: getModelSchemaRef(User, {partial: true})}}})
     user: User,
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
   ): Promise<void> {
@@ -568,8 +522,7 @@ export class UserController {
 
   @put('/users/{id}')
   @response(204, {
-    description: 'User PUT success',
-  })
+    description: 'User PUT success'})
   @authenticate('jwt')
   @authorize({allowedRoles: ['admin']})
   async replaceById(
@@ -581,8 +534,7 @@ export class UserController {
 
   @del('/users/{id}')
   @response(204, {
-    description: 'User DELETE success',
-  })
+    description: 'User DELETE success'})
   @authenticate('jwt')
   @authorize({allowedRoles: ['admin']})
   async deleteById(@param.path.string('id') id: string): Promise<void> {
@@ -597,8 +549,7 @@ export class UserController {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
-} from '@loopback/repository';
+  Where} from '@loopback/repository';
 import {
   post,
   param,
@@ -608,8 +559,7 @@ import {
   put,
   del,
   requestBody,
-  response,
-} from '@loopback/rest';
+  response} from '@loopback/rest';
 import {Todo} from '../models';
 import {TodoRepository} from '../repositories';
 import {authenticate} from '@loopback/authentication';
@@ -626,19 +576,14 @@ export class TodoController {
   @post('/todos')
   @response(200, {
     description: 'Todo model instance',
-    content: {'application/json': {schema: getModelSchemaRef(Todo)}},
-  })
+    content: {'application/json': {schema: getModelSchemaRef(Todo)}}})
   async create(
     @requestBody({
       content: {
         'application/json': {
           schema: getModelSchemaRef(Todo, {
             title: 'NewTodo',
-            exclude: ['id', 'userId'],
-          }),
-        },
-      },
-    })
+            exclude: ['id', 'userId']})}}})
     todo: Omit<Todo, 'id' | 'userId'>,
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
   ): Promise<Todo> {
@@ -649,8 +594,7 @@ export class TodoController {
   @get('/todos/count')
   @response(200, {
     description: 'Todo model count',
-    content: {'application/json': {schema: CountSchema}},
-  })
+    content: {'application/json': {schema: CountSchema}}})
   async count(
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
     @param.where(Todo) where?: Where<Todo>,
@@ -666,11 +610,7 @@ export class TodoController {
       'application/json': {
         schema: {
           type: 'array',
-          items: getModelSchemaRef(Todo, {includeRelations: true}),
-        },
-      },
-    },
-  })
+          items: getModelSchemaRef(Todo, {includeRelations: true})}}}})
   async find(
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
     @param.filter(Todo) filter?: Filter<Todo>,
@@ -683,16 +623,12 @@ export class TodoController {
   @patch('/todos')
   @response(200, {
     description: 'Todo PATCH success count',
-    content: {'application/json': {schema: CountSchema}},
-  })
+    content: {'application/json': {schema: CountSchema}}})
   async updateAll(
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Todo, {partial: true}),
-        },
-      },
-    })
+          schema: getModelSchemaRef(Todo, {partial: true})}}})
     todo: Todo,
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
     @param.where(Todo) where?: Where<Todo>,
@@ -706,10 +642,7 @@ export class TodoController {
     description: 'Todo model instance',
     content: {
       'application/json': {
-        schema: getModelSchemaRef(Todo, {includeRelations: true}),
-      },
-    },
-  })
+        schema: getModelSchemaRef(Todo, {includeRelations: true})}}})
   async findById(
     @param.path.string('id') id: string,
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
@@ -725,17 +658,13 @@ export class TodoController {
 
   @patch('/todos/{id}')
   @response(204, {
-    description: 'Todo PATCH success',
-  })
+    description: 'Todo PATCH success'})
   async updateById(
     @param.path.string('id') id: string,
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Todo, {partial: true}),
-        },
-      },
-    })
+          schema: getModelSchemaRef(Todo, {partial: true})}}})
     todo: Todo,
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
   ): Promise<void> {
@@ -749,8 +678,7 @@ export class TodoController {
 
   @put('/todos/{id}')
   @response(204, {
-    description: 'Todo PUT success',
-  })
+    description: 'Todo PUT success'})
   async replaceById(
     @param.path.string('id') id: string,
     @requestBody() todo: Todo,
@@ -766,8 +694,7 @@ export class TodoController {
 
   @del('/todos/{id}')
   @response(204, {
-    description: 'Todo DELETE success',
-  })
+    description: 'Todo DELETE success'})
   async deleteById(
     @param.path.string('id') id: string,
     @inject(SecurityBindings.USER) currentUserProfile: UserProfile,
@@ -790,92 +717,74 @@ import {Todo} from './todo.model';
     indexes: {
       uniqueEmail: {
         keys: {email: 1},
-        options: {unique: true},
-      },
-    },
-  },
-})
+        options: {unique: true}}}}})
 export class User extends Entity {
   @property({
     type: 'string',
     id: true,
-    generated: true,
-  })
+    generated: true})
   id?: string;
 
   @property({
     type: 'string',
     required: true,
-    index: {unique: true},
-  })
+    index: {unique: true}})
   email: string;
 
   @property({
     type: 'string',
-    required: true,
-  })
+    required: true})
   password: string;
 
   @property({
     type: 'string',
-    required: true,
-  })
+    required: true})
   name: string;
 
   @property({
     type: 'string',
-    default: 'user',
-  })
+    default: 'user'})
   role?: string;
 
   @property({
     type: 'boolean',
-    default: true,
-  })
+    default: true})
   isActive?: boolean;
 
   @property({
     type: 'boolean',
-    default: false,
-  })
+    default: false})
   isVerified?: boolean;
 
   @property({
-    type: 'string',
-  })
+    type: 'string'})
   verificationToken?: string;
 
   @property({
-    type: 'string',
-  })
+    type: 'string'})
   resetToken?: string;
 
   @property({
-    type: 'date',
-  })
+    type: 'date'})
   resetTokenExpiry?: string;
 
   @property({
-    type: 'string',
-  })
+    type: 'string'})
   avatarUrl?: string;
 
   @property({
-    type: 'date',
-  })
+    type: 'date'})
   lastLogin?: string;
 
   @property({
     type: 'date',
-    defaultFn: 'now',
-  })
+    defaultFn: 'now'})
   createdAt?: string;
 
   @property({
     type: 'date',
     defaultFn: 'now',
-    updateOnly: true,
-  })
+    updateOnly: true})
   updatedAt?: string;
 
   @hasMany(() => Todo)
@@ -901,76 +810,61 @@ import {User} from './user.model';
     indexes: {
       userIdIndex: {keys: {userId: 1}},
       statusIndex: {keys: {status: 1}},
-      priorityIndex: {keys: {priority: 1}},
-    },
-  },
-})
+      priorityIndex: {keys: {priority: 1}}}}})
 export class Todo extends Entity {
   @property({
     type: 'string',
     id: true,
-    generated: true,
-  })
+    generated: true})
   id?: string;
 
   @property({
     type: 'string',
-    required: true,
-  })
+    required: true})
   title: string;
 
   @property({
-    type: 'string',
-  })
+    type: 'string'})
   description?: string;
 
   @property({
     type: 'boolean',
-    default: false,
-  })
+    default: false})
   completed?: boolean;
 
   @property({
     type: 'string',
     default: 'pending',
     jsonSchema: {
-      enum: ['pending', 'in_progress', 'completed'],
-    },
-  })
+      enum: ['pending', 'in_progress', 'completed']}})
   status?: string;
 
   @property({
     type: 'string',
     default: 'medium',
     jsonSchema: {
-      enum: ['low', 'medium', 'high'],
-    },
-  })
+      enum: ['low', 'medium', 'high']}})
   priority?: string;
 
   @property({
-    type: 'date',
-  })
+    type: 'date'})
   dueDate?: string;
 
   @property({
     type: 'array',
     itemType: 'string',
-    default: [],
-  })
+    default: []})
   tags?: string[];
 
   @property({
     type: 'date',
-    defaultFn: 'now',
-  })
+    defaultFn: 'now'})
   createdAt?: string;
 
   @property({
     type: 'date',
     defaultFn: 'now',
-    updateOnly: true,
-  })
+    updateOnly: true})
   updatedAt?: string;
 
   @belongsTo(() => User)
@@ -1028,8 +922,7 @@ const config = {
   port: process.env.DB_PORT || 5432,
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || '{{projectName}}',
-};
+  database: process.env.DB_NAME || '{{projectName}}'};
 
 // Observe application's life cycle to disconnect the datasource when
 // application is stopped. This allows the application to be shut down
@@ -1356,6 +1249,4 @@ src/
 ## License
 
 MIT
-`,
-  },
-};
+`}};

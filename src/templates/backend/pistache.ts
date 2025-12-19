@@ -8,7 +8,7 @@ export const pistacheTemplate: BackendTemplate = {
   framework: 'pistache',
   language: 'cpp',
   version: '0.3.0',
-  tags: ['cpp', 'pistache', 'api', 'rest', 'async', 'http2', 'modern-cpp'],
+  tags: ['cpp', 'pistache', 'api', 'rest', 'http2', 'modern-cpp'],
   port: 9080,
   features: ['routing', 'middleware', 'authentication', 'validation', 'cors', 'logging', 'testing', 'docker', 'compression', 'rate-limiting'],
   dependencies: {},
@@ -1346,7 +1346,7 @@ ValidationResult Validator::validateLogin(const nlohmann::json& data) {
 }
 
 bool Validator::isValidEmail(const std::string& email) {
-    const std::regex pattern(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})");
+    const std::regex pattern(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2})");
     return std::regex_match(email, pattern);
 }
 

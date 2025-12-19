@@ -130,7 +130,6 @@ export class StencilTemplate extends BaseTemplate {
       es2017: 'dist/esm/index.mjs',
       types: 'dist/types/components.d.ts',
       collection: 'dist/collection/collection-manifest.json',
-      collection: 'dist/collection/collection-manifest.json',
       files: [
         'dist/',
         'loader/'
@@ -224,15 +223,15 @@ export const config: Config = {
 `;
   }
 
-  protected generateTsConfig() {
-    return {
+  protected generateTsConfig(): string {
+    return JSON.stringify({
       compilerOptions: {
         allowSyntheticDefaultImports: true,
         experimentalDecorators: true,
         emitDecoratorMetadata: true,
         lib: ['DOM', 'ES2021'],
         module: 'ESNext',
-        moduleResolution: 'node',
+        moduleResolution: 'bundler',
         target: 'ES2021',
         skipLibCheck: true,
         strict: true,
@@ -242,7 +241,7 @@ export const config: Config = {
       },
       include: ['src'],
       exclude: ['node_modules']
-    };
+    }, null, 2);
   }
 
   private generateIndexHtml() {

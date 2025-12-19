@@ -30,8 +30,7 @@ app [main] {
         email : Str,
         name : Str,
         password : Str,
-        role : Str,
-    }
+        role : Str}
 
     # Product record
     Product : {
@@ -39,25 +38,21 @@ app [main] {
         name : Str,
         description : Str,
         price : F64,
-        stock : U64,
-    }
+        stock : U64}
 
     # Auth response
     AuthResponse : {
         token : Str,
-        user : User,
-    }
+        user : User}
 
     # In-memory database (using list for immutability)
     users : List User = [
         { id: 1, email: "admin@example.com", password: hash_password("admin123"), name: "Admin User", role: "admin" },
-        { id: 2, email: "user@example.com", password: hash_password("user123"), name: "Test User", role: "user" },
-    ]
+        { id: 2, email: "user@example.com", password: hash_password("user123"), name: "Test User", role: "user" }]
 
     products : List Product = [
         { id: 1, name: "Sample Product 1", description: "This is a sample product", price: 29.99, stock: 100 },
-        { id: 2, name: "Sample Product 2", description: "Another sample product", price: 49.99, stock: 50 },
-    ]
+        { id: 2, name: "Sample Product 2", description: "Another sample product", price: 49.99, stock: 50 }]
 
     # Counters for IDs
     userIdCounter : U64 = 3
@@ -82,8 +77,7 @@ app [main] {
         {
             status: "healthy",
             timestamp: "now",
-            version: "1.0.0",
-        }
+            version: "1.0.0"}
         |> Json.to_str
         |> Response.ok
         |> Response.with_header("Content-Type", "application/json")
@@ -122,8 +116,7 @@ app [main] {
         # Check if user exists
         result = find_user_by_email(email, currentUsers)
         |> Result.map_err(|_| {
-            error: "Email already registered",
-        })
+            error: "Email already registered"})
         |> Result.map(|_|
             # Create new user
             newUser = {
@@ -131,8 +124,7 @@ app [main] {
                 email: email,
                 password: hash_password(password),
                 name: name,
-                role: "user",
-            }
+                role: "user"}
 
             token = generate_token(newUser)
 
@@ -145,8 +137,7 @@ app [main] {
             # Return response
             {
                 token: token,
-                user: newUser,
-            }
+                user: newUser}
             |> Json.to_str
             |> Response.created
             |> Response.with_header("Content-Type", "application/json")
@@ -176,8 +167,7 @@ app [main] {
                 token = generate_token(user)
                 {
                     token: token,
-                    user: user,
-                }
+                    user: user}
                 |> Json.to_str
                 |> Response.ok
                 |> Response.with_header("Content-Type", "application/json")
@@ -202,8 +192,7 @@ app [main] {
     list_products_handler = |_request|
         {
             products: products,
-            count: products |> List.len,
-        }
+            count: products |> List.len}
         |> Json.to_str
         |> Response.ok
         |> Response.with_header("Content-Type", "application/json")
@@ -251,8 +240,7 @@ app [main] {
             name: "New Product",
             description: "",
             price: 29.99,
-            stock: 100,
-        }
+            stock: 100}
 
         # Update products list
         updatedProducts = List.append(products, [newProduct])
@@ -596,8 +584,7 @@ add = |x, y| x + y
 User : {
     id : U64,
     name : Str,
-    email : Str,
-}
+    email : Str}
 
 # Tags (sum types)
 Result : [Ok Str, Err Str]
@@ -687,6 +674,5 @@ This template is provided for experimental and learning purposes.
 ## License
 
 MIT
-`,
-  }
+`}
 };

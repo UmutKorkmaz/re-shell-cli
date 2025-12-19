@@ -8,10 +8,10 @@ export const hyperExpressTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'hyper-express',
   version: '6.14.0',
-  tags: ['nodejs', 'hyper-express', 'api', 'rest', 'performance', 'websocket', 'uws', 'typescript'],
+  tags: ['nodejs', 'hyper-express', 'api', 'rest', 'performance', 'websockets', 'uws', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['extreme-performance', 'express-compatible', 'websocket', 'sse', 'streaming', 'jwt', 'prisma', 'redis'],
+  features: ['rest-api', 'middleware', 'websockets', 'websockets', 'streaming', 'authentication', 'database', 'caching'],
   
   files: {
     // Package configuration
@@ -42,8 +42,8 @@ export const hyperExpressTemplate: BackendTemplate = {
   "dependencies": {
     "hyper-express": "^6.14.0",
     "@prisma/client": "^5.13.0",
-    "prisma": "^5.13.0",
-    "redis": "^4.6.13",
+    "database": "^5.13.0",
+    "caching": "^4.6.13",
     "ioredis": "^5.3.2",
     "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
@@ -2250,14 +2250,12 @@ networks:
   roots: ['<rootDir>/src', '<rootDir>/test'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
+    '^.+\\.ts$': 'ts-jest'},
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/index.ts',
-    '!src/types/**/*',
-  ],
+    '!src/types/**/*'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
@@ -2269,11 +2267,9 @@ networks:
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '^@validators/(.*)$': '<rootDir>/src/validators/$1',
-    '^@controllers/(.*)$': '<rootDir>/src/controllers/$1',
-  },
+    '^@controllers/(.*)$': '<rootDir>/src/controllers/$1'},
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
-  testTimeout: 30000,
-};`,
+  testTimeout: 30000};`,
 
     // Test setup
     'test/setup.ts': `import { config } from 'dotenv';
@@ -2288,9 +2284,7 @@ jest.mock('../src/utils/logger', () => ({
     error: jest.fn(),
     warn: jest.fn(),
     debug: jest.fn(),
-    fatal: jest.fn(),
-  },
-}));
+    fatal: jest.fn()}}));
 
 // Increase timeout for integration tests
 jest.setTimeout(30000);`,
@@ -2325,14 +2319,11 @@ describe('Auth Endpoints', () => {
       const response = await fetch('http://localhost:3000/api/v1/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'},
         body: JSON.stringify({
           email: 'test@example.com',
           password: 'password123',
-          name: 'Test User',
-        }),
-      });
+          name: 'Test User'})});
       
       const data = await response.json();
       
@@ -2348,21 +2339,16 @@ describe('Auth Endpoints', () => {
         data: {
           email: 'test@example.com',
           password: 'hashedpassword',
-          name: 'Existing User',
-        },
-      });
+          name: 'Existing User'}});
       
       const response = await fetch('http://localhost:3000/api/v1/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'},
         body: JSON.stringify({
           email: 'test@example.com',
           password: 'password123',
-          name: 'Test User',
-        }),
-      });
+          name: 'Test User'})});
       
       const data = await response.json();
       

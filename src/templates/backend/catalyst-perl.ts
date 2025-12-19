@@ -8,7 +8,7 @@ export const catalystTemplate: BackendTemplate = {
   language: 'perl',
   framework: 'catalyst',
   version: '1.0.0',
-  tags: ['perl', 'catalyst', 'mvc', 'plugins', 'extensible', 'restful'],
+  tags: ['perl', 'catalyst', 'mvc', 'microservices', 'extensible', 'restful'],
   port: 5000,
   dependencies: {},
   features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing'],
@@ -70,26 +70,18 @@ sub configure {
             credential => {
                 class => 'Password',
                 password_field => 'password',
-                password_type => 'self_check',
-            },
+                password_type => 'self_check'},
             store => {
                 class => 'Minimal',
                 users => {
                     'admin@example.com' => {
                         password => 'admin123',
-                        role => 'admin',
-                    },
-                },
+                        role => 'admin'}},
                 roles => {
-                    admin => [ qw/admin/ ],
-                },
-            },
-        },
-    };
+                    admin => [ qw/admin/ ]}}}};
 
     $config->{'Plugin::Authorization::Roles'} = {
-        admin_role => 'admin',
-    };
+        admin_role => 'admin'};
 }
 
 sub after_authentication {
@@ -179,8 +171,7 @@ sub register :Local {
         name => $data->{name},
         role => 'user',
         created_at => scalar localtime,
-        updated_at => scalar localtime,
-    };
+        updated_at => scalar localtime};
 
     push @$users, $new_user;
 
@@ -192,8 +183,7 @@ sub register :Local {
             id => $new_user->{id},
             email => $new_user->{email},
             name => $new_user->{name},
-            role => $new_user->{role},
-        }
+            role => $new_user->{role}}
     };
 
     $c->response->status(201);
@@ -234,8 +224,7 @@ sub login :Local {
             id => $found_user->{id},
             email => $found_user->{email},
             name => $found_user->{name},
-            role => $found_user->{role},
-        }
+            role => $found_user->{role}}
     };
 
     $c->response->body(encode_json($response));
@@ -267,8 +256,7 @@ sub list :Local {
 
     my $response = {
         products => $products,
-        count => scalar @$products,
-    };
+        count => scalar @$products};
 
     $c->response->body(encode_json($response));
     $c->response->content_type('application/json');
@@ -306,8 +294,7 @@ sub create :Local {
         price => $data->{price},
         stock => $data->{stock},
         created_at => scalar localtime,
-        updated_at => scalar localtime,
-    };
+        updated_at => scalar localtime};
 
     push @$products, $new_product;
 
@@ -369,8 +356,7 @@ my @users = (
         name => 'Admin User',
         role => 'admin',
         created_at => scalar localtime,
-        updated_at => scalar localtime,
-    }
+        updated_at => scalar localtime}
 );
 
 my @products = (
@@ -381,8 +367,7 @@ my @products = (
         price => 29.99,
         stock => 100,
         created_at => scalar localtime,
-        updated_at => scalar localtime,
-    },
+        updated_at => scalar localtime},
     {
         id => 2,
         name => 'Sample Product 2',
@@ -390,8 +375,7 @@ my @products = (
         price => 49.99,
         stock => 50,
         created_at => scalar localtime,
-        updated_at => scalar localtime,
-    }
+        updated_at => scalar localtime}
 );
 
 sub init {

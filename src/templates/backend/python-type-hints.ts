@@ -315,8 +315,7 @@ class TypedBaseModel(BaseModel):
             date: lambda v: v.isoformat(),
             Decimal: lambda v: str(v),
             UUID: lambda v: str(v),
-            Path: lambda v: str(v),
-        }
+            Path: lambda v: str(v)}
     
     @classmethod
     def get_field_types(cls) -> Dict[str, Any]:
@@ -1031,8 +1030,7 @@ class APIResponse:
         response_data = {
             "success": True,
             "data": data,
-            "message": message,
-        }
+            "message": message}
         return jsonify(response_data), status_code
     
     @staticmethod
@@ -1045,8 +1043,7 @@ class APIResponse:
         response_data = {
             "success": False,
             "message": message,
-            "errors": errors,
-        }
+            "errors": errors}
         return jsonify(response_data), status_code
     
     @staticmethod
@@ -1060,8 +1057,7 @@ class APIResponse:
             "success": True,
             "data": data,
             "pagination": pagination,
-            "message": message,
-        }
+            "message": message}
         return jsonify(response_data)
 
 # Blueprint Types
@@ -1447,8 +1443,7 @@ class TypedRequestHandler(tornado.web.RequestHandler):
         error_data = {
             "error": True,
             "status_code": status_code,
-            "message": kwargs.get("message", "An error occurred"),
-        }
+            "message": kwargs.get("message", "An error occurred")}
         self.write_json(error_data)
 
 # WebSocket Handler with Typing
@@ -1488,8 +1483,7 @@ class TypedWebSocketHandler(tornado.websocket.WebSocketHandler):
         error_data = {
             "type": "error",
             "error": error,
-            "code": code,
-        }
+            "code": code}
         return self.send_json(error_data)
 
 # Application with Enhanced Typing
@@ -1517,8 +1511,7 @@ class TypedApplication(tornado.web.Application):
 URLPattern: TypeAlias = Union[
     tornado.web.URLSpec,
     Tuple[str, Type[tornado.web.RequestHandler]],
-    Tuple[str, Type[tornado.web.RequestHandler], Dict[str, Any]],
-]
+    Tuple[str, Type[tornado.web.RequestHandler], Dict[str, Any]]]
 
 def typed_url(
     pattern: str,
@@ -1966,8 +1959,7 @@ class APIResponse:
         response_data = {
             "success": True,
             "data": data,
-            "message": message,
-        }
+            "message": message}
         return APIResponse.json(response_data, status)
     
     @staticmethod
@@ -1980,8 +1972,7 @@ class APIResponse:
         response_data = {
             "success": False,
             "message": message,
-            "errors": errors,
-        }
+            "errors": errors}
         return APIResponse.json(response_data, status)
     
     @staticmethod
@@ -1995,8 +1986,7 @@ class APIResponse:
             "success": True,
             "data": data,
             "pagination": pagination,
-            "message": message,
-        }
+            "message": message}
         return APIResponse.json(response_data)
     
     @staticmethod
@@ -2403,8 +2393,7 @@ module = [
     "asyncpg.*",
     "sqlalchemy.*",
     "redis.*",
-    "celery.*",
-]
+    "celery.*"]
 ignore_missing_imports = true
 
 [tool.pyright]
@@ -2511,8 +2500,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
-    "--cov-fail-under=80",
-]
+    "--cov-fail-under=80"]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
@@ -2522,14 +2510,12 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "e2e: marks tests as end-to-end tests",
-    "asyncio: marks tests as async tests",
-]
+    "asyncio: marks tests as async tests"]
 asyncio_mode = "auto"
 filterwarnings = [
     "error",
     "ignore::UserWarning",
-    "ignore::DeprecationWarning",
-]
+    "ignore::DeprecationWarning"]
 
 [tool.coverage.run]
 # Coverage configuration
@@ -2542,8 +2528,7 @@ omit = [
     "*/.venv/*",
     "*/node_modules/*",
     "*/static/*",
-    "*/media/*",
-]
+    "*/media/*"]
 
 [tool.coverage.report]
 # Coverage reporting
@@ -2558,8 +2543,7 @@ exclude_lines = [
     "if __name__ .__main__.:",
     "if TYPE_CHECKING:",
     "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
+    "@(abc\\.)?abstractmethod"]
 show_missing = true
 skip_covered = false
 
@@ -2604,8 +2588,7 @@ disable = [
     "too-many-arguments", 
     "too-many-instance-attributes",
     "too-many-locals",
-    "duplicate-code",
-]
+    "duplicate-code"]
 
 [tool.pylint.format]
 max-line-length = "100"
@@ -2616,8 +2599,7 @@ rules = [
     "default",
     "refactoring",
     "no-long-functions",
-    "no-complex-functions",
-]
+    "no-complex-functions"]
 python_version = "3.11"
 `;
   }
@@ -2651,8 +2633,7 @@ class TypeHintValidator:
             "total_classes": 0,
             "typed_classes": 0,
             "total_variables": 0,
-            "typed_variables": 0,
-        }
+            "typed_variables": 0}
     
     def validate_file(self, file_path: Path) -> Dict[str, Any]:
         """Validate type hints in a Python file."""
@@ -2689,21 +2670,17 @@ class TypeHintValidator:
             "functions": {
                 "total": visitor.total_functions,
                 "typed": visitor.typed_functions,
-                "coverage": coverage["function_coverage"],
-            },
+                "coverage": coverage["function_coverage"]},
             "classes": {
                 "total": visitor.total_classes,
                 "typed": visitor.typed_classes,
-                "coverage": coverage["class_coverage"],
-            },
+                "coverage": coverage["class_coverage"]},
             "variables": {
                 "total": visitor.total_variables,
                 "typed": visitor.typed_variables,
-                "coverage": coverage["variable_coverage"],
-            },
+                "coverage": coverage["variable_coverage"]},
             "overall_coverage": coverage["overall_coverage"],
-            "issues": visitor.issues,
-        }
+            "issues": visitor.issues}
     
     def _calculate_coverage(self, visitor: 'TypeHintVisitor') -> Dict[str, float]:
         """Calculate type hint coverage percentages."""
@@ -2734,8 +2711,7 @@ class TypeHintValidator:
             "function_coverage": function_coverage,
             "class_coverage": class_coverage,
             "variable_coverage": variable_coverage,
-            "overall_coverage": overall_coverage,
-        }
+            "overall_coverage": overall_coverage}
     
     def validate_mypy_compliance(self, file_path: Path) -> Dict[str, Any]:
         """Validate MyPy compliance for a file."""
@@ -2751,27 +2727,23 @@ class TypeHintValidator:
                 "success": result.returncode == 0,
                 "stdout": result.stdout,
                 "stderr": result.stderr,
-                "errors": result.stderr.split('\\n') if result.stderr else [],
-            }
+                "errors": result.stderr.split('\\n') if result.stderr else []}
             
         except subprocess.TimeoutExpired:
             return {
                 "success": False,
                 "error": "MyPy validation timed out",
-                "errors": ["Validation timeout"],
-            }
+                "errors": ["Validation timeout"]}
         except FileNotFoundError:
             return {
                 "success": False,
                 "error": "MyPy not found",
-                "errors": ["MyPy not installed"],
-            }
+                "errors": ["MyPy not installed"]}
         except Exception as e:
             return {
                 "success": False,
                 "error": str(e),
-                "errors": [str(e)],
-            }
+                "errors": [str(e)]}
     
     def validate_runtime_types(self, code: str) -> Dict[str, Any]:
         """Validate runtime type checking with typeguard."""
@@ -2794,8 +2766,7 @@ class TypeHintValidator:
                     "success": result.returncode == 0,
                     "stdout": result.stdout,
                     "stderr": result.stderr,
-                    "errors": result.stderr.split('\\n') if result.stderr else [],
-                }
+                    "errors": result.stderr.split('\\n') if result.stderr else []}
                 
             finally:
                 os.unlink(temp_file)
@@ -2804,8 +2775,7 @@ class TypeHintValidator:
             return {
                 "success": False,
                 "error": str(e),
-                "errors": [str(e)],
-            }
+                "errors": [str(e)]}
     
     def get_summary(self) -> Dict[str, Any]:
         """Get validation summary."""
@@ -2827,8 +2797,7 @@ class TypeHintValidator:
             "overall_coverage": overall_coverage,
             "errors": self.errors,
             "warnings": self.warnings,
-            "success": len(self.errors) == 0 and overall_coverage >= 90.0,
-        }
+            "success": len(self.errors) == 0 and overall_coverage >= 90.0}
 
 
 class TypeHintVisitor(ast.NodeVisitor):
@@ -2953,8 +2922,7 @@ def validate_framework_types() -> None:
         "django_types.py",
         "flask_types.py",
         "tornado_types.py",
-        "sanic_types.py",
-    ]
+        "sanic_types.py"]
     
     results = {}
     
@@ -2978,8 +2946,7 @@ def validate_framework_types() -> None:
             
             results[framework_file] = {
                 "ast_analysis": ast_result,
-                "mypy_compliance": mypy_result,
-            }
+                "mypy_compliance": mypy_result}
             
             # Print results
             if ast_result.get("valid"):

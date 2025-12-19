@@ -144,8 +144,7 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "if typing.TYPE_CHECKING:",
     "@abstractmethod",
-    "@abc.abstractmethod",
-]
+    "@abc.abstractmethod"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -356,8 +355,7 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
-    "migrations",
-]
+    "migrations"]
 
 # Per-file ignores
 [per-file-ignores]
@@ -796,8 +794,7 @@ class QualityChecker:
             ("Ruff", self.run_ruff),
             ("mypy", self.run_mypy),
             ("Bandit", self.run_security_checks),
-            ("Test Coverage", self.run_tests),
-        ]
+            ("Test Coverage", self.run_tests)]
         
         all_passed = True
         

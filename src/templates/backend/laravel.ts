@@ -190,8 +190,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->api(prepend: [
-            \\Laravel\\Sanctum\\Http\\Middleware\\EnsureFrontendRequestsAreStateful::class,
-        ]);
+            \\Laravel\\Sanctum\\Http\\Middleware\\EnsureFrontendRequestsAreStateful::class]);
 
         $middleware->alias([
             'verified' => \\App\\Http\\Middleware\\EnsureEmailIsVerified::class,
@@ -199,8 +198,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \\Spatie\\Permission\\Middlewares\\PermissionMiddleware::class,
             'role_or_permission' => \\Spatie\\Permission\\Middlewares\\RoleOrPermissionMiddleware::class,
             'jwt.auth' => \\App\\Http\\Middleware\\JwtMiddleware::class,
-            'api.throttle' => \\App\\Http\\Middleware\\ThrottleRequests::class,
-        ]);
+            'api.throttle' => \\App\\Http\\Middleware\\ThrottleRequests::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
@@ -305,8 +303,7 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+            'password' => Hash::make($request->password)]);
 
         $user->assignRole('user');
 
@@ -385,8 +382,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'current_password' => 'required|string',
-            'new_password' => 'required|string|min:8|confirmed',
-        ]);
+            'new_password' => 'required|string|min:8|confirmed']);
 
         $user = auth()->user();
 
@@ -440,8 +436,7 @@ class User extends Authenticatable implements JWTSubject
         'postal_code',
         'avatar',
         'is_active',
-        'last_login_at',
-    ];
+        'last_login_at'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -450,8 +445,7 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $hidden = [
         'password',
-        'remember_token',
-    ];
+        'remember_token'];
 
     /**
      * The attributes that should be cast.
@@ -462,8 +456,7 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
         'last_login_at' => 'datetime',
         'is_active' => 'boolean',
-        'password' => 'hashed',
-    ];
+        'password' => 'hashed'];
 
     /**
      * Activity log options
@@ -491,8 +484,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return [
             'roles' => $this->getRoleNames(),
-            'permissions' => $this->getAllPermissions()->pluck('name'),
-        ];
+            'permissions' => $this->getAllPermissions()->pluck('name')];
     }
 
     /**
@@ -564,8 +556,7 @@ class Product extends Model
         'dimensions',
         'meta_title',
         'meta_description',
-        'meta_keywords',
-    ];
+        'meta_keywords'];
 
     protected $casts = [
         'price' => 'decimal:2',
@@ -576,8 +567,7 @@ class Product extends Model
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+        'updated_at' => 'datetime'];
 
     /**
      * Activity log options
@@ -844,8 +834,7 @@ class ProcessOrderJob implements ShouldQueue
             // Update order status
             $this->order->update([
                 'status' => 'processing',
-                'processed_at' => now(),
-            ]);
+                'processed_at' => now()]);
 
             Log::info('Order processed successfully', ['order_id' => $this->order->id]);
         } catch (\\Exception $e) {
@@ -895,8 +884,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             CategorySeeder::class,
             BrandSeeder::class,
-            ProductSeeder::class,
-        ]);
+            ProductSeeder::class]);
     }
 }`,
 
@@ -929,8 +917,7 @@ class RolePermissionSeeder extends Seeder
             'view-orders',
             'manage-orders',
             'view-reports',
-            'manage-settings',
-        ];
+            'manage-settings'];
 
         foreach ($permissions as $permission) {
             Permission::create(['name' => $permission, 'guard_name' => 'api']);
@@ -946,13 +933,11 @@ class RolePermissionSeeder extends Seeder
             'manage-products',
             'view-orders',
             'manage-orders',
-            'view-reports',
-        ]);
+            'view-reports']);
 
         $userRole = Role::create(['name' => 'user', 'guard_name' => 'api']);
         $userRole->givePermissionTo([
-            'view-orders',
-        ]);
+            'view-orders']);
     }
 }`,
 
@@ -1010,8 +995,7 @@ class AuthTest extends TestCase
             'name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
             'password' => 'password123',
-            'password_confirmation' => 'password123',
-        ];
+            'password_confirmation' => 'password123'];
 
         $response = $this->postJson('/api/v1/auth/register', $userData);
 
@@ -1037,8 +1021,7 @@ class AuthTest extends TestCase
 
         $response = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
-            'password' => 'password123',
-        ]);
+            'password' => 'password123']);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -1056,8 +1039,7 @@ class AuthTest extends TestCase
 
         $response = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
+            'password' => 'wrong-password']);
 
         $response->assertStatus(401)
             ->assertJson([
@@ -1071,8 +1053,7 @@ class AuthTest extends TestCase
         $token = JWTAuth::fromUser($user);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/v1/auth/me');
+            'Authorization' => 'Bearer ' . $token])->getJson('/api/v1/auth/me');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -1086,8 +1067,7 @@ class AuthTest extends TestCase
         $token = JWTAuth::fromUser($user);
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->postJson('/api/v1/auth/logout');
+            'Authorization' => 'Bearer ' . $token])->postJson('/api/v1/auth/logout');
 
         $response->assertStatus(200)
             ->assertJson([

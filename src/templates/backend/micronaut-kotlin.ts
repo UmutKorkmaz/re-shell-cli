@@ -8,10 +8,10 @@ export const micronautKotlinTemplate: BackendTemplate = {
   language: 'kotlin',
   framework: 'micronaut',
   version: '1.0.0',
-  tags: ['kotlin', 'micronaut', 'microservices', 'cloud-native', 'jwt', 'graalvm'],
+  tags: ['kotlin', 'micronaut', 'microservices', 'cloud-native', 'jwt', 'docker'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'graalvm'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'docker'],
 
   files: {
     // Gradle build file

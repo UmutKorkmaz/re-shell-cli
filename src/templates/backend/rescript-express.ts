@@ -97,15 +97,13 @@ export const rescriptExpressTemplate: BackendTemplate = {
   ],
   transform: {
     '^.+\\\\.res$': '<rootDir>/jest-rescript-transformer.js',
-    '^.+\\\\.js$': 'babel-jest',
-  },
+    '^.+\\\\.js$': 'babel-jest'},
   moduleFileExtensions: ['res', 'js', 'json'],
   collectCoverageFrom: [
     'src/**/*.{res,js}',
     '!src/**/*.bs.js',
     '!src/**/*.gen.tsx',
-    '!src/**/__tests__/**',
-  ],
+    '!src/**/__tests__/**'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
@@ -113,13 +111,10 @@ export const rescriptExpressTemplate: BackendTemplate = {
       branches: 70,
       functions: 70,
       lines: 70,
-      statements: 70,
-    },
-  },
+      statements: 70}},
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testTimeout: 10000,
-  verbose: true,
-}`,
+  verbose: true}`,
 
     // Jest transformer for ReScript
     'jest-rescript-transformer.js': `const { execSync } = require('child_process');
@@ -131,8 +126,7 @@ module.exports = {
     try {
       execSync(\`rescript build -clean \${filename}\`, {
         stdio: 'ignore',
-        cwd: process.cwd(),
-      });
+        cwd: process.cwd()});
 
       // Read the compiled JavaScript
       const compiledFile = filename.replace(/\\.res$/, '.bs.js');
@@ -140,16 +134,14 @@ module.exports = {
 
       // Return as CommonJS
       return {
-        code: \`module.exports = require('\${compiledFile}');\`,
-      };
+        code: \`module.exports = require('\${compiledFile}');\`};
     } catch (error) {
       throw new Error(\`Failed to compile \${filename}: \${error.message}\`);
     }
   },
   getCacheKey: (fileData, filePath) => {
     return filePath;
-  },
-};`,
+  }};`,
 
     // Jest setup file
     'jest.setup.js': `// Jest setup for ReScript tests
@@ -167,8 +159,7 @@ global.console = {
   info: jest.fn(),
   warn: jest.fn(),
   // Keep error for debugging test failures
-  error: console.error,
-};`,
+  error: console.error};`,
 
     // Test helper utilities
     'src/__tests__/TestHelpers.res': `open RescriptCore
@@ -184,8 +175,7 @@ module TestHelpers = {
       "path": path,
       "body": body,
       "headers": Js.Dict.empty(),
-      "query": Js.Dict.empty(),
-    }
+      "query": Js.Dict.empty()}
   }
 
   // Create mock response
@@ -202,8 +192,7 @@ module TestHelpers = {
       },
       "status": (code: int) => {
         statusCode := code
-      },
-    }
+      }}
   }
 
   // Async test helper
@@ -218,16 +207,14 @@ module TestHelpers = {
     "id": 1,
     "name": "Test User",
     "email": "test@example.com",
-    "role": "user",
-  }
+    "role": "user"}
 
   // Mock product data
   let mockProduct = {
     "id": 1,
     "name": "Test Product",
     "price": 99.99,
-    "description": "Test Description",
-  }
+    "description": "Test Description"}
 }`,
 
     // Example integration test
@@ -324,8 +311,7 @@ module AppRoutes = {
         "id": Js.Date.now()->Int.toFloat->Js.String.toString,
         "email": email,
         "name": name,
-        "role": "user",
-      }
+        "role": "user"}
 
       // Generate token (simplified)
       let token = "jwt-token-placeholder"
@@ -348,8 +334,7 @@ module AppRoutes = {
         "id": "1",
         "email": "admin@example.com",
         "name": "Admin User",
-        "role": "admin",
-      }
+        "role": "admin"}
 
       res->Status.statusCode(200)
       ->Json.stringify({ "token": token, "user": user })
@@ -405,8 +390,7 @@ module AppRoutes = {
       "name": "New Product",
       "description": "",
       "price": 29.99,
-      "stock": 100,
-    }
+      "stock": 100}
 
     res->Status.statusCode(201)
     ->Json.stringify({ "product": product })
@@ -490,25 +474,21 @@ type user = {
   id: string,
   email: string,
   name: string,
-  role: string,
-}
+  role: string}
 
 type product = {
   id: float,
   name: string,
   description: string,
   price: float,
-  stock: int,
-}
+  stock: int}
 
 type authResponse = {
   token: string,
-  user: user,
-}
+  user: user}
 
 type errorResponse = {
-  error: string,
-}`,
+  error: string}`,
 
     // Auth utilities
     'src/Auth.res': `open RescriptCore
@@ -534,8 +514,7 @@ let verifyToken = (token: string): option<user> => {
       id: "1",
       email: "admin@example.com",
       name: "Admin User",
-      role: "admin",
-    })
+      role: "admin"})
   } else {
     None
   }
@@ -841,6 +820,5 @@ docker-compose up
 ## License
 
 MIT
-`,
-  }
+`}
 };

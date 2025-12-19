@@ -8,10 +8,10 @@ export const amberCrTemplate: BackendTemplate = {
   language: 'crystal',
   framework: 'amber',
   version: '1.0.0',
-  tags: ['crystal', 'amber', 'mvc', 'websocket', 'orm', 'json'],
+  tags: ['crystal', 'amber', 'mvc', 'websockets', 'database', 'json'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websocket'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websockets'],
 
   files: {
     // Shard configuration
@@ -71,8 +71,7 @@ module {{projectNamePascal}}
       "key" => "amber.session",
       "store" => "signed_cookie",
       "expires" => 0,
-      "secret" => "change-this-secret-in-production",
-    }
+      "secret" => "change-this-secret-in-production"}
 
     # Database
     settings.database_url = "postgres://postgres:postgres@localhost:5432/{{projectNameSnake}}"
@@ -215,7 +214,7 @@ end
 `,
 
     // Controllers - Auth
-    'src/controllers/auth_controller.cr': `require "jwt"
+    'src/controllers/auth_controller.cr': `require "authentication"
 
 class AuthController < Amber::Controller::Base
   def register

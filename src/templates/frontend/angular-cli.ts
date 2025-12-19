@@ -2558,7 +2558,7 @@ describe('HomeComponent', () => {
 `;
   }
 
-  private generateEslintConfig() {
+  protected generateEslintConfig() {
     return JSON.stringify({
       root: true,
       ignorePatterns: ['dist', 'node_modules'],

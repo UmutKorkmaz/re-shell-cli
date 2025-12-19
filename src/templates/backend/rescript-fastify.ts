@@ -8,7 +8,7 @@ export const rescriptFastifyTemplate: BackendTemplate = {
   language: 'rescript',
   framework: 'fastify',
   version: '1.0.0',
-  tags: ['rescript', 'fastify', 'nodejs', 'type-safe', 'performance', 'schema-validation'],
+  tags: ['rescript', 'fastify', 'nodejs', 'type-safe', 'performance', 'validation'],
   port: 3000,
   dependencies: {},
   features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing'],
@@ -96,8 +96,7 @@ module AppRoutes = {
     let response = {
       "status": "healthy",
       "timestamp": Js.Date.now(),
-      "version": "1.0.0",
-    }
+      "version": "1.0.0"}
     reply->Reply.send(response)->resolve
   }
 
@@ -143,8 +142,7 @@ module AppRoutes = {
         "id": Js.Date.now()->Int.toFloat->Js.String.toString,
         "email": email,
         "name": name,
-        "role": "user",
-      }
+        "role": "user"}
 
       // Generate token (simplified)
       let token = "jwt-token-placeholder"
@@ -167,8 +165,7 @@ module AppRoutes = {
         "id": "1",
         "email": "admin@example.com",
         "name": "Admin User",
-        "role": "admin",
-      }
+        "role": "admin"}
 
       let response = { "token": token, "user": user }
       reply->Reply.send(response)->resolve
@@ -222,8 +219,7 @@ module AppRoutes = {
       "name": "New Product",
       "description": "",
       "price": 29.99,
-      "stock": 100,
-    }
+      "stock": 100}
 
     let response = { "product": product }
     reply->Reply.statusCode(201)->ignore
@@ -237,8 +233,7 @@ module AppRoutes = {
     // In production, parse JSON body and validate schema
     let product = {
       "id": Js.Date.now()->Int.toFloat,
-      "name": "Updated Product",
-    }
+      "name": "Updated Product"}
 
     let response = { "product": product }
     reply->Reply.send(response)->resolve
@@ -256,8 +251,7 @@ module AppRoutes = {
 @send
 let setup = () => {
   let fastify = Fastify.make({
-    "logger": true,
-  })
+    "logger": true})
 
   // Register plugins
   fastify->Fastify.registerCORS()->ignore
@@ -292,8 +286,7 @@ let start = async () => {
   try {
     let address = await fastify->Fastify.listen({
       "port": port->Js.Int.parse->Belt.Option.getOr(3000),
-      "host": "0.0.0.0",
-    })
+      "host": "0.0.0.0"})
 
     Js.log3("🚀 Server listening at", address, "")
     Js.log("📚 API docs: http://localhost:" ++ port ++ "/api/v1/health")
@@ -316,31 +309,26 @@ type user = {
   id: string,
   email: string,
   name: string,
-  role: string,
-}
+  role: string}
 
 type product = {
   id: float,
   name: string,
   description: string,
   price: float,
-  stock: int,
-}
+  stock: int}
 
 type authResponse = {
   token: string,
-  user: user,
-}
+  user: user}
 
 type errorResponse = {
-  error: string,
-}
+  error: string}
 
 type healthResponse = {
   status: string,
   timestamp: float,
-  version: string,
-}`,
+  version: string}`,
 
     // Auth utilities
     'src/Auth.res': `open RescriptCore
@@ -366,8 +354,7 @@ let verifyToken = (token: string): option<user> => {
       id: "1",
       email: "admin@example.com",
       name: "Admin User",
-      role: "admin",
-    })
+      role: "admin"})
   } else {
     None
   }
@@ -641,6 +628,5 @@ Fastify provides:
 ## License
 
 MIT
-`,
-  }
+`}
 };

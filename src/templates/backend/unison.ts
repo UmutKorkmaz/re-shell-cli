@@ -691,6 +691,5 @@ Benefits:
 ## License
 
 MIT
-`,
-  }
+`}
 };

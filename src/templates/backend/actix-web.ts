@@ -8,7 +8,7 @@ export const actixWebTemplate: BackendTemplate = {
   framework: 'actix-web',
   language: 'rust',
   version: '1.0.0',
-  tags: ['rust', 'actix-web', 'async', 'high-performance', 'api', 'postgresql', 'authentication'],
+  tags: ['rust', 'actix-web', 'high-performance', 'api', 'postgresql', 'authentication'],
   port: 8080,
   features: [
     'authentication',
@@ -255,8 +255,7 @@ pub struct Config {
     pub cors_allowed_methods: Vec<String>,
     pub cors_allowed_headers: Vec<String>,
     pub bcrypt_cost: u32,
-    pub secure_cookies: bool,
-}
+    pub secure_cookies: bool}
 
 impl Config {
     pub fn from_env() -> Result<Self, env::VarError> {
@@ -313,8 +312,7 @@ impl Config {
             secure_cookies: env::var("SECURE_COOKIES")
                 .unwrap_or_else(|_| "false".to_string())
                 .parse()
-                .expect("SECURE_COOKIES must be a boolean"),
-        })
+                .expect("SECURE_COOKIES must be a boolean")})
     }
 }`,
 
@@ -341,8 +339,7 @@ pub struct User {
     pub is_active: bool,
     pub is_verified: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+    pub updated_at: DateTime<Utc>}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserProfile {
@@ -354,8 +351,7 @@ pub struct UserProfile {
     pub is_active: bool,
     pub is_verified: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+    pub updated_at: DateTime<Utc>}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateUserRequest {
@@ -368,8 +364,7 @@ pub struct CreateUserRequest {
     #[validate(length(max = 100))]
     pub first_name: Option<String>,
     #[validate(length(max = 100))]
-    pub last_name: Option<String>,
-}
+    pub last_name: Option<String>}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct UpdateUserRequest {
@@ -378,8 +373,7 @@ pub struct UpdateUserRequest {
     #[validate(length(max = 100))]
     pub first_name: Option<String>,
     #[validate(length(max = 100))]
-    pub last_name: Option<String>,
-}
+    pub last_name: Option<String>}
 
 impl From<User> for UserProfile {
     fn from(user: User) -> Self {
@@ -392,8 +386,7 @@ impl From<User> for UserProfile {
             is_active: user.is_active,
             is_verified: user.is_verified,
             created_at: user.created_at,
-            updated_at: user.updated_at,
-        }
+            updated_at: user.updated_at}
     }
 }`,
 
@@ -405,21 +398,18 @@ pub struct LoginRequest {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = 1))]
-    pub password: String,
-}
+    pub password: String}
 
 #[derive(Debug, Serialize)]
 pub struct LoginResponse {
     pub access_token: String,
     pub refresh_token: String,
     pub token_type: String,
-    pub expires_in: u64,
-}
+    pub expires_in: u64}
 
 #[derive(Debug, Deserialize)]
 pub struct RefreshTokenRequest {
-    pub refresh_token: String,
-}
+    pub refresh_token: String}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -538,8 +528,7 @@ pub async fn login(
         access_token,
         refresh_token,
         token_type: "Bearer".to_string(),
-        expires_in: config.jwt_expiration,
-    };
+        expires_in: config.jwt_expiration};
 
     Ok(HttpResponse::Ok().json(response))
 }
@@ -563,8 +552,7 @@ pub async fn refresh_token(
         access_token,
         refresh_token: req.refresh_token.clone(),
         token_type: "Bearer".to_string(),
-        expires_in: config.jwt_expiration,
-    };
+        expires_in: config.jwt_expiration};
 
     Ok(HttpResponse::Ok().json(response))
 }
@@ -673,22 +661,19 @@ pub mod security;`,
 
     'src/middleware/auth.rs': `use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    Error, HttpMessage,
-};
+    Error, HttpMessage};
 use futures::future::{ready, Ready};
 use std::{
     future::{self, LocalBoxFuture},
     pin::Pin,
-    task::{Context, Poll},
-};
+    task::{Context, Poll}};
 use uuid::Uuid;
 
 use crate::auth::extract_user_from_request;
 use crate::errors::AppError;
 
 pub struct AuthMiddleware {
-    required: bool,
-}
+    required: bool}
 
 impl AuthMiddleware {
     pub fn new() -> Self {
@@ -715,15 +700,13 @@ where
     fn new_transform(&self, service: S) -> Self::Future {
         ready(Ok(AuthMiddlewareService {
             service,
-            required: self.required,
-        }))
+            required: self.required}))
     }
 }
 
 pub struct AuthMiddlewareService<S> {
     service: S,
-    required: bool,
-}
+    required: bool}
 
 impl<S, B> Service<ServiceRequest> for AuthMiddlewareService<S>
 where
@@ -761,14 +744,12 @@ where
 
     'src/middleware/security.rs': `use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    Error, HttpResponse,
-};
+    Error, HttpResponse};
 use futures::future::{ready, Ready};
 use std::{
     future::{self, LocalBoxFuture},
     pin::Pin,
-    task::{Context, Poll},
-};
+    task::{Context, Poll}};
 
 pub struct SecurityMiddleware;
 
@@ -796,8 +777,7 @@ where
 }
 
 pub struct SecurityMiddlewareService<S> {
-    service: S,
-}
+    service: S}
 
 impl<S, B> Service<ServiceRequest> for SecurityMiddlewareService<S>
 where
@@ -885,8 +865,7 @@ pub fn generate_token(user_id: &str, email: &str, token_type: &str, secret: &str
         email: email.to_string(),
         exp: (now + expiration) as usize,
         iat: now as usize,
-        token_type: token_type.to_string(),
-    };
+        token_type: token_type.to_string()};
 
     encode(
         &Header::default(),
@@ -947,8 +926,7 @@ pub enum AppError {
     NotFound(String),
     InternalServerError(String),
     ValidationError(ValidationErrors),
-    DatabaseError(SqlxError),
-}
+    DatabaseError(SqlxError)}
 
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -958,8 +936,7 @@ impl fmt::Display for AppError {
             AppError::NotFound(msg) => write!(f, "Not Found: {}", msg),
             AppError::InternalServerError(msg) => write!(f, "Internal Server Error: {}", msg),
             AppError::ValidationError(errors) => write!(f, "Validation Error: {:?}", errors),
-            AppError::DatabaseError(err) => write!(f, "Database Error: {}", err),
-        }
+            AppError::DatabaseError(err) => write!(f, "Database Error: {}", err)}
     }
 }
 
@@ -989,8 +966,7 @@ impl ResponseError for AppError {
             AppError::DatabaseError(_) => HttpResponse::InternalServerError().json(serde_json::json!({
                 "error": "Internal Server Error",
                 "message": "Database operation failed"
-            })),
-        }
+            }))}
     }
 }
 
@@ -1014,8 +990,7 @@ pub struct ApiResponse<T> {
     pub success: bool,
     pub data: Option<T>,
     pub message: Option<String>,
-    pub error: Option<String>,
-}
+    pub error: Option<String>}
 
 impl<T> ApiResponse<T> {
     pub fn success(data: T) -> Self {
@@ -1023,8 +998,7 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             message: None,
-            error: None,
-        }
+            error: None}
     }
 
     pub fn success_with_message(data: T, message: String) -> Self {
@@ -1032,8 +1006,7 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             message: Some(message),
-            error: None,
-        }
+            error: None}
     }
 
     pub fn error(error: String) -> ApiResponse<()> {
@@ -1041,8 +1014,7 @@ impl<T> ApiResponse<T> {
             success: false,
             data: None,
             message: None,
-            error: Some(error),
-        }
+            error: Some(error)}
     }
 }
 

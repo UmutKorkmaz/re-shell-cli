@@ -231,8 +231,7 @@ class Database extends BaseConfig
         'strictOn' => false,
         'failover' => [],
         'port' => 3306,
-        'numberNative' => false,
-    ];
+        'numberNative' => false];
 
     public array $tests = [
         'DSN' => '',
@@ -253,8 +252,7 @@ class Database extends BaseConfig
         'failover' => [],
         'port' => 3306,
         'foreignKeys' => true,
-        'busyTimeout' => 1000,
-    ];
+        'busyTimeout' => 1000];
 
     public function __construct()
     {
@@ -348,21 +346,17 @@ class Filters extends BaseConfig
         'honeypot' => Honeypot::class,
         'invalidchars' => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
-        'jwt' => JWTFilter::class,
-    ];
+        'jwt' => JWTFilter::class];
 
     public array $globals = [
         'before' => [
             // 'honeypot',
             // 'csrf',
-            // 'invalidchars',
-        ],
+            // 'invalidchars'],
         'after' => [
             'toolbar',
             // 'honeypot',
-            'secureheaders',
-        ],
-    ];
+            'secureheaders']];
 
     public array $methods = [];
 
@@ -689,53 +683,41 @@ class CreateUsersTable extends Migration
                 'type' => 'INT',
                 'constraint' => 11,
                 'unsigned' => true,
-                'auto_increment' => true,
-            ],
+                'auto_increment' => true],
             'username' => [
                 'type' => 'VARCHAR',
                 'constraint' => '50',
-                'unique' => true,
-            ],
+                'unique' => true],
             'email' => [
                 'type' => 'VARCHAR',
                 'constraint' => '100',
-                'unique' => true,
-            ],
+                'unique' => true],
             'password' => [
                 'type' => 'VARCHAR',
-                'constraint' => '255',
-            ],
+                'constraint' => '255'],
             'first_name' => [
                 'type' => 'VARCHAR',
                 'constraint' => '50',
-                'null' => true,
-            ],
+                'null' => true],
             'last_name' => [
                 'type' => 'VARCHAR',
                 'constraint' => '50',
-                'null' => true,
-            ],
+                'null' => true],
             'is_active' => [
                 'type' => 'BOOLEAN',
-                'default' => true,
-            ],
+                'default' => true],
             'last_login' => [
                 'type' => 'DATETIME',
-                'null' => true,
-            ],
+                'null' => true],
             'created_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
-            ],
+                'null' => true],
             'updated_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
-            ],
+                'null' => true],
             'deleted_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
-            ],
-        ]);
+                'null' => true]]);
         
         $this->forge->addKey('id', true);
         $this->forge->createTable('users');

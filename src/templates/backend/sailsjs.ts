@@ -8,10 +8,10 @@ export const sailsjsTemplate: BackendTemplate = {
   language: 'javascript',
   framework: 'sailsjs',
   version: '1.5.8',
-  tags: ['nodejs', 'sailsjs', 'mvc', 'rest', 'waterline', 'websocket', 'blueprints', 'realtime'],
+  tags: ['nodejs', 'sailsjs', 'microservices', 'rest', 'waterline', 'websockets', 'routing', 'realtime'],
   port: 1337,
   dependencies: {},
-  features: ['mvc', 'orm', 'blueprints', 'websockets', 'policies', 'authentication', 'file-uploads', 'email', 'testing'],
+  features: ['microservices', 'database', 'routing', 'websockets', 'authorization', 'authentication', 'file-upload', 'email', 'testing'],
   
   files: {
     // Package configuration
@@ -19,7 +19,7 @@ export const sailsjsTemplate: BackendTemplate = {
   "name": "{{projectName}}",
   "version": "1.0.0",
   "description": "Sails.js MVC application with auto-generated REST APIs",
-  "keywords": ["sails", "mvc", "rest", "api", "waterline"],
+  "keywords": ["sails", "microservices", "rest", "api", "waterline"],
   "dependencies": {
     "sails": "^1.5.8",
     "sails-hook-grunt": "^5.0.0",
@@ -44,7 +44,7 @@ export const sailsjsTemplate: BackendTemplate = {
     "skipper-s3": "^0.6.0",
     "moment": "^2.30.1",
     "validator": "^13.12.0",
-    "async": "^3.2.5",
+    : "^3.2.5",
     "machinepack-passwords": "^2.3.0",
     "machinepack-jwt": "^1.0.0",
     "machinepack-mailgun": "^0.6.1",

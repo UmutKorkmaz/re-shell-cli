@@ -6,7 +6,7 @@ export const djangoEnhancedTemplate: BackendTemplate = {
   displayName: 'Django Enhanced',
   description: 'Django with enhanced ORM management commands and migration utilities',
   version: '1.0.0',
-  tags: ['django', 'python', 'orm', 'management', 'commands', 'migrations'],
+  tags: ['django', 'python', 'database', 'management', 'commands', 'migrations'],
   framework: 'django',
   language: 'python',
   dependencies: {
@@ -20,8 +20,7 @@ export const djangoEnhancedTemplate: BackendTemplate = {
     'celery': '^5.3.1',
     'flower': '^2.0.1',
     'gunicorn': '^21.2.0',
-    'whitenoise': '^6.5.0',
-  },
+    'whitenoise': '^6.5.0'},
   devDependencies: {
     'pytest': '^7.4.0',
     'pytest-django': '^4.5.2',
@@ -32,8 +31,7 @@ export const djangoEnhancedTemplate: BackendTemplate = {
     'flake8': '^6.0.0',
     'mypy': '^1.5.0',
     'django-debug-toolbar': '^4.1.0',
-    'django-silk': '^5.0.3',
-  },
+    'django-silk': '^5.0.3'},
   features: ['authentication', 'authorization', 'database', 'caching', 'testing', 'documentation'],
   postInstall: [
     'python manage.py makemigrations',
@@ -149,18 +147,15 @@ DJANGO_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-]
+    'django.contrib.staticfiles']
 
 THIRD_PARTY_APPS = [
     'rest_framework',
     'django_filters',
-    'django_extensions',
-]
+    'django_extensions']
 
 LOCAL_APPS = [
-    '{{projectName}}',
-]
+    '{{projectName}}']
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -172,8 +167,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+    'django.middleware.clickjacking.XFrameOptionsMiddleware']
 
 ROOT_URLCONF = '{{projectName}}.urls'
 
@@ -187,11 +181,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
+                'django.contrib.messages.context_processors.messages']}}]
 
 WSGI_APPLICATION = '{{projectName}}.wsgi.application'
 
@@ -205,27 +195,22 @@ DATABASES = {
         'HOST': config('DB_HOST', default=''),
         'PORT': config('DB_PORT', default=''),
         'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60, cast=int),
-        'CONN_HEALTH_CHECKS': True,
-    }
+        'CONN_HEALTH_CHECKS': True}
 }
 
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
-    ],
+        'rest_framework.authentication.TokenAuthentication'],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+        'rest_framework.permissions.IsAuthenticated'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
-    ],
-}
+        'rest_framework.filters.OrderingFilter']}
 
 # Celery Configuration
 CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
@@ -240,8 +225,7 @@ CACHES = {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
         'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient'}
     }
 }
 
@@ -255,8 +239,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+    BASE_DIR / 'static']
 
 # Media files
 MEDIA_URL = '/media/'
@@ -278,20 +261,17 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 # Development apps
 INSTALLED_APPS += [
     'debug_toolbar',
-    'django_silk',
-]
+    'django_silk']
 
 # Development middleware
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'silk.middleware.SilkyMiddleware',
-] + MIDDLEWARE
+    'silk.middleware.SilkyMiddleware'] + MIDDLEWARE
 
 # Debug toolbar configuration
 INTERNAL_IPS = [
     '127.0.0.1',
-    'localhost',
-]
+    'localhost']
 
 # Development email backend
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

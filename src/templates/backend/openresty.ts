@@ -171,8 +171,7 @@ local routes = {
     ["GET /api/orders/:id"] = order_routes.get,
     ["POST /api/orders"] = order_routes.create,
     ["PUT /api/orders/:id"] = order_routes.update,
-    ["DELETE /api/orders/:id"] = order_routes.delete,
-}
+    ["DELETE /api/orders/:id"] = order_routes.delete}
 
 -- Pattern matching for dynamic routes
 local function match_route(method, path)
@@ -254,8 +253,7 @@ _M.database = {
     user = os.getenv("DB_USER") or "postgres",
     password = os.getenv("DB_PASSWORD") or "postgres",
     pool_size = tonumber(os.getenv("DB_POOL_SIZE")) or 10,
-    idle_timeout = tonumber(os.getenv("DB_IDLE_TIMEOUT")) or 10000,
-}
+    idle_timeout = tonumber(os.getenv("DB_IDLE_TIMEOUT")) or 10000}
 
 -- Redis configuration
 _M.redis = {
@@ -264,8 +262,7 @@ _M.redis = {
     database = tonumber(os.getenv("REDIS_DB")) or 0,
     password = os.getenv("REDIS_PASSWORD"),
     pool_size = tonumber(os.getenv("REDIS_POOL_SIZE")) or 10,
-    keepalive_timeout = tonumber(os.getenv("REDIS_KEEPALIVE_TIMEOUT")) or 60000,
-}
+    keepalive_timeout = tonumber(os.getenv("REDIS_KEEPALIVE_TIMEOUT")) or 60000}
 
 -- JWT configuration
 _M.jwt = {
@@ -284,8 +281,7 @@ _M.rate_limit = {
 _M.app = {
     env = os.getenv("APP_ENV") or "development",
     debug = os.getenv("APP_DEBUG") == "true",
-    log_level = os.getenv("LOG_LEVEL") or "info",
-}
+    log_level = os.getenv("LOG_LEVEL") or "info"}
 
 return _M
 `,
@@ -1385,16 +1381,14 @@ RATE_LIMIT_WINDOW=60
     'luarocks-config.lua': `-- LuaRocks configuration for OpenResty
 rocks_trees = {
    { name = "user", root = home .. "/.luarocks" },
-   { name = "system", root = "/usr/local" },
-}
+   { name = "system", root = "/usr/local" }}
 
 variables = {
    LUA_DIR = "/usr/local/openresty/luajit",
    LUA_INCDIR = "/usr/local/openresty/luajit/include/luajit-2.1",
    LUA_BINDIR = "/usr/local/openresty/luajit/bin",
    LUA_VERSION = "5.1",
-   LUA = "/usr/local/openresty/luajit/bin/luajit",
-}
+   LUA = "/usr/local/openresty/luajit/bin/luajit"}
 `,
 
     // Makefile
@@ -1841,8 +1835,7 @@ uwsgi_temp/
     '.luacheckrc': `return {
     globals = {
         "ngx",
-        "ndk",
-    },
+        "ndk"},
     ignore = {
         "212", -- Unused argument
         "213", -- Unused loop variable
@@ -1857,11 +1850,7 @@ uwsgi_temp/
                 "assert",
                 "spy",
                 "stub",
-                "mock",
-            },
-        },
-    },
-}
+                "mock"}}}}
 `
   }
 };

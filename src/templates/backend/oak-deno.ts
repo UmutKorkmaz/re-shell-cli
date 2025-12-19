@@ -34,7 +34,7 @@ export const oakDenoTemplate: BackendTemplate = {
     "datetime": "https://deno.land/std@0.208.0/datetime/mod.ts",
     "testing": "https://deno.land/std@0.208.0/testing/asserts.ts",
     "postgres": "https://deno.land/x/postgres@v0.17.2/mod.ts",
-    "redis": "https://deno.land/x/redis@v0.32.0/mod.ts",
+    "caching": "https://deno.land/x/redis@v0.32.0/mod.ts",
     "zod": "https://deno.land/x/zod@v3.22.4/mod.ts"
   },
   "compilerOptions": {
@@ -110,8 +110,7 @@ export const config = {
 
   // Rate limiting
   rateLimitRequests: parseInt(Deno.env.get('RATE_LIMIT_REQUESTS') || '100'),
-  rateLimitWindowMs: parseInt(Deno.env.get('RATE_LIMIT_WINDOW_MS') || '60000'),
-};
+  rateLimitWindowMs: parseInt(Deno.env.get('RATE_LIMIT_WINDOW_MS') || '60000')};
 `,
 
     // Database
@@ -252,28 +251,24 @@ export interface PaginatedResponse<T> {
 export const registerSchema = z.object({
   email: z.string().email('Valid email is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-});
+  name: z.string().min(2, 'Name must be at least 2 characters')});
 
 export const loginSchema = z.object({
   email: z.string().email('Valid email is required'),
-  password: z.string().min(1, 'Password is required'),
-});
+  password: z.string().min(1, 'Password is required')});
 
 export const createProductSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
   description: z.string().optional(),
   price: z.number().min(0, 'Price must be non-negative'),
-  stock: z.number().int().min(0).default(0),
-});
+  stock: z.number().int().min(0).default(0)});
 
 export const updateProductSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
   price: z.number().min(0).optional(),
   stock: z.number().int().min(0).optional(),
-  active: z.boolean().optional(),
-});
+  active: z.boolean().optional()});
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -308,8 +303,7 @@ export async function generateToken(payload: AuthPayload): Promise<string> {
     { alg: 'HS256', typ: 'JWT' },
     {
       ...payload,
-      exp: getNumericDate(config.jwtExpirationHours * 60 * 60),
-    },
+      exp: getNumericDate(config.jwtExpirationHours * 60 * 60)},
     key
   );
 }
@@ -320,8 +314,7 @@ export async function verifyToken(token: string): Promise<AuthPayload | null> {
     return {
       userId: payload.userId as string,
       email: payload.email as string,
-      role: payload.role as string,
-    };
+      role: payload.role as string};
   } catch {
     return null;
   }
@@ -340,8 +333,7 @@ export function toUserResponse(user: User): UserResponse {
     name: user.name,
     role: user.role,
     active: user.active,
-    createdAt: user.createdAt,
-  };
+    createdAt: user.createdAt};
 }
 
 export async function createUser(email: string, password: string, name: string): Promise<User> {
@@ -356,8 +348,7 @@ export async function createUser(email: string, password: string, name: string):
     role: 'user',
     active: true,
     createdAt: now,
-    updatedAt: now,
-  };
+    updatedAt: now};
 
   memoryDb.insert('users', user);
   return user;
@@ -378,8 +369,7 @@ export function findAllUsers(): User[] {
 export function updateUser(id: string, updates: Partial<User>): User | undefined {
   return memoryDb.update('users', id, {
     ...updates,
-    updatedAt: new Date().toISOString(),
-  }) as User | undefined;
+    updatedAt: new Date().toISOString()}) as User | undefined;
 }
 
 export function deleteUser(id: string): boolean {
@@ -403,8 +393,7 @@ export function createProduct(input: CreateProductInput): Product {
     stock: input.stock,
     active: true,
     createdAt: now,
-    updatedAt: now,
-  };
+    updatedAt: now};
 
   memoryDb.insert('products', product);
   return product;
@@ -429,8 +418,7 @@ export function findProducts(
 export function updateProduct(id: string, updates: UpdateProductInput): Product | undefined {
   return memoryDb.update('products', id, {
     ...updates,
-    updatedAt: new Date().toISOString(),
-  }) as Product | undefined;
+    updatedAt: new Date().toISOString()}) as Product | undefined;
 }
 
 export function deleteProduct(id: string): boolean {
@@ -458,9 +446,7 @@ export async function errorMiddleware(
         error: 'Validation error',
         details: err.errors.map((e) => ({
           field: e.path.join('.'),
-          message: e.message,
-        })),
-      };
+          message: e.message}))};
     } else {
       console.error('Unhandled error:', err);
       ctx.response.status = 500;
@@ -549,8 +535,7 @@ export async function rateLimitMiddleware(
   if (!record || now > record.resetTime) {
     record = {
       count: 0,
-      resetTime: now + config.rateLimitWindowMs,
-    };
+      resetTime: now + config.rateLimitWindowMs};
   }
 
   record.count++;
@@ -643,8 +628,7 @@ export const router = new Router();
 router.get('/health', (ctx) => {
   ctx.response.body = {
     status: 'healthy',
-    timestamp: new Date().toISOString(),
-  };
+    timestamp: new Date().toISOString()};
 });
 
 // Mount routers
@@ -703,13 +687,11 @@ authRouter.post('/login', async (ctx) => {
   const token = await generateToken({
     userId: user.id,
     email: user.email,
-    role: user.role,
-  });
+    role: user.role});
 
   ctx.response.body = {
     token,
-    user: toUserResponse(user),
-  };
+    user: toUserResponse(user)};
 });
 `,
 
@@ -721,8 +703,7 @@ import {
   findAllUsers,
   updateUser,
   deleteUser,
-  toUserResponse,
-} from '../services/user.ts';
+  toUserResponse} from '../services/user.ts';
 
 export const userRouter = new Router();
 
@@ -742,8 +723,7 @@ userRouter.put('/me', authMiddleware, async (ctx: AuthContext) => {
   const body = await ctx.request.body().value;
 
   const user = updateUser(ctx.state.user!.userId, {
-    name: body.name,
-  });
+    name: body.name});
 
   if (!user) {
     ctx.throw(Status.NotFound, 'User not found');
@@ -801,8 +781,7 @@ import {
   findProductById,
   findProducts,
   updateProduct,
-  deleteProduct,
-} from '../services/product.ts';
+  deleteProduct} from '../services/product.ts';
 
 export const productRouter = new Router();
 
@@ -886,8 +865,7 @@ Deno.test('Health check returns OK', async () => {
 
   const response = {
     status: 'healthy',
-    timestamp: new Date().toISOString(),
-  };
+    timestamp: new Date().toISOString()};
 
   assertEquals(response.status, 'healthy');
 });
@@ -899,24 +877,21 @@ Deno.test('Validation schemas work correctly', async () => {
   const validResult = registerSchema.safeParse({
     email: 'test@example.com',
     password: 'password123',
-    name: 'Test User',
-  });
+    name: 'Test User'});
   assertEquals(validResult.success, true);
 
   // Invalid email
   const invalidEmail = registerSchema.safeParse({
     email: 'invalid-email',
     password: 'password123',
-    name: 'Test User',
-  });
+    name: 'Test User'});
   assertEquals(invalidEmail.success, false);
 
   // Short password
   const shortPassword = registerSchema.safeParse({
     email: 'test@example.com',
     password: '123',
-    name: 'Test User',
-  });
+    name: 'Test User'});
   assertEquals(shortPassword.success, false);
 });
 `,

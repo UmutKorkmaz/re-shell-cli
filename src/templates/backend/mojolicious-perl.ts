@@ -8,10 +8,10 @@ export const mojoliciousTemplate: BackendTemplate = {
   language: 'perl',
   framework: 'mojolicious',
   version: '1.0.0',
-  tags: ['perl', 'mojolicious', 'mvc', 'real-time', 'websocket', 'rest', 'full-stack'],
+  tags: ['perl', 'mojolicious', 'mvc', 'websockets', 'websockets', 'rest', 'full-stack'],
   port: 3000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websocket'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websockets'],
 
   files: {
     // Main application file
@@ -126,8 +126,7 @@ sub _init_data ($self) {
     name => 'Admin User',
     role => 'admin',
     created_at => scalar localtime,
-    updated_at => scalar localtime,
-  };
+    updated_at => scalar localtime};
   print "✅ Database initialized with admin user: admin@example.com / admin123\\n";
 
   # Create sample products
@@ -138,8 +137,7 @@ sub _init_data ($self) {
     price => 29.99,
     stock => 100,
     created_at => scalar localtime,
-    updated_at => scalar localtime,
-  };
+    updated_at => scalar localtime};
   push @{$self->products}, {
     id => '2',
     name => 'Sample Product 2',
@@ -147,8 +145,7 @@ sub _init_data ($self) {
     price => 49.99,
     stock => 50,
     created_at => scalar localtime,
-    updated_at => scalar localtime,
-  };
+    updated_at => scalar localtime};
   print "✅ Database initialized with sample products\\n";
 }
 
@@ -175,8 +172,7 @@ sub create_user ($self, $data) {
     name => $data->{name},
     role => 'user',
     created_at => scalar localtime,
-    updated_at => scalar localtime,
-  };
+    updated_at => scalar localtime};
   push @{$self->users}, $user;
   return {%$user, password => undef};
 }
@@ -224,8 +220,7 @@ sub create_product ($self, $data) {
     price => $data->{price} + 0,
     stock => $data->{stock} + 0,
     created_at => scalar localtime,
-    updated_at => scalar localtime,
-  };
+    updated_at => scalar localtime};
   push @{$self->products}, $product;
   return $product;
 }
@@ -288,8 +283,7 @@ sub generate_token ($self, $user) {
     claims => {
       sub => $user->{id},
       email => $user->{email},
-      role => $user->{role},
-    },
+      role => $user->{role}},
   )->encode;
 }
 
@@ -329,8 +323,7 @@ sub health ($self) {
   $self->render(json => {
     status => 'healthy',
     timestamp => scalar localtime,
-    version => '1.0.0',
-  });
+    version => '1.0.0'});
 }
 
 1;
@@ -365,8 +358,7 @@ sub register ($self) {
 
   $self->render(json => {
     token => $token,
-    user => {%$user, password => undef},
-  }, status => 201);
+    user => {%$user, password => undef}}, status => 201);
 }
 
 sub login ($self) {
@@ -386,8 +378,7 @@ sub login ($self) {
 
   $self->render(json => {
     token => $token,
-    user => {%$user, password => undef},
-  });
+    user => {%$user, password => undef}});
 }
 
 sub authenticate ($self) {
@@ -599,9 +590,7 @@ JWT_EXPIRATION=604800
     listen => ['http://*:3000'],
     workers => 4,
     accept_interval => 0.5,
-    backlog => 128,
-  },
-};
+    backlog => 128}};
 `,
 
     // Dockerfile - Multi-stage optimized build
@@ -715,8 +704,7 @@ WriteMakefile(
   VERSION_FROM => 'lib/{{projectNamePascal}}.pm',
   PREREQ_PM => {
     'Mojolicious' => '9.00',
-    'Mojo::JWT' => '0',
-  },
+    'Mojo::JWT' => '0'},
   ABSTRACT => '{{description}}',
   AUTHOR => '{{author}} <{{email}}>',
   LICENSE => 'perl',

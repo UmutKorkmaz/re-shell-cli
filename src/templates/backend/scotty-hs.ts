@@ -11,7 +11,7 @@ export const scottyHsTemplate: BackendTemplate = {
   tags: ['haskell', 'scotty', 'lightweight', 'sinatra-like', 'wai', 'middleware'],
   port: 3000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'rest'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'rest-api'],
 
   files: {
     // Package configuration

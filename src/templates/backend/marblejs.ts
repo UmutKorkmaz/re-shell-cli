@@ -8,10 +8,10 @@ export const marblejsTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'marblejs',
   version: '4.1.0',
-  tags: ['nodejs', 'marblejs', 'rxjs', 'functional', 'reactive', 'api', 'websocket', 'grpc', 'microservices', 'typescript'],
+  tags: ['nodejs', 'marblejs', 'rxjs', 'functional', 'reactive', 'api', 'websockets', 'microservices', 'microservices', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['functional-reactive', 'effect-based', 'dependency-injection', 'middleware-operators', 'websocket', 'grpc', 'event-sourcing', 'cqrs', 'testing'],
+  features: ['streaming', 'streaming', 'middleware', 'middleware', 'websockets', 'microservices', 'queue', 'database', 'testing'],
   
   files: {
     // Package configuration
@@ -57,7 +57,7 @@ export const marblejsTemplate: BackendTemplate = {
     "uuid": "^9.0.1",
     "pg": "^8.11.5",
     "typeorm": "^0.3.20",
-    "redis": "^4.6.13",
+    "caching": "^4.6.13",
     "amqplib": "^0.10.4",
     "nodemailer": "^6.9.13",
     "winston": "^3.13.0",
@@ -145,9 +145,7 @@ const server = createServer({
   hostname: config.hostname,
   listener,
   options: {
-    httpsOptions: config.httpsOptions,
-  },
-});
+    httpsOptions: config.httpsOptions}});
 
 const main: IO<void> = async () => {
   await server();
@@ -170,20 +168,16 @@ import { api$ } from './effects/api.effects';
 export const listener = httpListener({
   middlewares: [
     logger$({
-      silent: process.env.NODE_ENV === 'test',
-    }),
+      silent: process.env.NODE_ENV === 'test'}),
     bodyParser$(),
     cors$({
       origin: process.env.CORS_ORIGINS?.split(',') || '*',
-      credentials: true,
-    }),
+      credentials: true}),
     helmet$,
     compression$,
-    requestValidator$,
-  ],
+    requestValidator$],
   effects: [api$],
-  error$,
-});`,
+  error$});`,
 
     // API Effects
     'src/effects/api.effects.ts': `import { r } from '@marblejs/http';
@@ -199,8 +193,7 @@ export const api$ = combineRoutes('/api/v1', [
   userEffects$,
   todoEffects$,
   healthEffect$,
-  websocketEffect$,
-]);`,
+  websocketEffect$]);`,
 
     // Auth Effects
     'src/effects/auth.effects.ts': `import { r, HttpError, HttpStatus } from '@marblejs/http';
@@ -215,18 +208,15 @@ import { requestValidator$ } from '../middlewares/validator.middleware';
 // Validation schemas
 const LoginDto = t.type({
   email: t.string,
-  password: t.string,
-});
+  password: t.string});
 
 const RegisterDto = t.type({
   email: t.string,
   password: t.string,
-  name: t.string,
-});
+  name: t.string});
 
 const RefreshTokenDto = t.type({
-  refreshToken: t.string,
-});
+  refreshToken: t.string});
 
 // Login effect
 const login$ = r.pipe(
@@ -242,12 +232,9 @@ const login$ = r.pipe(
               user: {
                 id: user.id,
                 email: user.email,
-                name: user.name,
-              },
+                name: user.name},
               accessToken: generateToken({ sub: user.id, email: user.email }),
-              refreshToken: generateToken({ sub: user.id, email: user.email }, '7d'),
-            },
-          })),
+              refreshToken: generateToken({ sub: user.id, email: user.email }, '7d')}})),
           catchError(() =>
             throwError(() => new HttpError('Invalid credentials', HttpStatus.UNAUTHORIZED))
           ),
@@ -271,12 +258,9 @@ const register$ = r.pipe(
               user: {
                 id: user.id,
                 email: user.email,
-                name: user.name,
-              },
+                name: user.name},
               accessToken: generateToken({ sub: user.id, email: user.email }),
-              refreshToken: generateToken({ sub: user.id, email: user.email }, '7d'),
-            },
-          })),
+              refreshToken: generateToken({ sub: user.id, email: user.email }, '7d')}})),
           catchError((error) =>
             throwError(() => new HttpError(error.message, HttpStatus.BAD_REQUEST))
           ),
@@ -296,8 +280,7 @@ const refreshToken$ = r.pipe(
       mergeMap((req) =>
         authService.refreshToken(req.body.refreshToken).pipe(
           map((tokens) => ({
-            body: tokens,
-          })),
+            body: tokens})),
           catchError(() =>
             throwError(() => new HttpError('Invalid refresh token', HttpStatus.UNAUTHORIZED))
           ),
@@ -314,8 +297,7 @@ const logout$ = r.pipe(
   r.useEffect((req$) =>
     req$.pipe(
       map(() => ({
-        body: { message: 'Logout successful' },
-      })),
+        body: { message: 'Logout successful' }})),
     )
   ),
 );
@@ -324,8 +306,7 @@ export const authEffects$ = combineRoutes('/auth', [
   login$,
   register$,
   refreshToken$,
-  logout$,
-]);`,
+  logout$]);`,
 
     // User Effects
     'src/effects/user.effects.ts': `import { r, HttpError, HttpStatus } from '@marblejs/http';
@@ -339,8 +320,7 @@ import { userService } from '../services/user.service';
 // Validation schemas
 const UpdateUserDto = t.partial({
   name: t.string,
-  email: t.string,
-});
+  email: t.string});
 
 // Get current user effect
 const getMe$ = r.pipe(
@@ -350,8 +330,7 @@ const getMe$ = r.pipe(
     req$.pipe(
       authorize$,
       map((req) => ({
-        body: req.user,
-      })),
+        body: req.user})),
     )
   ),
 );
@@ -366,8 +345,7 @@ const getUsers$ = r.pipe(
       mergeMap(() =>
         userService.findAll().pipe(
           map((users) => ({
-            body: { users },
-          })),
+            body: { users }})),
         )
       ),
     )
@@ -384,8 +362,7 @@ const getUserById$ = r.pipe(
       mergeMap((req) =>
         userService.findById(req.params.id).pipe(
           map((user) => ({
-            body: user,
-          })),
+            body: user})),
           catchError(() =>
             throwError(() => new HttpError('User not found', HttpStatus.NOT_FOUND))
           ),
@@ -406,8 +383,7 @@ const updateUser$ = r.pipe(
       mergeMap((req) =>
         userService.update(req.params.id, req.body).pipe(
           map((user) => ({
-            body: user,
-          })),
+            body: user})),
           catchError((error) =>
             throwError(() => new HttpError(error.message, HttpStatus.BAD_REQUEST))
           ),
@@ -428,8 +404,7 @@ const deleteUser$ = r.pipe(
         userService.delete(req.params.id).pipe(
           map(() => ({
             status: HttpStatus.NO_CONTENT,
-            body: {},
-          })),
+            body: {}})),
           catchError(() =>
             throwError(() => new HttpError('User not found', HttpStatus.NOT_FOUND))
           ),
@@ -444,8 +419,7 @@ export const userEffects$ = combineRoutes('/users', [
   getUsers$,
   getUserById$,
   updateUser$,
-  deleteUser$,
-]);`,
+  deleteUser$]);`,
 
     // Todo Effects
     'src/effects/todo.effects.ts': `import { r, HttpError, HttpStatus } from '@marblejs/http';
@@ -461,16 +435,14 @@ const CreateTodoDto = t.type({
   title: t.string,
   description: t.union([t.string, t.undefined]),
   dueDate: t.union([t.string, t.undefined]),
-  priority: t.union([t.literal('low'), t.literal('medium'), t.literal('high')]),
-});
+  priority: t.union([t.literal('low'), t.literal('medium'), t.literal('high')])});
 
 const UpdateTodoDto = t.partial({
   title: t.string,
   description: t.string,
   status: t.union([t.literal('pending'), t.literal('in_progress'), t.literal('completed')]),
   priority: t.union([t.literal('low'), t.literal('medium'), t.literal('high')]),
-  dueDate: t.string,
-});
+  dueDate: t.string});
 
 // Get all todos effect
 const getTodos$ = r.pipe(
@@ -482,8 +454,7 @@ const getTodos$ = r.pipe(
       mergeMap((req) =>
         todoService.findAllByUser(req.user.id).pipe(
           map((todos) => ({
-            body: { todos },
-          })),
+            body: { todos }})),
         )
       ),
     )
@@ -500,8 +471,7 @@ const getTodoById$ = r.pipe(
       mergeMap((req) =>
         todoService.findById(req.params.id, req.user.id).pipe(
           map((todo) => ({
-            body: todo,
-          })),
+            body: todo})),
           catchError(() =>
             throwError(() => new HttpError('Todo not found', HttpStatus.NOT_FOUND))
           ),
@@ -523,8 +493,7 @@ const createTodo$ = r.pipe(
         todoService.create({ ...req.body, userId: req.user.id }).pipe(
           map((todo) => ({
             status: HttpStatus.CREATED,
-            body: todo,
-          })),
+            body: todo})),
           catchError((error) =>
             throwError(() => new HttpError(error.message, HttpStatus.BAD_REQUEST))
           ),
@@ -545,8 +514,7 @@ const updateTodo$ = r.pipe(
       mergeMap((req) =>
         todoService.update(req.params.id, req.user.id, req.body).pipe(
           map((todo) => ({
-            body: todo,
-          })),
+            body: todo})),
           catchError((error) =>
             throwError(() => new HttpError(error.message, HttpStatus.BAD_REQUEST))
           ),
@@ -567,8 +535,7 @@ const deleteTodo$ = r.pipe(
         todoService.delete(req.params.id, req.user.id).pipe(
           map(() => ({
             status: HttpStatus.NO_CONTENT,
-            body: {},
-          })),
+            body: {}})),
           catchError(() =>
             throwError(() => new HttpError('Todo not found', HttpStatus.NOT_FOUND))
           ),
@@ -583,8 +550,7 @@ export const todoEffects$ = combineRoutes('/todos', [
   getTodoById$,
   createTodo$,
   updateTodo$,
-  deleteTodo$,
-]);`,
+  deleteTodo$]);`,
 
     // Health Effect
     'src/effects/health.effects.ts': `import { r } from '@marblejs/http';
@@ -601,8 +567,7 @@ export const healthEffect$ = r.pipe(
       mergeMap(() =>
         Promise.all([
           dbService.checkConnection().toPromise(),
-          redisService.checkConnection().toPromise(),
-        ]).then(([dbStatus, redisStatus]) =>
+          redisService.checkConnection().toPromise()]).then(([dbStatus, redisStatus]) =>
           of({
             body: {
               status: 'ok',
@@ -610,10 +575,7 @@ export const healthEffect$ = r.pipe(
               uptime: process.uptime(),
               services: {
                 database: dbStatus ? 'healthy' : 'unhealthy',
-                redis: redisStatus ? 'healthy' : 'unhealthy',
-              },
-            },
-          })
+                redis: redisStatus ? 'healthy' : 'unhealthy'}}})
         )
       ),
     )
@@ -629,8 +591,7 @@ const echo$ = matchEvent('echo')
   .pipe(
     map((event) => ({
       type: 'echo_response',
-      payload: event.payload,
-    }))
+      payload: event.payload}))
   );
 
 const broadcast$ = matchEvent('broadcast')
@@ -639,14 +600,11 @@ const broadcast$ = matchEvent('broadcast')
       type: 'broadcast_message',
       payload: {
         message: event.payload.message,
-        timestamp: new Date().toISOString(),
-      },
-    }))
+        timestamp: new Date().toISOString()}}))
   );
 
 export const websocketEffect$ = webSocketListener({
-  effects: [echo$, broadcast$],
-});`,
+  effects: [echo$, broadcast$]});`,
 
     // Auth Middleware
     'src/middlewares/auth.middleware.ts': `import { HttpMiddlewareEffect, HttpError, HttpStatus } from '@marblejs/http';
@@ -669,8 +627,7 @@ export const authorize$: HttpMiddlewareEffect = (req$) =>
         return userService.findById(decoded.sub).pipe(
           map((user) => ({
             ...req,
-            user,
-          })),
+            user})),
           catchError(() =>
             throwError(() => new HttpError('User not found', HttpStatus.UNAUTHORIZED))
           ),
@@ -765,8 +722,7 @@ export const error$: HttpErrorEffect = (req$, res) =>
       logger.error(\`[\${status}] \${message}\`, {
         error: error.stack,
         url: res.url,
-        method: res.method,
-      });
+        method: res.method});
 
       return {
         status,
@@ -774,10 +730,7 @@ export const error$: HttpErrorEffect = (req$, res) =>
           error: {
             status,
             message,
-            timestamp: new Date().toISOString(),
-          },
-        },
-      };
+            timestamp: new Date().toISOString()}}};
     }),
   );`,
 
@@ -863,8 +816,7 @@ class UserService {
         .then((hashedPassword) => {
           const user = this.userRepository.create({
             ...userData,
-            password: hashedPassword,
-          });
+            password: hashedPassword});
           return this.userRepository.save(user);
         })
         .then((user) => {
@@ -955,8 +907,7 @@ class AuthService {
       
       return of({
         accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      });
+        refreshToken: newRefreshToken});
     } catch (error) {
       return throwError(() => new Error('Invalid refresh token'));
     }
@@ -1070,8 +1021,7 @@ class DatabaseService {
       database: config.database.name,
       entities: [User, Todo],
       synchronize: config.database.synchronize,
-      logging: config.database.logging,
-    });
+      logging: config.database.logging});
   }
 
   checkConnection(): Observable<boolean> {
@@ -1092,8 +1042,7 @@ class RedisService {
   async connect(): Promise<void> {
     this.client = createClient({
       url: \`redis://\${config.redis.host}:\${config.redis.port}\`,
-      password: config.redis.password,
-    });
+      password: config.redis.password});
 
     await this.client.connect();
   }
@@ -1128,14 +1077,12 @@ export const redisService = new RedisService();`,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
-} from 'typeorm';
+  OneToMany} from 'typeorm';
 import { Todo } from './todo.model';
 
 export enum UserRole {
   USER = 'user',
-  ADMIN = 'admin',
-}
+  ADMIN = 'admin'}
 
 @Entity('users')
 export class User {
@@ -1154,8 +1101,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.USER,
-  })
+    default: UserRole.USER})
   role!: UserRole;
 
   @Column({ default: true })
@@ -1179,21 +1125,18 @@ export class User {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+  JoinColumn} from 'typeorm';
 import { User } from './user.model';
 
 export enum TodoStatus {
   PENDING = 'pending',
   IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-}
+  COMPLETED = 'completed'}
 
 export enum TodoPriority {
   LOW = 'low',
   MEDIUM = 'medium',
-  HIGH = 'high',
-}
+  HIGH = 'high'}
 
 @Entity('todos')
 export class Todo {
@@ -1209,15 +1152,13 @@ export class Todo {
   @Column({
     type: 'enum',
     enum: TodoStatus,
-    default: TodoStatus.PENDING,
-  })
+    default: TodoStatus.PENDING})
   status!: TodoStatus;
 
   @Column({
     type: 'enum',
     enum: TodoPriority,
-    default: TodoPriority.MEDIUM,
-  })
+    default: TodoPriority.MEDIUM})
   priority!: TodoPriority;
 
   @Column({ nullable: true })
@@ -1281,17 +1222,12 @@ export const logger = winston.createLogger({
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.simple(),
-      ),
-    }),
+      )}),
     new winston.transports.File({
       filename: 'logs/error.log',
-      level: 'error',
-    }),
+      level: 'error'}),
     new winston.transports.File({
-      filename: 'logs/combined.log',
-    }),
-  ],
-});`,
+      filename: 'logs/combined.log'})]});`,
 
     // Configuration
     'src/config/index.ts': `import dotenv from 'dotenv';
@@ -1309,25 +1245,20 @@ export const config = {
     password: process.env.DB_PASSWORD || 'postgres',
     name: process.env.DB_NAME || '{{projectName}}',
     synchronize: process.env.NODE_ENV === 'development',
-    logging: process.env.NODE_ENV === 'development',
-  },
+    logging: process.env.NODE_ENV === 'development'},
   
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
-    password: process.env.REDIS_PASSWORD,
-  },
+    password: process.env.REDIS_PASSWORD},
   
   jwt: {
     secret: process.env.JWT_SECRET || 'supersecret',
-    expiresIn: process.env.JWT_EXPIRES_IN || '1h',
-  },
+    expiresIn: process.env.JWT_EXPIRES_IN || '1h'},
   
   httpsOptions: process.env.NODE_ENV === 'production' ? {
     cert: process.env.SSL_CERT,
-    key: process.env.SSL_KEY,
-  } : undefined,
-};`,
+    key: process.env.SSL_KEY} : undefined};`,
 
     // Environment variables
     '.env.example': `# Application
@@ -1494,14 +1425,12 @@ networks:
   roots: ['<rootDir>/src', '<rootDir>/test'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
+    '^.+\\.ts$': 'ts-jest'},
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.spec.ts',
-    '!src/**/*.test.ts',
-  ],
+    '!src/**/*.test.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
@@ -1510,9 +1439,7 @@ networks:
     '^@middlewares/(.*)$': '<rootDir>/src/middlewares/$1',
     '^@models/(.*)$': '<rootDir>/src/models/$1',
     '^@services/(.*)$': '<rootDir>/src/services/$1',
-    '^@utils/(.*)$': '<rootDir>/src/utils/$1',
-  },
-};`,
+    '^@utils/(.*)$': '<rootDir>/src/utils/$1'}};`,
 
     // Test file
     'test/auth.spec.ts': `import { createHttpTestBed, createTestBedSetup } from '@marblejs/testing';
@@ -1538,23 +1465,20 @@ describe('Auth API', () => {
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        todos: [],
-      })
+        todos: []})
     );
 
     const response = await testBed.request('POST', '/api/v1/auth/login')
       .send({
         email: 'test@example.com',
-        password: 'password123',
-      });
+        password: 'password123'});
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty('accessToken');
     expect(response.body).toHaveProperty('refreshToken');
     expect(response.body.user).toMatchObject({
       email: 'test@example.com',
-      name: 'Test User',
-    });
+      name: 'Test User'});
   });
 
   test('POST /api/v1/auth/register should create new user', async () => {
@@ -1568,23 +1492,20 @@ describe('Auth API', () => {
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        todos: [],
-      })
+        todos: []})
     );
 
     const response = await testBed.request('POST', '/api/v1/auth/register')
       .send({
         email: 'newuser@example.com',
         password: 'password123',
-        name: 'New User',
-      });
+        name: 'New User'});
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty('accessToken');
     expect(response.body.user).toMatchObject({
       email: 'newuser@example.com',
-      name: 'New User',
-    });
+      name: 'New User'});
   });
 });`,
 
@@ -1715,6 +1636,4 @@ src/
 ## License
 
 MIT
-`,
-  },
-};
+`}};

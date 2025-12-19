@@ -122,7 +122,7 @@ export class HyperappTemplate extends BaseTemplate {
     return files;
   }
 
-  protected generatePackageJson() {
+  protected generatePackageJson(): any {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -147,8 +147,8 @@ export class HyperappTemplate extends BaseTemplate {
     };
   }
 
-  protected generateTsConfig() {
-    return {
+  protected generateTsConfig(): string {
+    return JSON.stringify({
       compilerOptions: {
         target: 'ES2020',
         useDefineForClassFields: true,
@@ -173,10 +173,10 @@ export class HyperappTemplate extends BaseTemplate {
         }
       },
       include: ['src']
-    };
+    }, null, 2);
   }
 
-  private generateViteConfig() {
+  protected generateViteConfig(): string {
     return `import { defineConfig } from 'vite';
 import hyperapp from 'vite-plugin-hyperapp';
 import path from 'path';

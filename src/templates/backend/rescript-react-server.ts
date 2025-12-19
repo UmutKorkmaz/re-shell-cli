@@ -8,10 +8,10 @@ export const rescriptReactServerTemplate: BackendTemplate = {
   language: 'rescript',
   framework: 'react-server',
   version: '1.0.0',
-  tags: ['rescript', 'react', 'server-components', 'nodejs', 'type-safe', 'ssr'],
+  tags: ['rescript', 'react', 'server-components', 'nodejs', 'type-safe', 'rest-api'],
   port: 3000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing', 'ssr'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing', 'rest-api'],
 
   files: {
     // Package.json
@@ -53,7 +53,7 @@ export const rescriptReactServerTemplate: BackendTemplate = {
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0"
   },
-  "keywords": ["rescript", "react", "server-components", "ssr"],
+  "keywords": ["rescript", "react", "server-components"],
   "author": "{{author}}",
   "license": "MIT"
 }`,
@@ -99,26 +99,22 @@ type user = {
   id: int,
   name: string,
   email: string,
-  role: string,
-}
+  role: string}
 
 type product = {
   id: int,
   name: string,
   price: float,
-  description: string,
-}
+  description: string}
 
 // Mock data (replace with real database)
 let mockUsers: array<user> = [
   {id: 1, name: "Admin User", email: "admin@example.com", role: "admin"},
-  {id: 2, name: "Test User", email: "user@example.com", role: "user"},
-]
+  {id: 2, name: "Test User", email: "user@example.com", role: "user"}]
 
 let mockProducts: array<product> = [
   {id: 1, name: "Product 1", price: 99.99, description: "Description 1"},
-  {id: 2, name: "Product 2", price: 149.99, description: "Description 2"},
-]
+  {id: 2, name: "Product 2", price: 149.99, description: "Description 2"}]
 
 // Auth middleware
 let authMiddleware = (req, res, next) => {
@@ -147,8 +143,7 @@ module AppRoutes = {
     let response = {
       "status": "healthy",
       "timestamp": Js.Date.now(),
-      "framework": "ReScript + React Server Components",
-    }
+      "framework": "ReScript + React Server Components"}
     res->Response.json(response)->Js.Promise.resolve
   }
 
@@ -173,10 +168,8 @@ module AppRoutes = {
         "id": Js.Int.toString(u.id),
         "name": u.name,
         "email": u.email,
-        "role": u.role,
-      }),
-      "count": Js.Array.length(mockUsers),
-    }
+        "role": u.role}),
+      "count": Js.Array.length(mockUsers)}
     res->Response.json(users)->Js.Promise.resolve
   }
 
@@ -192,8 +185,7 @@ module AppRoutes = {
         "id": Js.Int.toString(user.id),
         "name": user.name,
         "email": user.email,
-        "role": user.role,
-      }
+        "role": user.role}
       res->Response.json(userData)
     }
   }
@@ -205,10 +197,8 @@ module AppRoutes = {
         "id": Js.Int.toString(p.id),
         "name": p.name,
         "price": Js.Float.toString(p.price),
-        "description": p.description,
-      }),
-      "count": Js.Array.length(mockProducts),
-    }
+        "description": p.description}),
+      "count": Js.Array.length(mockProducts)}
     res->Response.json(products)->Js.Promise.resolve
   }
 
@@ -227,9 +217,7 @@ module AppRoutes = {
             "id": "1",
             "name": "Admin User",
             "email": email,
-            "role": "admin",
-          },
-        }
+            "role": "admin"}}
         res->Response.json(response)
       } else {
         res->Status.statusCode(401)->Response.json({"error": "Invalid credentials"})
@@ -314,8 +302,7 @@ app->Express.use("/api/v1", protectedRouter)
 app->Express.use((req, res) => {
   res->Status.statusCode(404)->Response.json({
     "error": "Not found",
-    "path": req->Express.getUrl,
-  })->ignore
+    "path": req->Express.getUrl})->ignore
 })
 
 // Error handler
@@ -323,8 +310,7 @@ app->Express.use((err, req, res, _next) => {
   Console.error(err->Js.Exn.message)
   res->Status.statusCode(500)->Response.json({
     "error": "Internal server error",
-    "message": err->Js.Exn.message,
-  })->ignore
+    "message": err->Js.Exn.message})->ignore
 })
 
 // Start server
@@ -623,6 +609,4 @@ NODE_ENV=production npm start
 ## License
 
 MIT
-`,
-  },
-};
+`}};

@@ -162,8 +162,7 @@ func main() {
 
 	// Global middleware
 	e.Use(echoMiddleware.RequestIDWithConfig(echoMiddleware.RequestIDConfig{
-		Generator: middleware.GenerateRequestID,
-	}))
+		Generator: middleware.GenerateRequestID}))
 	e.Use(middleware.ZapLogger(logger))
 	e.Use(echoMiddleware.Recover())
 	e.Use(echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
@@ -172,26 +171,22 @@ func main() {
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, "X-Request-ID"},
 		ExposeHeaders:    []string{"X-Request-ID"},
 		AllowCredentials: true,
-		MaxAge:           86400,
-	}))
+		MaxAge:           86400}))
 	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{
-		Level: 5,
-	}))
+		Level: 5}))
 	e.Use(middleware.RateLimiter(cfg))
 	e.Use(echoMiddleware.SecureWithConfig(echoMiddleware.SecureConfig{
 		XSSProtection:         "1; mode=block",
 		ContentTypeNosniff:    "nosniff",
 		XFrameOptions:         "DENY",
 		HSTSMaxAge:            3600,
-		ContentSecurityPolicy: "default-src 'self'",
-	}))
+		ContentSecurityPolicy: "default-src 'self'"}))
 
 	// Health check
 	e.GET("/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"status": "healthy",
-			"time":   time.Now().UTC(),
-		})
+			"time":   time.Now().UTC()})
 	})
 
 	// Swagger documentation
@@ -345,8 +340,7 @@ func New() *Config {
 		// TLS
 		TLSEnabled:  getEnvAsBool("TLS_ENABLED", false),
 		TLSCertFile: getEnv("TLS_CERT_FILE", ""),
-		TLSKeyFile:  getEnv("TLS_KEY_FILE", ""),
-	}
+		TLSKeyFile:  getEnv("TLS_KEY_FILE", "")}
 }
 
 func getEnv(key, defaultValue string) string {
@@ -409,8 +403,7 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 
 	// Configure GORM
 	gormConfig := &gorm.Config{
-		PrepareStmt: true,
-	}
+		PrepareStmt: true}
 	if cfg.Environment == "development" {
 		gormConfig.Logger = logger.Default.LogMode(logger.Info)
 	} else {
@@ -519,8 +512,7 @@ func (u *User) ToResponse() UserResponse {
 		Name:      u.Name,
 		Role:      u.Role,
 		Active:    u.Active,
-		CreatedAt: u.CreatedAt,
-	}
+		CreatedAt: u.CreatedAt}
 }
 `,
 
@@ -606,8 +598,7 @@ func NewHandler(db *gorm.DB, cfg *config.Config, logger *zap.Logger) *Handler {
 		db:       db,
 		cfg:      cfg,
 		logger:   logger,
-		validate: validator.New(),
-	}
+		validate: validator.New()}
 }
 
 // Custom validation errors
@@ -623,8 +614,7 @@ func (h *Handler) formatValidationErrors(err error) []ValidationError {
 		for _, e := range validationErrors {
 			errors = append(errors, ValidationError{
 				Field:   e.Field(),
-				Message: h.getErrorMessage(e),
-			})
+				Message: h.getErrorMessage(e)})
 		}
 	}
 	
@@ -684,8 +674,7 @@ func (h *Handler) Register(c echo.Context) error {
 	if err := h.validate.Struct(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error":  "Validation failed",
-			"errors": h.formatValidationErrors(err),
-		})
+			"errors": h.formatValidationErrors(err)})
 	}
 
 	// Check if user exists
@@ -697,8 +686,7 @@ func (h *Handler) Register(c echo.Context) error {
 	// Create new user
 	user := models.User{
 		Email: req.Email,
-		Name:  req.Name,
-	}
+		Name:  req.Name}
 
 	if err := user.SetPassword(req.Password); err != nil {
 		h.logger.Error("Failed to hash password", zap.Error(err))
@@ -733,8 +721,7 @@ func (h *Handler) Login(c echo.Context) error {
 	if err := h.validate.Struct(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error":  "Validation failed",
-			"errors": h.formatValidationErrors(err),
-		})
+			"errors": h.formatValidationErrors(err)})
 	}
 
 	// Find user
@@ -770,8 +757,7 @@ func (h *Handler) Login(c echo.Context) error {
 	refreshTokenModel := models.RefreshToken{
 		Token:     refreshToken,
 		UserID:    user.ID,
-		ExpiresAt: time.Now().Add(h.cfg.JWTRefreshExpiration),
-	}
+		ExpiresAt: time.Now().Add(h.cfg.JWTRefreshExpiration)}
 
 	if err := h.db.Create(&refreshTokenModel).Error; err != nil {
 		h.logger.Error("Failed to save refresh token", zap.Error(err))
@@ -784,8 +770,7 @@ func (h *Handler) Login(c echo.Context) error {
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		TokenType:    "Bearer",
-		ExpiresIn:    int(h.cfg.JWTAccessExpiration.Seconds()),
-	})
+		ExpiresIn:    int(h.cfg.JWTAccessExpiration.Seconds())})
 }
 
 // @Summary Refresh access token
@@ -807,8 +792,7 @@ func (h *Handler) RefreshToken(c echo.Context) error {
 	if err := h.validate.Struct(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error":  "Validation failed",
-			"errors": h.formatValidationErrors(err),
-		})
+			"errors": h.formatValidationErrors(err)})
 	}
 
 	// Find refresh token
@@ -840,8 +824,7 @@ func (h *Handler) RefreshToken(c echo.Context) error {
 		AccessToken:  accessToken,
 		RefreshToken: req.RefreshToken,
 		TokenType:    "Bearer",
-		ExpiresIn:    int(h.cfg.JWTAccessExpiration.Seconds()),
-	})
+		ExpiresIn:    int(h.cfg.JWTAccessExpiration.Seconds())})
 }
 
 func (h *Handler) generateRefreshToken() (string, error) {
@@ -1068,8 +1051,7 @@ func (h *Handler) ListProducts(c echo.Context) error {
 	if err := h.validate.Struct(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error":  "Validation failed",
-			"errors": h.formatValidationErrors(err),
-		})
+			"errors": h.formatValidationErrors(err)})
 	}
 
 	// Build query
@@ -1108,8 +1090,7 @@ func (h *Handler) ListProducts(c echo.Context) error {
 		Total:      total,
 		Page:       req.Page,
 		Limit:      req.Limit,
-		TotalPages: totalPages,
-	})
+		TotalPages: totalPages})
 }
 
 // @Summary Get product by ID
@@ -1161,8 +1142,7 @@ func (h *Handler) CreateProduct(c echo.Context) error {
 	if err := h.validate.Struct(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error":  "Validation failed",
-			"errors": h.formatValidationErrors(err),
-		})
+			"errors": h.formatValidationErrors(err)})
 	}
 
 	// Check if SKU exists
@@ -1178,8 +1158,7 @@ func (h *Handler) CreateProduct(c echo.Context) error {
 		Stock:       req.Stock,
 		SKU:         req.SKU,
 		Category:    req.Category,
-		Active:      true,
-	}
+		Active:      true}
 
 	if err := h.db.Create(&product).Error; err != nil {
 		h.logger.Error("Failed to create product", zap.Error(err))
@@ -1226,8 +1205,7 @@ func (h *Handler) UpdateProduct(c echo.Context) error {
 	if err := h.validate.Struct(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error":  "Validation failed",
-			"errors": h.formatValidationErrors(err),
-		})
+			"errors": h.formatValidationErrors(err)})
 	}
 
 	// Update fields
@@ -1302,8 +1280,7 @@ import (
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
+	WriteBufferSize: 1024}
 
 type WebSocketMessage struct {
 	Type    string      \`json:"type"\`
@@ -1331,9 +1308,7 @@ func (h *Handler) WebSocketHandler(c echo.Context) error {
 		Type: "welcome",
 		Payload: map[string]interface{}{
 			"message": "Connected to WebSocket",
-			"user_id": userID,
-		},
-	}
+			"user_id": userID}}
 	
 	if err := ws.WriteJSON(welcome); err != nil {
 		h.logger.Error("Failed to send welcome message", zap.Error(err))
@@ -1359,8 +1334,7 @@ func (h *Handler) WebSocketHandler(c echo.Context) error {
 		case "ping":
 			response := WebSocketMessage{
 				Type:    "pong",
-				Payload: msg.Payload,
-			}
+				Payload: msg.Payload}
 			if err := ws.WriteJSON(response); err != nil {
 				h.logger.Error("Failed to send pong", zap.Error(err))
 				break
@@ -1369,8 +1343,7 @@ func (h *Handler) WebSocketHandler(c echo.Context) error {
 		case "echo":
 			response := WebSocketMessage{
 				Type:    "echo_response",
-				Payload: msg.Payload,
-			}
+				Payload: msg.Payload}
 			if err := ws.WriteJSON(response); err != nil {
 				h.logger.Error("Failed to send echo response", zap.Error(err))
 				break
@@ -1380,9 +1353,7 @@ func (h *Handler) WebSocketHandler(c echo.Context) error {
 			response := WebSocketMessage{
 				Type: "error",
 				Payload: map[string]string{
-					"message": "Unknown message type",
-				},
-			}
+					"message": "Unknown message type"}}
 			if err := ws.WriteJSON(response); err != nil {
 				h.logger.Error("Failed to send error response", zap.Error(err))
 				break
@@ -1423,8 +1394,7 @@ func JWT(secret string) echo.MiddlewareFunc {
 			c.Set("userID", claims.UserID)
 			c.Set("userEmail", claims.Email)
 			c.Set("userRole", claims.Role)
-		},
-	})
+		}})
 }
 
 func RequireRole(roles ...string) echo.MiddlewareFunc {
@@ -1486,8 +1456,7 @@ func ZapLogger(logger *zap.Logger) echo.MiddlewareFunc {
 				zap.Int64("size", res.Size),
 				zap.String("user_agent", req.UserAgent()),
 				zap.Duration("latency", time.Since(start)),
-				zap.String("request_id", c.Request().Header.Get(echo.HeaderXRequestID)),
-			}
+				zap.String("request_id", c.Request().Header.Get(echo.HeaderXRequestID))}
 
 			// Add user ID if authenticated
 			if userID, ok := c.Get("userID").(uint); ok {
@@ -1533,8 +1502,7 @@ func RateLimiter(cfg *config.Config) echo.MiddlewareFunc {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisAddr,
 		Password: cfg.RedisPassword,
-		DB:       cfg.RedisDB,
-	})
+		DB:       cfg.RedisDB})
 
 	// Test Redis connection
 	ctx := context.Background()
@@ -1614,8 +1582,7 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		} else {
 			c.JSON(code, map[string]interface{}{
 				"error": message,
-				"code":  code,
-			})
+				"code":  code})
 		}
 	}
 }
@@ -1657,9 +1624,7 @@ func GenerateAccessToken(userID uint, email, role, secret string, expiration tim
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-		},
-	}
+			NotBefore: jwt.NewNumericDate(time.Now())}}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
@@ -1729,8 +1694,7 @@ func TestRegister(t *testing.T) {
 
 	cfg := &config.Config{
 		JWTSecret:           "test-secret",
-		JWTAccessExpiration: time.Hour,
-	}
+		JWTAccessExpiration: time.Hour}
 
 	logger, _ := zap.NewDevelopment()
 	h := NewHandler(db, cfg, logger)
@@ -1739,8 +1703,7 @@ func TestRegister(t *testing.T) {
 	user := models.RegisterRequest{
 		Email:    "test@example.com",
 		Password: "password123",
-		Name:     "Test User",
-	}
+		Name:     "Test User"}
 
 	body, _ := json.Marshal(user)
 	req := httptest.NewRequest(http.MethodPost, "/auth/register", bytes.NewReader(body))
@@ -1779,8 +1742,7 @@ func TestLogin(t *testing.T) {
 	cfg := &config.Config{
 		JWTSecret:            "test-secret",
 		JWTAccessExpiration:  time.Hour,
-		JWTRefreshExpiration: 24 * time.Hour,
-	}
+		JWTRefreshExpiration: 24 * time.Hour}
 
 	logger, _ := zap.NewDevelopment()
 	h := NewHandler(db, cfg, logger)
@@ -1788,16 +1750,14 @@ func TestLogin(t *testing.T) {
 	// Create test user
 	user := models.User{
 		Email: "test@example.com",
-		Name:  "Test User",
-	}
+		Name:  "Test User"}
 	user.SetPassword("password123")
 	db.Create(&user)
 
 	// Test successful login
 	loginReq := models.LoginRequest{
 		Email:    "test@example.com",
-		Password: "password123",
-	}
+		Password: "password123"}
 
 	body, _ := json.Marshal(loginReq)
 	req := httptest.NewRequest(http.MethodPost, "/auth/login", bytes.NewReader(body))

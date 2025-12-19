@@ -8,7 +8,7 @@ export const aspnetSwaggerTemplate: BackendTemplate = {
   language: 'csharp',
   framework: 'aspnet-swagger',
   version: '1.0.0',
-  tags: ['aspnet', 'swagger', 'openapi', 'documentation', 'xml-docs'],
+  tags: ['aspnet', 'swagger', 'swagger', 'documentation', 'xml-docs'],
   port: 5000,
   dependencies: {},
   features: ['authentication', 'database', 'validation', 'logging', 'testing'],

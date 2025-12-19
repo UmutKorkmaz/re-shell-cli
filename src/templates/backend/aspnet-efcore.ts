@@ -8,7 +8,7 @@ export const aspnetEFCoreTemplate: BackendTemplate = {
   language: 'csharp',
   framework: 'aspnet-efcore',
   version: '1.0.0',
-  tags: ['aspnet', 'efcore', 'migrations', 'database', 'orm'],
+  tags: ['aspnet', 'efcore', 'migrations', 'database', 'database'],
   port: 5000,
   dependencies: {},
   features: ['authentication', 'database', 'validation', 'logging', 'testing'],
@@ -159,10 +159,9 @@ builder.Services.AddSwaggerGen(c =>
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 },
-                Scheme = "oauth2",
+                Scheme = "authorization",
                 Name = "Bearer",
-                In = ParameterLocation.Header,
-            },
+                In = ParameterLocation.Header},
             new List<string>()
         }
     });

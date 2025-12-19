@@ -255,7 +255,6 @@ export default defineAppConfig({
   authors: [
     {
       name: '${this.context.team || this.context.org}',
-      url: '${this.context.repository || ''}',
     }
   ]
 });

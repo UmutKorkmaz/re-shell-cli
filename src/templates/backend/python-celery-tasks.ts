@@ -150,8 +150,7 @@ app.conf.task_queues = (
 app.conf.task_annotations = {
     '*': {'rate_limit': '10/s'},
     'tasks.email_tasks.*': {'rate_limit': '5/s'},
-    'tasks.data_tasks.*': {'time_limit': 600},
-}
+    'tasks.data_tasks.*': {'time_limit': 600}}
 
 ${config.enableMonitoring ? this.generateMonitoringSignals() : ''}
 
@@ -1857,8 +1856,7 @@ class WorkerManager:
         # Set options
         options = {
             'loglevel': loglevel,
-            'pool': pool,
-        }
+            'pool': pool}
         
         if queues:
             options['queues'] = ','.join(queues)
@@ -3166,8 +3164,7 @@ app.conf.task_routes = {
     'tasks.data_tasks.*': {'queue': 'data_processing'},
     'tasks.notification_tasks.*': {'queue': 'notifications'},
     'tasks.monitoring.*': {'queue': 'monitoring'},
-    'tasks.scheduled.*': {'queue': 'default'},
-}
+    'tasks.scheduled.*': {'queue': 'default'}}
 
 # Priority routing
 app.conf.task_route = {

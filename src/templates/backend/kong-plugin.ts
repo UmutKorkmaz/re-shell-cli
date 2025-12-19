@@ -47,8 +47,7 @@ build = {
     ["kong.plugins.myplugin.daos"] = "kong/plugins/myplugin/daos.lua",
     ["kong.plugins.myplugin.migrations.init"] = "kong/plugins/myplugin/migrations/init.lua",
     ["kong.plugins.myplugin.migrations.000_base"] = "kong/plugins/myplugin/migrations/000_base.lua",
-    ["kong.plugins.myplugin.migrations.001_add_ttl"] = "kong/plugins/myplugin/migrations/001_add_ttl.lua",
-  }
+    ["kong.plugins.myplugin.migrations.001_add_ttl"] = "kong/plugins/myplugin/migrations/001_add_ttl.lua"}
 }
 `,
 
@@ -59,8 +58,7 @@ local cjson = require "cjson"
 
 local MyPlugin = {
   PRIORITY = 1000, -- Plugin execution priority
-  VERSION = "0.1.0",
-}
+  VERSION = "0.1.0"}
 
 -- Constructor
 function MyPlugin:new()
@@ -276,8 +274,7 @@ return {
               type = "record",
               fields = {
                 { add_timestamp = { type = "boolean", default = false } },
-                { add_request_id = { type = "boolean", default = false } },
-              }
+                { add_request_id = { type = "boolean", default = false } }}
           }},
           
           -- Response transformation
@@ -292,8 +289,7 @@ return {
           { enable_logging = { type = "boolean", default = true } },
           { log_to_redis = { type = "boolean", default = false } },
           { redis_host = { type = "string", default = "localhost" } },
-          { redis_port = { type = "number", default = 6379 } },
-        },
+          { redis_port = { type = "number", default = 6379 } }},
         entity_checks = {
           -- Custom validation logic
           { conditional = {
@@ -307,11 +303,8 @@ return {
               if_match = { eq = true },
               then_field = "redis_host",
               then_match = { required = true }
-          }},
-        }
-    }},
-  },
-}
+          }}}
+    }}}}
 `,
 
     // Plugin API endpoints
@@ -390,9 +383,7 @@ return {
       { consumer = { type = "foreign", reference = "consumers", required = true, on_delete = "cascade" } },
       { token = { type = "string", required = true, unique = true, auto = true } },
       { description = { type = "string" } },
-      { ttl = { type = "number", default = 3600 } },
-    },
-  },
+      { ttl = { type = "number", default = 3600 } }}},
   
   myplugin_logs = {
     name = "myplugin_logs",
@@ -411,16 +402,13 @@ return {
       { latency = { type = "number" } },
       { client_ip = { type = "string" } },
       { ttl = { type = "number", default = 604800 } }, -- 7 days
-    },
-  },
-}
+    }}}
 `,
 
     // Migrations
     'kong/plugins/myplugin/migrations/init.lua': `return {
   "000_base",
-  "001_add_ttl",
-}
+  "001_add_ttl"}
 `,
 
     'kong/plugins/myplugin/migrations/000_base.lua': `return {
@@ -455,8 +443,7 @@ return {
       
       CREATE INDEX IF NOT EXISTS myplugin_logs_request_id_idx ON myplugin_logs(request_id);
       CREATE INDEX IF NOT EXISTS myplugin_logs_created_at_idx ON myplugin_logs(created_at);
-    ]],
-  },
+    ]]},
   
   cassandra = {
     up = [[
@@ -488,9 +475,7 @@ return {
       );
       
       CREATE INDEX IF NOT EXISTS ON myplugin_logs(request_id);
-    ]],
-  },
-}
+    ]]}}
 `,
 
     'kong/plugins/myplugin/migrations/001_add_ttl.lua': `return {
@@ -498,16 +483,13 @@ return {
     up = [[
       ALTER TABLE myplugin_credentials ADD COLUMN IF NOT EXISTS ttl integer DEFAULT 3600;
       ALTER TABLE myplugin_logs ADD COLUMN IF NOT EXISTS ttl integer DEFAULT 604800;
-    ]],
-  },
+    ]]},
   
   cassandra = {
     up = [[
       ALTER TABLE myplugin_credentials ADD ttl int;
       ALTER TABLE myplugin_logs ADD ttl int;
-    ]],
-  },
-}
+    ]]}}
 `,
 
     // Test specs
@@ -623,22 +605,19 @@ for _, strategy in helpers.each_strategy() do
     local bp = helpers.get_db_utils(strategy, {
       "routes",
       "services",
-      "plugins",
-    })
+      "microservices"})
     
     setup(function()
       -- Create test route and service
       local service = bp.services:insert({
         protocol = "http",
         port = 80,
-        host = "httpbin.org",
-      })
+        host = "httpbin.org"})
       
       local route = bp.routes:insert({
         protocols = { "http" },
         paths = { "/test" },
-        service = { id = service.id },
-      })
+        service = { id = service.id }})
       
       -- Add plugin to route
       bp.plugins:insert({
@@ -651,14 +630,12 @@ for _, strategy in helpers.each_strategy() do
           add_headers = {
             ["X-MyPlugin"] = "enabled"
           }
-        },
-      })
+        }})
       
       assert(helpers.start_kong({
         database = strategy,
         nginx_conf = "spec/fixtures/custom_nginx.template",
-        plugins = "bundled," .. PLUGIN_NAME,
-      }))
+        plugins = "bundled," .. PLUGIN_NAME}))
     end)
     
     teardown(function()
@@ -677,8 +654,7 @@ for _, strategy in helpers.each_strategy() do
       it("adds configured headers", function()
         local res = assert(client:send({
           method = "GET",
-          path = "/test",
-        }))
+          path = "/test"}))
         
         assert.response(res).has.status(200)
         assert.request(res).has.header("X-MyPlugin", "enabled")
@@ -689,16 +665,14 @@ for _, strategy in helpers.each_strategy() do
         for i = 1, 5 do
           local res = assert(client:send({
             method = "GET",
-            path = "/test",
-          }))
+            path = "/test"}))
           assert.response(res).has.status(200)
         end
         
         -- Next request should be rate limited
         local res = assert(client:send({
           method = "GET",
-          path = "/test",
-        }))
+          path = "/test"}))
         assert.response(res).has.status(429)
         local body = assert.response(res).has.jsonbody()
         assert.equal("Rate limit exceeded", body.message)
@@ -713,9 +687,7 @@ end
   default = {
     verbose = true,
     coverage = false,
-    output = "gtest",
-  },
-}
+    output = "gtest"}}
 `,
 
     '.luacheckrc': `std = "ngx_lua"
@@ -729,13 +701,11 @@ globals = {
   "ngx.location",
   "ngx.socket",
   "ngx.req",
-  "ngx.ctx",
-}
+  "ngx.ctx"}
 
 not_globals = {
   "string.len",
-  "table.getn",
-}
+  "table.getn"}
 
 ignore = {
   "6.", -- ignore whitespace warnings
@@ -743,8 +713,7 @@ ignore = {
 
 exclude_files = {
   "spec/fixtures/**/*.lua",
-  ".luarocks/**/*.lua",
-}
+  ".luarocks/**/*.lua"}
 `,
 
     'Makefile': `.PHONY: install test lint clean package deploy

@@ -9,7 +9,7 @@ export const micronautTemplate: BackendTemplate = {
   framework: 'micronaut',
   language: 'java',
   port: 8080,
-  tags: ['microservices', 'cloud-native', 'reactive', 'dependency-injection', 'aop'],
+  tags: ['microservices', 'cloud-native', 'reactive', 'middleware', 'aop'],
   features: [
     'authentication',
     'authorization',

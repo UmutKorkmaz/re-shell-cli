@@ -296,7 +296,7 @@ export default defineUserConfig({
     importCode: {
       handleImportPath: (importPath: string) => {
         // Transform import path for code blocks
-        return importPath.replace(/^@/, path.resolve(__dirname, '../../'));
+        return importPath.replace(/^@/, require('path').resolve(__dirname, '../../'));
       },
     },
   },
@@ -315,8 +315,8 @@ export default defineUserConfig({
         jsx: 'preserve',
         jsxImportSource: 'vue',
         paths: {
-          '@': path.resolve(__dirname, '../../'),
-          '@theme': path.resolve(__dirname, '../../client/theme-default'),
+          '@': ['./src'],
+          '@theme': ['./client/theme-default'],
         }
       },
       include: ['**/*.ts', '**/*.vue', '**/*.d.ts'],

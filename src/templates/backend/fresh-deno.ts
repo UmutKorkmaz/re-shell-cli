@@ -8,10 +8,10 @@ export const freshDenoTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'fresh',
   version: '1.0.0',
-  tags: ['deno', 'fresh', 'typescript', 'ssr', 'islands', 'pwa', 'full-stack'],
+  tags: ['deno', 'fresh', 'typescript', 'rest-api', 'websockets', 'pwa', 'full-stack'],
   port: 8000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'ssr', 'islands'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'rest-api', 'websockets'],
 
   files: {
     // Import map for Deno
@@ -64,8 +64,7 @@ await start(manifest, { port: config.port });
 import { defineConfig } from "$fresh/server.ts";
 
 export default defineConfig({
-  plugins: [tailwind()],
-});
+  plugins: [tailwind()]});
 `,
 
     // Configuration
@@ -78,8 +77,7 @@ export default defineConfig({
   jwtExpiration: Deno.env.get("JWT_EXPIRATION") || "7d",
 
   // Database
-  dbPath: Deno.env.get("DB_PATH") || "./data/db.json",
-};
+  dbPath: Deno.env.get("DB_PATH") || "./data/db.json"};
 
 export { config };
 `,
@@ -123,8 +121,7 @@ class InMemoryDatabase {
       name: "Admin User",
       role: "admin",
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+      updatedAt: new Date().toISOString()});
 
     // Create sample products
     this.products.push(
@@ -135,8 +132,7 @@ class InMemoryDatabase {
         price: 29.99,
         stock: 100,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
+        updatedAt: new Date().toISOString()},
       {
         id: "2",
         name: "Sample Product 2",
@@ -144,8 +140,7 @@ class InMemoryDatabase {
         price: 49.99,
         stock: 50,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
+        updatedAt: new Date().toISOString()}
     );
 
     console.log("✅ Database initialized");
@@ -186,8 +181,7 @@ class InMemoryDatabase {
       password: hashedPassword,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     this.users.push(newUser);
     return { ...newUser, password: "" };
   }
@@ -207,8 +201,7 @@ class InMemoryDatabase {
     this.users[index] = {
       ...this.users[index],
       ...updates,
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     return { ...this.users[index], password: "" };
   }
 
@@ -233,8 +226,7 @@ class InMemoryDatabase {
       ...product,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     this.products.push(newProduct);
     return newProduct;
   }
@@ -246,8 +238,7 @@ class InMemoryDatabase {
     this.products[index] = {
       ...this.products[index],
       ...updates,
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     return this.products[index];
   }
 
@@ -372,8 +363,7 @@ export function requireAuth() {
     if (!ctx.state.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
     return ctx.next();
   };
@@ -384,14 +374,12 @@ export function requireRole(...roles: string[]) {
     if (!ctx.state.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
     if (!roles.includes(ctx.state.user.role)) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
     return ctx.next();
   };
@@ -416,8 +404,7 @@ export const handler = {
     }
 
     return new Response("Not Found", { status: 404 });
-  },
-};
+  }};
 
 async function handleLogin(req: Request) {
   try {
@@ -427,23 +414,20 @@ async function handleLogin(req: Request) {
     if (!email || !password) {
       return new Response(JSON.stringify({ error: "Email and password required" }), {
         status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
 
     const user = await db.verifyUser(email, password);
     if (!user) {
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
         status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
 
     const token = await createToken({
       sub: user.id,
       email: user.email,
-      role: user.role,
-    });
+      role: user.role});
 
     return new Response(JSON.stringify({
       token,
@@ -451,17 +435,13 @@ async function handleLogin(req: Request) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
-      },
-    }), {
+        role: user.role}}), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { "Content-Type": "application/json" }});
   } catch (error) {
     return new Response(JSON.stringify({ error: "Invalid request" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { "Content-Type": "application/json" }});
   }
 }
 
@@ -473,37 +453,32 @@ async function handleRegister(req: Request) {
     if (!email || !password || !name) {
       return new Response(JSON.stringify({ error: "Email, password, and name required" }), {
         status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
 
     if (password.length < 6) {
       return new Response(JSON.stringify({ error: "Password must be at least 6 characters" }), {
         status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
 
     const existingUser = db.getUserByEmail(email);
     if (existingUser) {
       return new Response(JSON.stringify({ error: "Email already registered" }), {
         status: 409,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
 
     const user = await db.createUser({
       email,
       password,
       name,
-      role: "user",
-    });
+      role: "user"});
 
     const token = await createToken({
       sub: user.id,
       email: user.email,
-      role: user.role,
-    });
+      role: user.role});
 
     return new Response(JSON.stringify({
       token,
@@ -511,17 +486,13 @@ async function handleRegister(req: Request) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
-      },
-    }), {
+        role: user.role}}), {
       status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { "Content-Type": "application/json" }});
   } catch (error) {
     return new Response(JSON.stringify({ error: "Invalid request" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { "Content-Type": "application/json" }});
   }
 }
 `,
@@ -543,25 +514,21 @@ export const handler = {
       if (!product) {
         return new Response(JSON.stringify({ error: "Product not found" }), {
           status: 404,
-          headers: { "Content-Type": "application/json" },
-        });
+          headers: { "Content-Type": "application/json" }});
       }
       return new Response(JSON.stringify({ product }), {
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
 
     // List all products
     const products = db.getProducts();
     return new Response(JSON.stringify({ products, count: products.length }), {
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { "Content-Type": "application/json" }});
   },
 
   async POST(req: Request, ctx: HandlerContext<undefined, AuthState>) {
     return requireRole("admin")(req, ctx);
-  },
-};
+  }};
 
 export const handlerWithAuth = requireAuth()(async (req: Request, ctx: HandlerContext<undefined, AuthState>) => {
   const url = new URL(req.url);
@@ -575,13 +542,11 @@ export const handlerWithAuth = requireAuth()(async (req: Request, ctx: HandlerCo
       name,
       description,
       price: Number(price),
-      stock: Number(stock) || 0,
-    });
+      stock: Number(stock) || 0});
 
     return new Response(JSON.stringify({ product }), {
       status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { "Content-Type": "application/json" }});
   }
 
   if (req.method === "PUT") {
@@ -591,13 +556,11 @@ export const handlerWithAuth = requireAuth()(async (req: Request, ctx: HandlerCo
     if (!product) {
       return new Response(JSON.stringify({ error: "Product not found" }), {
         status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
 
     return new Response(JSON.stringify({ product }), {
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { "Content-Type": "application/json" }});
   }
 
   if (req.method === "DELETE") {
@@ -605,8 +568,7 @@ export const handlerWithAuth = requireAuth()(async (req: Request, ctx: HandlerCo
     if (!deleted) {
       return new Response(JSON.stringify({ error: "Product not found" }), {
         status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
     return new Response(null, { status: 204 });
   }
@@ -624,8 +586,7 @@ import { requireAuth, requireRole } from "../../middleware/auth.ts";
 export const handler = {
   GET: (req: Request, ctx: HandlerContext<undefined, AuthState>) => {
     return requireRole("admin")(req, ctx);
-  },
-};
+  }};
 
 export const handlerWithAuth = requireAuth()(async (req: Request, ctx: HandlerContext<undefined, AuthState>) => {
   const url = new URL(req.url);
@@ -636,19 +597,16 @@ export const handlerWithAuth = requireAuth()(async (req: Request, ctx: HandlerCo
     if (!user) {
       return new Response(JSON.stringify({ error: "User not found" }), {
         status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" }});
     }
     return new Response(JSON.stringify({ user }), {
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { "Content-Type": "application/json" }});
   }
 
   // List all users (admin only)
   const users = db.getUsers();
   return new Response(JSON.stringify({ users, count: users.length }), {
-    headers: { "Content-Type": "application/json" },
-  });
+    headers: { "Content-Type": "application/json" }});
 });
 `,
 
@@ -656,10 +614,8 @@ export const handlerWithAuth = requireAuth()(async (req: Request, ctx: HandlerCo
     'routes/api/health.ts': `export const handler = () => {
   return new Response(JSON.stringify({
     status: "healthy",
-    timestamp: new Date().toISOString(),
-  }), {
-    headers: { "Content-Type": "application/json" },
-  });
+    timestamp: new Date().toISOString()}), {
+    headers: { "Content-Type": "application/json" }});
 };
 `,
 
@@ -961,7 +917,7 @@ Fresh is a modern web framework that provides:
 
 Fresh uses islands architecture where:
 - Most of the page is server-rendered (no JS sent to client)
-- Interactive parts are "islands" that hydrate independently
+- Interactive parts are  that hydrate independently
 - Better performance and progressive enhancement
 
 ## Docker

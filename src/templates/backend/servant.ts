@@ -1072,32 +1072,25 @@ All notable changes to this project will be documented in this file.
 - CORS middleware support
 - Docker configuration
 - Test suite with hspec-wai
-`,
-  },
+`},
   prompts: [
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: 'my-servant-app',
-    },
+      default: 'my-servant-app'},
     {
       type: 'input',
       name: 'description',
       message: 'Project description:',
-      default: 'A Haskell web application built with Servant',
-    },
+      default: 'A Haskell web application built with Servant'},
     {
       type: 'input',
       name: 'author',
       message: 'Author:',
-      default: 'Developer',
-    },
-  ],
+      default: 'Developer'}],
   postInstall: [
     'stack setup',
     'stack build',
     'echo "✨ {{projectName}} is ready!"',
-    'echo "Run: stack run"',
-  ],
-};
+    'echo "Run: stack run"']};

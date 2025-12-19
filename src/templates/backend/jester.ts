@@ -9,7 +9,7 @@ export const jesterTemplate: BackendTemplate = {
   displayName: 'Jester (Nim)',
   language: 'nim',
   port: 5000,
-  tags: ['nim', 'jester', 'web', 'api', 'rest', 'async'],
+  tags: ['nim', 'jester', 'web', 'api', 'rest'],
   features: ['routing', 'middleware', 'rest-api', 'logging', 'cors', 'validation'],
   dependencies: {},
   devDependencies: {},
@@ -674,31 +674,24 @@ docker-compose up -d
 ## License
 
 MIT
-`,
-  },
+`},
   prompts: [
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: 'my-jester-app',
-    },
+      default: 'my-jester-app'},
     {
       type: 'input',
       name: 'description',
       message: 'Project description:',
-      default: 'A Nim web application built with Jester',
-    },
+      default: 'A Nim web application built with Jester'},
     {
       type: 'input',
       name: 'author',
       message: 'Author:',
-      default: 'Developer',
-    },
-  ],
+      default: 'Developer'}],
   postInstall: [
     'nimble install -y',
     'echo "✨ {{projectName}} is ready!"',
-    'echo "Run: nimble run"',
-  ],
-};
+    'echo "Run: nimble run"']};

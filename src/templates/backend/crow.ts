@@ -8,7 +8,7 @@ export const crowTemplate: BackendTemplate = {
   framework: 'crow',
   language: 'cpp',
   version: '1.0.0',
-  tags: ['cpp', 'crow', 'api', 'rest', 'microframework', 'header-only', 'async'],
+  tags: ['cpp', 'crow', 'api', 'rest', 'microframework', 'header-only'],
   port: 8080,
   features: ['routing', 'middleware', 'validation', 'file-upload', 'websockets', 'testing', 'docker', 'cors', 'logging'],
   dependencies: {},

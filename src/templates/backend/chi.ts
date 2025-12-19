@@ -171,9 +171,7 @@ func main() {
 		TimeFieldFormat:  time.RFC3339,
 		Tags: map[string]string{
 			"version": "1.0.0",
-			"env":     cfg.Environment,
-		},
-	})))
+			"env":     cfg.Environment}})))
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
 	r.Use(chiMiddleware.Compress(5))
@@ -183,8 +181,7 @@ func main() {
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "X-Request-ID"},
 		ExposedHeaders:   []string{"Link", "X-Request-ID"},
 		AllowCredentials: true,
-		MaxAge:           300,
-	}))
+		MaxAge:           300}))
 	r.Use(middleware.RateLimiter(cfg))
 	r.Use(chiMiddleware.Heartbeat("/ping"))
 
@@ -231,8 +228,7 @@ func main() {
 		Handler:      r,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
+		IdleTimeout:  60 * time.Second}
 
 	// Start server in goroutine
 	go func() {
@@ -269,8 +265,7 @@ func setupLogger(cfg *config.Config) {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 		log.Logger = log.Output(zerolog.ConsoleWriter{
 			Out:        os.Stdout,
-			TimeFormat: time.RFC3339,
-		})
+			TimeFormat: time.RFC3339})
 	}
 }
 `,
@@ -349,8 +344,7 @@ func New() *Config {
 		
 		// Logging
 		LogLevel: getEnv("LOG_LEVEL", "info"),
-		LogJSON:  getEnvAsBool("LOG_JSON", false),
-	}
+		LogJSON:  getEnvAsBool("LOG_JSON", false)}
 }
 
 func getEnv(key, defaultValue string) string {
@@ -418,8 +412,7 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 		NowFunc: func() time.Time {
 			return time.Now().UTC()
 		},
-		PrepareStmt: true,
-	}
+		PrepareStmt: true}
 	
 	if cfg.Environment == "development" {
 		gormConfig.Logger = logger.Default.LogMode(logger.Info)
@@ -549,8 +542,7 @@ func (u *User) ToResponse() UserResponse {
 		Role:      u.Role,
 		Active:    u.Active,
 		Verified:  u.Verified,
-		CreatedAt: u.CreatedAt,
-	}
+		CreatedAt: u.CreatedAt}
 }
 `,
 
@@ -744,8 +736,7 @@ func NewHandler(db *gorm.DB, cfg *config.Config) *Handler {
 	return &Handler{
 		db:       db,
 		cfg:      cfg,
-		validate: v,
-	}
+		validate: v}
 }
 
 // Custom validation functions
@@ -794,16 +785,14 @@ func (h *Handler) respondWithValidationError(w http.ResponseWriter, r *http.Requ
 		for _, e := range validationErrors {
 			details = append(details, ValidationError{
 				Field:   e.Field(),
-				Message: h.getErrorMessage(e),
-			})
+				Message: h.getErrorMessage(e)})
 		}
 	}
 	
 	render.Status(r, http.StatusBadRequest)
 	render.JSON(w, r, ErrorResponse{
 		Error:   "Validation failed",
-		Details: details,
-	})
+		Details: details})
 }
 
 func (h *Handler) getErrorMessage(e validator.FieldError) string {
@@ -889,8 +878,7 @@ func (h *Handler) paginate(query *gorm.DB, page, limit int, result interface{}) 
 		Limit:      limit,
 		TotalPages: totalPages,
 		HasNext:    page < totalPages,
-		HasPrev:    page > 1,
-	}, nil
+		HasPrev:    page > 1}, nil
 }
 `,
 
@@ -940,8 +928,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		Email:     req.Email,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
-		Phone:     req.Phone,
-	}
+		Phone:     req.Phone}
 
 	if err := user.SetPassword(req.Password); err != nil {
 		log.Error().Err(err).Msg("Failed to hash password")
@@ -1091,8 +1078,7 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	log.Info().Uint("user_id", user.ID).Msg("Password changed")
 
 	render.JSON(w, r, map[string]string{
-		"message": "Password changed successfully",
-	})
+		"message": "Password changed successfully"})
 }
 `,
 
@@ -1496,8 +1482,7 @@ func (h *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		Brand:       req.Brand,
 		Weight:      req.Weight,
 		Dimensions:  req.Dimensions,
-		Active:      true,
-	}
+		Active:      true}
 
 	if err := h.db.Create(&product).Error; err != nil {
 		log.Error().Err(err).Msg("Failed to create product")
@@ -1887,8 +1872,7 @@ func ValidateJWT(tokenString, secret string) (*JWTClaims, error) {
 	return &JWTClaims{
 		UserID: uid,
 		Email:  email.(string),
-		Role:   role.(string),
-	}, nil
+		Role:   role.(string)}, nil
 }
 `,
 

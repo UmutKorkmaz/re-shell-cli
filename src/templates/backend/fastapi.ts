@@ -8,10 +8,10 @@ export const fastapiTemplate: BackendTemplate = {
   language: 'python',
   framework: 'fastapi',
   version: '0.111.0',
-  tags: ['python', 'fastapi', 'api', 'rest', 'async', 'openapi', 'type-hints'],
+  tags: ['python', 'fastapi', 'api', 'rest', 'swagger', 'type-hints'],
   port: 8000,
   dependencies: {},
-  features: ['async', 'openapi', 'websocket', 'graphql', 'authentication', 'orm', 'validation', 'testing'],
+  features: [, 'swagger', 'websockets', 'graphql', 'authentication', 'database', 'validation', 'testing'],
   
   files: {
     // Python project configuration
@@ -36,7 +36,7 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-multipart = "^0.0.9"
 email-validator = "^2.1.1"
 redis = {extras = ["hiredis"], version = "^5.0.3"}
-celery = {extras = ["redis"], version = "^5.3.6"}
+celery = {extras = ["caching"], version = "^5.3.6"}
 httpx = "^0.27.0"
 aiofiles = "^23.2.1"
 python-dotenv = "^1.0.1"
@@ -56,7 +56,7 @@ orjson = "^3.10.0"
 pydantic-extra-types = "^2.7.0"
 pendulum = "^3.0.0"
 python-socketio = "^5.11.2"
-broadcaster = {extras = ["redis"], version = "^0.2.0"}
+broadcaster = {extras = ["caching"], version = "^0.2.0"}
 pillow = "^10.3.0"
 python-magic = "^0.4.27"
 minio = "^7.2.5"
@@ -118,8 +118,7 @@ addopts = "-ra -q --strict-markers"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-]
+    "unit: marks tests as unit tests"]
 
 [tool.coverage.run]
 source = ["app"]
@@ -306,8 +305,7 @@ async def root():
         "message": f"Welcome to {settings.APP_NAME}",
         "version": settings.APP_VERSION,
         "docs": f"{settings.API_PREFIX}/docs",
-        "health": "/health",
-    }
+        "health": "/health"}
 
 
 @app.get("/health", tags=["health"])
@@ -316,8 +314,7 @@ async def health_check():
     return {
         "status": "healthy",
         "environment": settings.ENVIRONMENT,
-        "version": settings.APP_VERSION,
-    }
+        "version": settings.APP_VERSION}
 
 
 if __name__ == "__main__":
@@ -482,8 +479,7 @@ convention = {
     "uq": "uq_%(table_name)s_%(column_0_name)s",
     "ck": "ck_%(table_name)s_%(constraint_name)s",
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s",
-}
+    "pk": "pk_%(table_name)s"}
 
 metadata = MetaData(naming_convention=convention)
 
@@ -591,8 +587,7 @@ def create_access_token(
     to_encode = {
         "exp": expire,
         "sub": str(subject),
-        "type": "access",
-    }
+        "type": "access"}
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
@@ -612,8 +607,7 @@ def create_refresh_token(
     to_encode = {
         "exp": expire,
         "sub": str(subject),
-        "type": "refresh",
-    }
+        "type": "refresh"}
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
@@ -651,7 +645,7 @@ api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(todos.router, prefix="/todos", tags=["todos"])
-api_router.include_router(websocket.router, prefix="/ws", tags=["websocket"])`,
+api_router.include_router(websocket.router, prefix="/ws", tags=["websockets"])`,
 
     // Health endpoint
     'app/api/api_v1/endpoints/__init__.py': '',
@@ -678,8 +672,7 @@ async def health_check(
     health_status = {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "services": {},
-    }
+        "services": {}}
     
     # Check database
     try:
@@ -693,12 +686,12 @@ async def health_check(
     try:
         if redis:
             await redis.ping()
-            health_status["services"]["redis"] = "healthy"
+            health_status["services"]["caching"] = "healthy"
         else:
-            health_status["services"]["redis"] = "not configured"
+            health_status["services"]["caching"] = "not configured"
     except Exception as e:
         health_status["status"] = "degraded"
-        health_status["services"]["redis"] = f"unhealthy: {str(e)}"
+        health_status["services"]["caching"] = f"unhealthy: {str(e)}"
     
     return health_status
 
@@ -785,8 +778,7 @@ async def login(
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "token_type": "bearer",
-    }
+        "token_type": "bearer"}
 
 
 @router.post("/refresh", response_model=schemas.TokenRefresh)
@@ -1090,8 +1082,7 @@ __all__ = [
     "TodoListResponse",
     "UserCreate",
     "UserUpdate",
-    "UserResponse",
-]`,
+    "UserResponse"]`,
 
     'app/schemas/user.py': `from typing import Optional
 
@@ -1427,8 +1418,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
                     if conn != websocket:
                         await conn.send_json({
                             "type": "message",
-                            "data": message["data"],
-                        })
+                            "data": message["data"]})
             
     except WebSocketDisconnect:
         # Remove connection on disconnect
@@ -1833,6 +1823,4 @@ poetry run bandit -r app/
 ## License
 
 MIT
-`,
-  },
-};
+`}};

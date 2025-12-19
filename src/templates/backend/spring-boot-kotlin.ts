@@ -11,7 +11,7 @@ export const springBootKotlinTemplate: BackendTemplate = {
   tags: ['kotlin', 'spring-boot', 'enterprise', 'microservices', 'jwt', 'security'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websocket'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websockets'],
 
   files: {
     // Gradle build file

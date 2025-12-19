@@ -8,10 +8,10 @@ export const hummingbirdTemplate: BackendTemplate = {
   language: 'swift',
   framework: 'hummingbird',
   version: '1.10.0',
-  tags: ['swift', 'hummingbird', 'api', 'rest', 'swiftnio', 'lightweight', 'async'],
+  tags: ['swift', 'hummingbird', 'api', 'rest', 'swiftnio', 'lightweight'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'middleware', 'logging', 'cors', 'compression', 'websocket'],
+  features: ['authentication', 'middleware', 'logging', 'cors', 'compression', 'websockets'],
   
   files: {
     // Swift Package Manager configuration
@@ -21,11 +21,9 @@ import PackageDescription
 let package = Package(
     name: "{{projectName}}",
     platforms: [
-        .macOS(.v14),
-    ],
+        .macOS(.v14)],
     products: [
-        .executable(name: "{{projectName}}", targets: ["{{projectName}}"]),
-    ],
+        .executable(name: "{{projectName}}", targets: ["{{projectName}}"])],
     dependencies: [
         // Hummingbird
         .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "1.10.0"),
@@ -50,8 +48,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3"),
         
         // Argument Parser
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.3"),
-    ],
+        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.3")],
     targets: [
         .executableTarget(
             name: "{{projectName}}",
@@ -66,22 +63,19 @@ let package = Package(
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
                 .product(name: "FluentMySQLDriver", package: "fluent-mysql-driver"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-                .product(name: "JWT", package: "jwt"),
+                .product(name: "JWT", package: "authentication"),
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-            ],
+                .product(name: "ArgumentParser", package: "swift-argument-parser")],
             path: "Sources/{{projectName}}"
         ),
         .testTarget(
             name: "{{projectName}}Tests",
             dependencies: [
                 .target(name: "{{projectName}}"),
-                .product(name: "HummingbirdXCT", package: "hummingbird"),
-            ],
+                .product(name: "HummingbirdXCT", package: "hummingbird")],
             path: "Tests/{{projectName}}Tests"
-        ),
-    ]
+        )]
 )`,
 
     // Main entry point
@@ -1559,6 +1553,4 @@ public/uploads/
 
 # IDE
 .vscode/
-.idea/`,
-  },
-};
+.idea/`}};

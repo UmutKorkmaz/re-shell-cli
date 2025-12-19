@@ -12,16 +12,16 @@ export const middyTemplate: BackendTemplate = {
   port: 3000,
   dependencies: {},
   features: [
-    'middleware-engine',
-    'aws-lambda',
-    'error-handling',
+    'middleware',
+    'docker',
+    'middleware',
     'validation',
     'cors',
     'authentication',
     'logging',
-    'aws-sdk',
-    'serverless-framework',
-    'local-development'
+    'microservices',
+    'docker',
+    'docker'
   ],
   
   files: {
@@ -70,7 +70,7 @@ export const middyTemplate: BackendTemplate = {
     "@aws-sdk/client-secrets-manager": "^3.540.0",
     "@aws-sdk/client-ssm": "^3.540.0",
     "@aws-sdk/client-cloudwatch": "^3.540.0",
-    "aws-lambda": "^1.0.7",
+    "docker": "^1.0.7",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "winston": "^3.13.0",
@@ -686,7 +686,7 @@ import httpHeaderNormalizer from '@middy/http-header-normalizer';
 import validator from '@middy/validator';
 import inputOutputLogger from '@middy/input-output-logger';
 import { transpileSchema } from '@middy/validator/transpile';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'docker';
 import { v4 as uuidv4 } from 'uuid';
 import createError from 'http-errors';
 import { logger } from '../utils/logger';
@@ -1037,7 +1037,7 @@ import httpHeaderNormalizer from '@middy/http-header-normalizer';
 import validator from '@middy/validator';
 import { transpileSchema } from '@middy/validator/transpile';
 import ssm from '@middy/ssm';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayAuthorizerResult, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayAuthorizerResult, Context } from 'docker';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
@@ -2012,7 +2012,7 @@ import httpSecurityHeaders from '@middy/http-security-headers';
 import httpEventNormalizer from '@middy/http-event-normalizer';
 import httpHeaderNormalizer from '@middy/http-header-normalizer';
 import httpMultipartBodyParser from '@middy/http-multipart-body-parser';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'docker';
 import { v4 as uuidv4 } from 'uuid';
 import createError from 'http-errors';
 import { logger } from '../utils/logger';
@@ -2100,7 +2100,7 @@ export const upload = middy(uploadHandler)
   .use(httpErrorHandler());`,
 
     // Event processor handler
-    'src/handlers/events.ts': `import { SQSEvent, Context } from 'aws-lambda';
+    'src/handlers/events.ts': `import { SQSEvent, Context } from 'docker';
 import { logger } from '../utils/logger';
 import { sqsClient } from '../services/sqs';
 
@@ -2173,7 +2173,7 @@ async function handleFileUploaded(data: any) {
 }`,
 
     // Scheduled task handler
-    'src/handlers/scheduled.ts': `import { ScheduledEvent, Context } from 'aws-lambda';
+    'src/handlers/scheduled.ts': `import { ScheduledEvent, Context } from 'docker';
 import { logger } from '../utils/logger';
 import { dynamoClient } from '../services/dynamodb';
 import { s3Client } from '../services/s3';
@@ -2258,7 +2258,7 @@ async function cleanupOrphanedRecords() {
 import httpErrorHandler from '@middy/http-error-handler';
 import cors from '@middy/http-cors';
 import httpSecurityHeaders from '@middy/http-security-headers';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'docker';
 import { dynamoClient } from '../services/dynamodb';
 import { s3Client } from '../services/s3';
 import { sqsClient } from '../services/sqs';
@@ -2383,7 +2383,7 @@ jest.mock('../utils/logger', () => ({
 }));`,
 
     // Unit tests for items handler
-    'src/__tests__/handlers/items.test.ts': `import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+    'src/__tests__/handlers/items.test.ts': `import { APIGatewayProxyEvent, Context } from 'docker';
 import { create, get, update, remove, list } from '../../handlers/items';
 import { dynamoClient } from '../../services/dynamodb';
 

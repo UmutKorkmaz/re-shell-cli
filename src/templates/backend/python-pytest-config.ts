@@ -59,20 +59,17 @@ def generate_fake_data(data_type: str = "user") -> Dict[str, Any]:
             "email": "test@example.com",
             "first_name": "Test",
             "last_name": "User",
-            "is_active": True,
-        },
+            "is_active": True},
         "post": {
             "id": "550e8400-e29b-41d4-a716-446655440001",
             "title": "Test Post",
             "content": "Test content",
-            "author_id": "550e8400-e29b-41d4-a716-446655440000",
-        },
+            "author_id": "550e8400-e29b-41d4-a716-446655440000"},
         "product": {
             "id": "550e8400-e29b-41d4-a716-446655440002",
             "name": "Test Product",
             "price": 99.99,
-            "description": "Test product description",
-        }
+            "description": "Test product description"}
     }
     return fake_data.get(data_type, {})
 
@@ -88,8 +85,7 @@ def random_test_data(length: int = 10) -> List[Dict[str, Any]]:
             "id": ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)),
             "name": f"Test Item {i}",
             "value": random.randint(1, 100),
-            "active": random.choice([True, False]),
-        })
+            "active": random.choice([True, False])})
     return data
 
 
@@ -103,8 +99,7 @@ class TestFactory:
         defaults = {
             "username": "testuser",
             "email": "test@example.com",
-            "is_active": True,
-        }
+            "is_active": True}
         defaults.update(kwargs)
         return defaults
     
@@ -116,8 +111,7 @@ class TestFactory:
             "email": "admin@example.com",
             "is_active": True,
             "is_admin": True,
-            "roles": ["admin", "user"],
-        }
+            "roles": ["admin", "user"]}
         defaults.update(kwargs)
         return defaults
     
@@ -127,8 +121,7 @@ class TestFactory:
         defaults = {
             "title": "Test Post",
             "content": "Test content",
-            "status": "published",
-        }
+            "status": "published"}
         defaults.update(kwargs)
         return defaults
 
@@ -138,8 +131,7 @@ def test_factory(object_type: str, **kwargs):
     factory_map = {
         "user": TestFactory.create_user,
         "admin": TestFactory.create_admin_user,
-        "post": TestFactory.create_post,
-    }
+        "post": TestFactory.create_post}
     
     factory_func = factory_map.get(object_type)
     if factory_func:
@@ -244,8 +236,7 @@ async def authenticate_test_user(client, username: str = "testuser", password: s
     """Authenticate test user and return token."""
     login_data = {
         "username": username,
-        "password": password,
-    }
+        "password": password}
     
     # This would be framework-specific implementation
     response = await client.post("/auth/login", json=login_data)
@@ -475,8 +466,7 @@ addopts = [
     "--disable-warnings",
     "-p no:warnings",
     "--maxfail=5",
-    "--verbose",
-]
+    "--verbose"]
 
 # Async testing configuration
 asyncio_mode = "auto"
@@ -503,8 +493,7 @@ markers = [
     "utils: Utility function tests",
     "mock: Tests using mocks/stubs",
     "parametrized: Parametrized tests with multiple inputs",
-    "fixture: Tests demonstrating fixture usage",
-]
+    "fixture: Tests demonstrating fixture usage"]
 
 # Test discovery patterns
 norecursedirs = [
@@ -524,8 +513,7 @@ norecursedirs = [
     "static",
     "media",
     "htmlcov",
-    ".coverage*",
-]
+    ".coverage*"]
 
 # Filter warnings
 filterwarnings = [
@@ -540,8 +528,7 @@ filterwarnings = [
     "ignore:.*django.*:DeprecationWarning",
     "ignore:.*flask.*:DeprecationWarning",
     "ignore:.*tornado.*:DeprecationWarning",
-    "ignore:.*sanic.*:DeprecationWarning",
-]
+    "ignore:.*sanic.*:DeprecationWarning"]
 
 # Logging configuration for tests
 log_auto_indent = true
@@ -560,7 +547,7 @@ timeout_method = "thread"
 
 [tool.coverage.run]
 # Coverage configuration
-source = ["app", "src", "api", "models", "schemas", "routers", "blueprints", "handlers", "middleware", "core"]
+source = ["app", "src", "api", "models", "schemas", "routers", "routing", "handlers", "middleware", "core"]
 branch = true
 parallel = true
 concurrency = ["thread", "multiprocessing"]
@@ -585,8 +572,7 @@ omit = [
     "conftest.py",
     "*/conftest.py",
     "*/settings/*",
-    "*/config/*",
-]
+    "*/config/*"]
 
 # Include/exclude patterns
 include = ["*/app/*", "*/src/*", "*/api/*"]
@@ -613,8 +599,7 @@ exclude_lines = [
     "except ImportError:",
     "except ModuleNotFoundError:",
     "pass",
-    "\\.\\.\\.",
-]
+    "\\.\\.\\."]
 
 show_missing = true
 skip_covered = false
@@ -679,8 +664,7 @@ test = [
     "httpx>=0.24.0",
     "aiohttp>=3.8.0",
     "psutil>=5.9.0",
-    "PyJWT>=2.6.0",
-]
+    "PyJWT>=2.6.0"]
 `;
   }
 
@@ -723,8 +707,7 @@ pytest_plugins = [
     "pytest_benchmark",
     "pytest_xdist",
     "pytest_timeout",
-    "pytest_html",
-]
+    "pytest_html"]
 
 # Environment setup
 os.environ.setdefault("TESTING", "1")
@@ -756,8 +739,7 @@ def test_config() -> Dict[str, Any]:
         "MAX_CONTENT_LENGTH": 16 * 1024 * 1024,  # 16MB
         "CORS_ORIGINS": ["http://localhost:3000"],
         "RATE_LIMIT": "100/minute",
-        "LOG_LEVEL": "DEBUG",
-    }
+        "LOG_LEVEL": "DEBUG"}
 
 
 @pytest.fixture(scope="function")
@@ -812,8 +794,7 @@ def sample_user_data() -> Dict[str, Any]:
         "roles": ["user"],
         "permissions": ["read", "write"],
         "created_at": "2024-01-01T12:00:00Z",
-        "updated_at": "2024-01-01T12:00:00Z",
-    }
+        "updated_at": "2024-01-01T12:00:00Z"}
 
 
 @pytest.fixture(scope="function")
@@ -833,8 +814,7 @@ def sample_post_data() -> Dict[str, Any]:
         "featured_image": "https://example.com/image.jpg",
         "published_at": "2024-01-01T12:00:00Z",
         "created_at": "2024-01-01T12:00:00Z",
-        "updated_at": "2024-01-01T12:00:00Z",
-    }
+        "updated_at": "2024-01-01T12:00:00Z"}
 
 
 @pytest.fixture(scope="function")
@@ -845,8 +825,7 @@ def sample_api_response() -> Dict[str, Any]:
         "data": {"message": "Operation successful"},
         "message": "Request completed successfully",
         "timestamp": "2024-01-01T12:00:00Z",
-        "request_id": "550e8400-e29b-41d4-a716-446655440003",
-    }
+        "request_id": "550e8400-e29b-41d4-a716-446655440003"}
 
 
 @pytest.fixture(scope="function")
@@ -858,8 +837,7 @@ def sample_pagination() -> Dict[str, Any]:
         "total": 100,
         "pages": 5,
         "has_next": True,
-        "has_prev": False,
-    }
+        "has_prev": False}
 
 
 @pytest.fixture(scope="function")
@@ -1047,8 +1025,7 @@ def mock_user():
         "first_name": "Test",
         "last_name": "User",
         "is_active": True,
-        "roles": ["user"],
-    }
+        "roles": ["user"]}
 
 
 @pytest.fixture(scope="function")
@@ -1189,8 +1166,7 @@ def benchmark_config():
         "min_time": 0.000005,
         "timer": "time.perf_counter",
         "disable_gc": True,
-        "warmup": True,
-    }
+        "warmup": True}
 
 
 class TestClient:
@@ -1247,8 +1223,7 @@ def api_error_test_cases():
         {"status_code": 403, "error_type": "AuthorizationError", "expected_fields": ["message"]},
         {"status_code": 404, "error_type": "NotFoundError", "expected_fields": ["message"]},
         {"status_code": 422, "error_type": "ValidationError", "expected_fields": ["message", "errors"]},
-        {"status_code": 500, "error_type": "InternalServerError", "expected_fields": ["message"]},
-    ]
+        {"status_code": 500, "error_type": "InternalServerError", "expected_fields": ["message"]}]
 
 
 @pytest.fixture(scope="session")
@@ -1259,8 +1234,7 @@ def pagination_test_cases():
         {"page": 1, "limit": 20, "total": 100, "expected_pages": 5},
         {"page": 2, "limit": 25, "total": 100, "expected_pages": 4},
         {"page": 1, "limit": 50, "total": 30, "expected_pages": 1},
-        {"page": 1, "limit": 10, "total": 0, "expected_pages": 0},
-    ]
+        {"page": 1, "limit": 10, "total": 0, "expected_pages": 0}]
 
 
 # Performance testing utilities
@@ -1292,8 +1266,7 @@ def performance_monitor():
             return {
                 "duration": end_time - self.start_time,
                 "memory_delta": end_memory - self.start_memory,
-                "cpu_usage": (self.start_cpu + end_cpu) / 2,
-            }
+                "cpu_usage": (self.start_cpu + end_cpu) / 2}
     
     return PerformanceMonitor()
 
@@ -1329,8 +1302,7 @@ def security_headers_check():
             "X-Frame-Options", 
             "X-XSS-Protection",
             "Strict-Transport-Security",
-            "Content-Security-Policy",
-        ]
+            "Content-Security-Policy"]
         
         missing_headers = []
         for header in security_headers:
@@ -1340,8 +1312,7 @@ def security_headers_check():
         return {
             "has_all_security_headers": len(missing_headers) == 0,
             "missing_headers": missing_headers,
-            "present_headers": [h for h in security_headers if h in response.headers],
-        }
+            "present_headers": [h for h in security_headers if h in response.headers]}
     
     return _check_security_headers
 
@@ -1592,8 +1563,7 @@ def dependency_overrides():
     return {
         "set": set_override,
         "get": get_overrides,
-        "clear": clear_overrides,
-    }
+        "clear": clear_overrides}
 
 
 # File upload testing
@@ -1608,8 +1578,7 @@ def test_upload_file():
     
     return {
         "file": ("test_file.txt", file_obj, "text/plain"),
-        "content": file_content,
-    }
+        "content": file_content}
 
 
 # API versioning testing
@@ -1656,8 +1625,7 @@ def event_recorder():
         events.append({
             "type": event_type,
             "data": data or {},
-            "timestamp": asyncio.get_event_loop().time(),
-        })
+            "timestamp": asyncio.get_event_loop().time()})
     
     def get_events():
         return events.copy()
@@ -1668,8 +1636,7 @@ def event_recorder():
     return {
         "record": record_event,
         "get": get_events,
-        "clear": clear_events,
-    }
+        "clear": clear_events}
 `;
   }
 
@@ -1956,8 +1923,7 @@ def call_command_capture():
         call_command(*args, **kwargs)
         return {
             'stdout': out.getvalue(),
-            'stderr': err.getvalue(),
-        }
+            'stderr': err.getvalue()}
     
     return _call_command
 
@@ -1974,8 +1940,7 @@ def signal_recorder():
         recorded_signals.append({
             'sender': sender,
             'signal': kwargs.get('signal'),
-            'instance': kwargs.get('instance'),
-        })
+            'instance': kwargs.get('instance')})
     
     # Connect to common signals
     signals.pre_save.connect(signal_handler)
@@ -2034,8 +1999,7 @@ def middleware_test_setup():
     return {
         "factory": factory,
         "get_response": get_response,
-        "create_request": create_request,
-    }
+        "create_request": create_request}
 `;
   }
 
@@ -2066,8 +2030,7 @@ def flask_app() -> Flask:
         'DATABASE_URL': f'sqlite:///{db_path}',
         'SECRET_KEY': 'test-secret-key',
         'WTF_CSRF_ENABLED': False,
-        'UPLOAD_FOLDER': tempfile.mkdtemp(),
-    })
+        'UPLOAD_FOLDER': tempfile.mkdtemp()})
     
     with app.app_context():
         from app.extensions import db
@@ -2211,8 +2174,7 @@ def form_data():
         'password': 'testpass123',
         'confirm_password': 'testpass123',
         'first_name': 'Test',
-        'last_name': 'User',
-    }
+        'last_name': 'User'}
 
 
 @pytest.fixture(scope="function")
@@ -2220,8 +2182,7 @@ def json_headers():
     """JSON request headers."""
     return {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    }
+        'Accept': 'application/json'}
 
 
 @pytest.fixture(scope="function")
@@ -2246,8 +2207,7 @@ def mock_session():
         'set': mock_session_set,
         'pop': mock_session_pop,
         'clear': mock_session_clear,
-        'data': session_data,
-    }
+        'data': session_data}
 
 
 # Flask-specific test utilities
@@ -2404,15 +2364,13 @@ def middleware_test_setup(flask_app: Flask):
             middleware_calls.append({
                 'function': f.__name__,
                 'args': args,
-                'kwargs': kwargs,
-            })
+                'kwargs': kwargs})
             return f(*args, **kwargs)
         return wrapper
     
     return {
         'track': track_middleware,
-        'calls': middleware_calls,
-    }
+        'calls': middleware_calls}
 
 
 # Signal testing (if Flask-SQLAlchemy is used)
@@ -2428,8 +2386,7 @@ def signal_recorder(app_context):
         recorded_events.append({
             'mapper': mapper,
             'target': target,
-            'event': 'after_insert',
-        })
+            'event': 'after_insert'})
     
     event.listen(db.Model, 'after_insert', record_event)
     
@@ -2528,8 +2485,7 @@ async def test_server(tornado_app: Application):
     yield {
         'server': server,
         'port': port,
-        'base_url': base_url,
-    }
+        'base_url': base_url}
     
     server.stop()
     await server.close_all_connections()
@@ -2617,8 +2573,7 @@ def sample_json_data():
         "name": "Test Item",
         "description": "This is a test item",
         "active": True,
-        "created_at": "2024-01-01T12:00:00Z",
-    }
+        "created_at": "2024-01-01T12:00:00Z"}
 
 
 # Tornado-specific test utilities
@@ -2720,8 +2675,7 @@ def mock_auth():
     auth_mock.authenticate.return_value = {
         "user_id": "550e8400-e29b-41d4-a716-446655440000",
         "username": "testuser",
-        "roles": ["user"],
-    }
+        "roles": ["user"]}
     auth_mock.generate_token.return_value = "test-jwt-token"
     auth_mock.verify_token.return_value = True
     
@@ -2765,8 +2719,7 @@ def test_file_upload():
         'filename': 'test_file.txt',
         'content_type': 'text/plain',
         'body': file_content,
-        'file_obj': file_obj,
-    }
+        'file_obj': file_obj}
 
 
 # Background task testing
@@ -2799,8 +2752,7 @@ def ioloop_test():
             'callback': callback,
             'args': args,
             'kwargs': kwargs,
-            'handle': handle,
-        })
+            'handle': handle})
         return handle
     
     original_call_later = ioloop.call_later
@@ -2808,8 +2760,7 @@ def ioloop_test():
     
     yield {
         'ioloop': ioloop,
-        'scheduled_callbacks': scheduled_callbacks,
-    }
+        'scheduled_callbacks': scheduled_callbacks}
     
     # Restore original method
     ioloop.call_later = original_call_later
@@ -2914,8 +2865,7 @@ def sanic_app() -> Sanic:
         'DATABASE_URL': 'sqlite:///:memory:',
         'REDIS_URL': 'redis://localhost:6379/15',
         'SECRET_KEY': 'test-secret-key',
-        'JWT_SECRET': 'test-jwt-secret',
-    })
+        'JWT_SECRET': 'test-jwt-secret'})
     
     return app
 
@@ -2959,8 +2909,7 @@ def test_user():
         'first_name': 'Test',
         'last_name': 'User',
         'is_active': True,
-        'roles': ['user'],
-    }
+        'roles': ['user']}
 
 
 @pytest.fixture(scope="function")
@@ -2973,8 +2922,7 @@ def admin_user():
         'first_name': 'Admin',
         'last_name': 'User',
         'is_active': True,
-        'roles': ['admin', 'user'],
-    }
+        'roles': ['admin', 'user']}
 
 
 @pytest.fixture(scope="function")
@@ -3014,8 +2962,7 @@ def sample_json_data():
         'name': 'Test Item',
         'description': 'This is a test item for Sanic',
         'active': True,
-        'tags': ['test', 'sanic', 'python'],
-    }
+        'tags': ['test', 'sanic', 'python']}
 
 
 @pytest.fixture(scope="function")
@@ -3025,8 +2972,7 @@ def sample_form_data():
         'username': 'testuser',
         'email': 'test@example.com',
         'password': 'testpass123',
-        'confirm_password': 'testpass123',
-    }
+        'confirm_password': 'testpass123'}
 
 
 # Sanic-specific test utilities
@@ -3181,14 +3127,12 @@ def middleware_recorder():
                 'name': name,
                 'method': request.method,
                 'path': request.path,
-                'timestamp': asyncio.get_event_loop().time(),
-            })
+                'timestamp': asyncio.get_event_loop().time()})
         return middleware
     
     return {
         'record': record_middleware,
-        'calls': middleware_calls,
-    }
+        'calls': middleware_calls}
 
 
 # Cache testing
@@ -3234,8 +3178,7 @@ def mock_task_queue():
             'name': task_name,
             'args': args,
             'kwargs': kwargs,
-            'status': 'pending',
-        })
+            'status': 'pending'})
         return task_id
     
     async def mock_get_task(task_id):
@@ -3265,8 +3208,7 @@ def test_file_upload():
         'name': 'test_file.txt',
         'type': 'text/plain',
         'body': file_content,
-        'file': file_obj,
-    }
+        'file': file_obj}
 
 
 # Rate limiting testing
@@ -3320,8 +3262,7 @@ def sanic_benchmark():
             return {
                 'duration': self.duration,
                 'requests': self.request_count,
-                'rps': self.requests_per_second,
-            }
+                'rps': self.requests_per_second}
         
         @property
         def duration(self):
@@ -3360,8 +3301,7 @@ def error_handler_test():
     
     return {
         'trigger': trigger_error,
-        'TestException': TestException,
-    }
+        'TestException': TestException}
 
 
 # Listener testing
@@ -3375,14 +3315,12 @@ def listener_recorder():
             listener_calls.append({
                 'event': event,
                 'app': app.name,
-                'timestamp': asyncio.get_event_loop().time(),
-            })
+                'timestamp': asyncio.get_event_loop().time()})
         return listener
     
     return {
         'record': record_listener,
-        'calls': listener_calls,
-    }
+        'calls': listener_calls}
 
 
 # Security testing
@@ -3401,16 +3339,14 @@ def security_test_utils():
                 'script': '<script>alert("XSS")</script>',
                 'sql': "'; DROP TABLE users; --",
                 'path_traversal': '../../../etc/passwd',
-                'command_injection': '; cat /etc/passwd',
-            }
+                'command_injection': '; cat /etc/passwd'}
         
         @staticmethod
         def assert_security_headers(response: HTTPResponse):
             security_headers = [
                 'X-Content-Type-Options',
                 'X-Frame-Options',
-                'X-XSS-Protection',
-            ]
+                'X-XSS-Protection']
             
             missing_headers = []
             for header in security_headers:
@@ -3419,8 +3355,7 @@ def security_test_utils():
             
             return {
                 'secure': len(missing_headers) == 0,
-                'missing': missing_headers,
-            }
+                'missing': missing_headers}
     
     return SecurityTestUtils()
 `;
@@ -3457,8 +3392,7 @@ class PytestConfigValidator:
             '[tool.pytest.ini_options]',
             '[tool.coverage.run]',
             '[tool.coverage.report]',
-            '[tool.pytest-benchmark]',
-        ]
+            '[tool.pytest-benchmark]']
         
         missing_sections = []
         for section in required_sections:
@@ -3474,8 +3408,7 @@ class PytestConfigValidator:
             'python_functions',
             'addopts',
             'markers',
-            'asyncio_mode',
-        ]
+            'asyncio_mode']
         
         missing_options = []
         for option in pytest_options:
@@ -3488,8 +3421,7 @@ class PytestConfigValidator:
             'branch',
             'omit',
             'exclude_lines',
-            'show_missing',
-        ]
+            'show_missing']
         
         missing_coverage = []
         for option in coverage_options:
@@ -3503,8 +3435,7 @@ class PytestConfigValidator:
             'missing_coverage': missing_coverage,
             'has_async_support': 'asyncio_mode = "auto"' in config_content,
             'has_benchmarks': '[tool.pytest-benchmark]' in config_content,
-            'has_parallel': 'pytest-xdist' in config_content,
-        }
+            'has_parallel': 'pytest-xdist' in config_content}
     
     def validate_conftest_structure(self, conftest_content: str) -> Dict[str, Any]:
         """Validate conftest.py structure and fixtures."""
@@ -3524,8 +3455,7 @@ class PytestConfigValidator:
                 'has_event_loop': 'event_loop' in visitor.fixtures,
                 'has_test_config': 'test_config' in visitor.fixtures,
                 'has_temp_fixtures': any('temp' in f for f in visitor.fixtures),
-                'has_mock_fixtures': any('mock' in f for f in visitor.fixtures),
-            }
+                'has_mock_fixtures': any('mock' in f for f in visitor.fixtures)}
             
         except SyntaxError as e:
             return {'valid': False, 'error': str(e)}
@@ -3537,8 +3467,7 @@ class PytestConfigValidator:
             'django': self._validate_django_config,
             'flask': self._validate_flask_config,
             'tornado': self._validate_tornado_config,
-            'sanic': self._validate_sanic_config,
-        }
+            'sanic': self._validate_sanic_config}
         
         if framework not in framework_checks:
             return {'valid': False, 'error': f'Unknown framework: {framework}'}
@@ -3554,8 +3483,7 @@ class PytestConfigValidator:
             'authenticated_client',
             'FastAPITestUtils',
             'TestClient',
-            'AsyncClient',
-        ]
+            'AsyncClient']
         
         missing_elements = [elem for elem in required_elements if elem not in content]
         
@@ -3563,11 +3491,10 @@ class PytestConfigValidator:
             'valid': len(missing_elements) == 0,
             'missing_elements': missing_elements,
             'has_dependency_override': 'override_dependencies' in content,
-            'has_websocket_support': 'websocket' in content.lower(),
+            'has_websocket_support': 'websockets' in content.lower(),
             'has_auth_fixtures': 'authenticated_client' in content,
             'has_file_upload': 'test_upload_file' in content,
-            'has_background_tasks': 'background_tasks' in content,
-        }
+            'has_background_tasks': 'background_tasks' in content}
     
     def _validate_django_config(self, content: str) -> Dict[str, Any]:
         """Validate Django test configuration."""
@@ -3577,8 +3504,7 @@ class PytestConfigValidator:
             'test_user',
             'admin_user',
             'DjangoTestUtils',
-            'django.test',
-        ]
+            'django.test']
         
         missing_elements = [elem for elem in required_elements if elem not in content]
         
@@ -3590,8 +3516,7 @@ class PytestConfigValidator:
             'has_mail_mock': 'mock_send_mail' in content,
             'has_management_commands': 'call_command' in content,
             'has_signal_testing': 'signal_recorder' in content,
-            'has_drf_support': 'rest_framework' in content,
-        }
+            'has_drf_support': 'rest_framework' in content}
     
     def _validate_flask_config(self, content: str) -> Dict[str, Any]:
         """Validate Flask test configuration."""
@@ -3601,8 +3526,7 @@ class PytestConfigValidator:
             'test_user',
             'FlaskTestUtils',
             'FlaskClient',
-            'app_context',
-        ]
+            'app_context']
         
         missing_elements = [elem for elem in required_elements if elem not in content]
         
@@ -3613,8 +3537,7 @@ class PytestConfigValidator:
             'has_db_session': 'db_session' in content,
             'has_mail_mock': 'mock_mail' in content,
             'has_cli_testing': 'cli_runner' in content,
-            'has_blueprint_testing': 'blueprint_app' in content,
-        }
+            'has_blueprint_testing': 'blueprint_app' in content}
     
     def _validate_tornado_config(self, content: str) -> Dict[str, Any]:
         """Validate Tornado test configuration."""
@@ -3624,19 +3547,17 @@ class PytestConfigValidator:
             'tornado_test_case',
             'TornadoTestUtils',
             'AsyncHTTPTestCase',
-            'websocket_client',
-        ]
+            'websocket_client']
         
         missing_elements = [elem for elem in required_elements if elem not in content]
         
         return {
             'valid': len(missing_elements) == 0,
             'missing_elements': missing_elements,
-            'has_websocket_support': 'websocket' in content,
+            'has_websocket_support': 'websockets' in content,
             'has_mock_handler': 'mock_handler' in content,
             'has_async_support': 'async def' in content,
-            'has_ioloop_testing': 'ioloop_test' in content,
-        }
+            'has_ioloop_testing': 'ioloop_test' in content}
     
     def _validate_sanic_config(self, content: str) -> Dict[str, Any]:
         """Validate Sanic test configuration."""
@@ -3646,8 +3567,7 @@ class PytestConfigValidator:
             'authenticated_client',
             'SanicTestUtils',
             'TestClient',
-            'websocket_client',
-        ]
+            'websocket_client']
         
         missing_elements = [elem for elem in required_elements if elem not in content]
         
@@ -3655,10 +3575,9 @@ class PytestConfigValidator:
             'valid': len(missing_elements) == 0,
             'missing_elements': missing_elements,
             'has_middleware_testing': 'middleware_recorder' in content,
-            'has_websocket_support': 'websocket' in content,
+            'has_websocket_support': 'websockets' in content,
             'has_rate_limiting': 'rate_limiter' in content,
-            'has_security_utils': 'security_test_utils' in content,
-        }
+            'has_security_utils': 'security_test_utils' in content}
     
     def run_sample_tests(self, framework: str) -> Dict[str, Any]:
         """Run sample tests to validate functionality."""
@@ -3683,8 +3602,7 @@ class PytestConfigValidator:
                 'stderr': result.stderr,
                 'tests_run': self._count_tests_run(result.stdout),
                 'tests_passed': self._count_tests_passed(result.stdout),
-                'coverage': self._extract_coverage(result.stdout),
-            }
+                'coverage': self._extract_coverage(result.stdout)}
             
         except subprocess.TimeoutExpired:
             return {'success': False, 'error': 'Test execution timed out'}
@@ -3713,8 +3631,7 @@ async def test_async_functionality():
 @pytest.mark.parametrize("value,expected", [
     (1, True),
     (0, False),
-    (-1, False),
-])
+    (-1, False)])
 def test_parametrized(value, expected):
     """Test parametrized functionality."""
     assert bool(value) == expected
@@ -3759,8 +3676,7 @@ async def test_sanic_endpoint(test_client):
     """Test Sanic endpoint."""
     response = await test_client.get("/health")
     assert response.status in [200, 404]  # 404 is ok for test
-''',
-        }
+'''}
         
         return base_test + framework_specific.get(framework, '')
     
@@ -3798,8 +3714,7 @@ async def test_sanic_endpoint(test_client):
                 'total_validations': len(self.test_results),
                 'successful_validations': sum(1 for r in self.test_results.values() if r.get('valid', False)),
                 'error_count': len(self.errors),
-                'warning_count': len(self.warnings),
-            }
+                'warning_count': len(self.warnings)}
         }
 
 
@@ -3907,8 +3822,7 @@ def main():
             'config': config_result,
             'conftest': conftest_result,
             'framework': framework_result,
-            'tests': test_result,
-        }
+            'tests': test_result}
         
         # Print results
         print(f"✅ Configuration: {'✓' if config_result['valid'] else '✗'}")
@@ -4128,14 +4042,12 @@ async def websocket_client():
 
 class SanicTestUtils:
     pass
-''',
-    }
+'''}
     
     return {
         'pyproject': pyproject_config,
         'conftest': conftest_base,
-        'framework': framework_configs.get(framework, ''),
-    }
+        'framework': framework_configs.get(framework, '')}
 
 
 if __name__ == "__main__":

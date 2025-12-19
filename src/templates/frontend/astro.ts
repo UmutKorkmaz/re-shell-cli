@@ -114,7 +114,7 @@ export class AstroTemplate extends BaseTemplate {
     return files;
   }
 
-  protected generatePackageJson() {
+  protected generatePackageJson(): any {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -180,8 +180,8 @@ export default defineConfig({
 `;
   }
 
-  protected generateTsConfig() {
-    return {
+  protected generateTsConfig(): string {
+    return JSON.stringify({
       extends: 'astro/tsconfigs/strict',
       compilerOptions: {
         baseUrl: '.',
@@ -192,7 +192,7 @@ export default defineConfig({
           '@utils/*': ['./src/utils/*'],
         }
       }
-    };
+    }, null, 2);
   }
 
   private generateLayout() {
@@ -497,7 +497,7 @@ export default function Counter() {
 
       <div className="counter-controls">
         <button
-          onClick={() => setCount(count - 1)}
+          onClick={ => setCount(count - 1)}
           disabled={count <= 0}
           aria-label="Decrement"
           className="btn btn-secondary"
@@ -505,14 +505,14 @@ export default function Counter() {
           −
         </button>
         <button
-          onClick={() => setCount(0)}
+          onClick={ => setCount(0)}
           aria-label="Reset"
           className="btn btn-reset"
         >
           ↺ Reset
         </button>
         <button
-          onClick={() => setCount(count + 1)}
+          onClick={ => setCount(count + 1)}
           aria-label="Increment"
           className="btn btn-primary"
         >
@@ -912,7 +912,7 @@ import { useState } from 'react';
 
 export default function Counter() {
   const [count, setCount] = useState(0);
-  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+  return <button onClick={ => setCount(count + 1)}>{count}</button>;
 }
 \`\`\`
 
@@ -941,7 +941,7 @@ export default {
   let open = true;
 </script>
 
-<button on:click={() => open = !open}>
+<button on:click={ => open = !open}>
   {open ? 'Close' : 'Open'}
 </button>
 \`\`\`

@@ -8,10 +8,10 @@ export const vaporTemplate: BackendTemplate = {
   language: 'swift',
   framework: 'vapor',
   version: '4.89.0',
-  tags: ['swift', 'vapor', 'api', 'rest', 'orm', 'authentication', 'async'],
+  tags: ['swift', 'vapor', 'api', 'rest', 'database', 'authentication'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'orm', 'migration', 'validation', 'logging', 'cors', 'websocket'],
+  features: ['authentication', 'database', 'database', 'validation', 'logging', 'cors', 'websockets'],
   
   files: {
     // Swift Package Manager configuration
@@ -38,8 +38,7 @@ let package = Package(
         // 🔍 Swift Metrics API
         .package(url: "https://github.com/apple/swift-metrics.git", from: "2.4.1"),
         // 🧪 Testing utilities
-        .package(url: "https://github.com/vapor/vapor-testing.git", from: "0.2.0"),
-    ],
+        .package(url: "https://github.com/vapor/vapor-testing.git", from: "0.2.0")],
     targets: [
         .executableTarget(
             name: "App",
@@ -49,18 +48,16 @@ let package = Package(
                 .product(name: "FluentMySQLDriver", package: "fluent-mysql-driver"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "Vapor", package: "vapor"),
-                .product(name: "JWT", package: "jwt"),
+                .product(name: "JWT", package: "authentication"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "Metrics", package: "swift-metrics"),
-            ]
+                .product(name: "Metrics", package: "swift-metrics")]
         ),
         .testTarget(
             name: "AppTests",
             dependencies: [
                 .target(name: "App"),
                 .product(name: "XCTVapor", package: "vapor"),
-                .product(name: "VaporTesting", package: "vapor-testing"),
-            ]
+                .product(name: "VaporTesting", package: "vapor-testing")]
         )
     ]
 )`,
@@ -1236,6 +1233,4 @@ db.sqlite
 .env.production.local
 .env.local
 Public/
-Resources/`,
-  },
-};
+Resources/`}};

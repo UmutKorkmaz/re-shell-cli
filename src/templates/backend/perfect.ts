@@ -8,10 +8,10 @@ export const perfectTemplate: BackendTemplate = {
   language: 'swift',
   framework: 'perfect',
   version: '4.0.0',
-  tags: ['swift', 'perfect', 'api', 'rest', 'websocket', 'performance'],
+  tags: ['swift', 'perfect', 'api', 'rest', 'websockets', 'performance'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'websocket', 'database', 'logging', 'cors', 'ssl'],
+  features: ['authentication', 'websockets', 'database', 'logging', 'cors', 'security'],
   
   files: {
     // Swift Package Manager configuration
@@ -21,11 +21,9 @@ import PackageDescription
 let package = Package(
     name: "{{projectName}}",
     platforms: [
-        .macOS(.v12),
-    ],
+        .macOS(.v12)],
     products: [
-        .executable(name: "{{projectName}}", targets: ["{{projectName}}"]),
-    ],
+        .executable(name: "{{projectName}}", targets: ["{{projectName}}"])],
     dependencies: [
         .package(url: "https://github.com/PerfectlySoft/Perfect-HTTPServer.git", from: "3.0.0"),
         .package(url: "https://github.com/PerfectlySoft/Perfect-WebSockets.git", from: "3.0.0"),
@@ -37,8 +35,7 @@ let package = Package(
         .package(url: "https://github.com/PerfectlySoft/Perfect-RequestLogger.git", from: "3.0.0"),
         .package(url: "https://github.com/PerfectlySoft/Perfect-Session.git", from: "3.0.0"),
         .package(url: "https://github.com/PerfectlySoft/Perfect-SessionPostgreSQL.git", from: "3.0.0"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3"),
-    ],
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3")],
     targets: [
         .executableTarget(
             name: "{{projectName}}",
@@ -53,16 +50,14 @@ let package = Package(
                 .product(name: "PerfectRequestLogger", package: "Perfect-RequestLogger"),
                 .product(name: "PerfectSession", package: "Perfect-Session"),
                 .product(name: "PerfectSessionPostgreSQL", package: "Perfect-SessionPostgreSQL"),
-                .product(name: "Logging", package: "swift-log"),
-            ],
+                .product(name: "Logging", package: "swift-log")],
             path: "Sources"
         ),
         .testTarget(
             name: "{{projectName}}Tests",
             dependencies: ["{{projectName}}"],
             path: "Tests"
-        ),
-    ]
+        )]
 )`,
 
     // Main entry point
@@ -1460,6 +1455,4 @@ DerivedData/
 # Certificates
 *.pem
 *.key
-*.crt`,
-  },
-};
+*.crt`}};

@@ -11,7 +11,7 @@ export const fastifyTemplate: BackendTemplate = {
   tags: ['nodejs', 'fastify', 'api', 'rest', 'performance', 'schema', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['schema-validation', 'plugins', 'decorators', 'hooks', 'authentication', 'swagger', 'websocket'],
+  features: ['validation', 'microservices', 'authentication', 'swagger', 'websockets'],
   
   files: {
     // Package configuration
@@ -66,7 +66,7 @@ export const fastifyTemplate: BackendTemplate = {
     "fastify-graceful-shutdown": "^3.5.3",
     "fastify-print-routes": "^3.1.0",
     "@prisma/client": "^5.13.0",
-    "prisma": "^5.13.0",
+    "database": "^5.13.0",
     "dotenv": "^16.4.5",
     "pino": "^9.0.0",
     "pino-pretty": "^11.0.0",
@@ -156,7 +156,7 @@ const start = async () => {
   try {
     // Register plugins
     await app.register(AutoLoad, {
-      dir: join(__dirname, 'plugins'),
+      dir: join(__dirname, 'microservices'),
       options: { ...config }
     });
 

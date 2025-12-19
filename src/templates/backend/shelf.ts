@@ -11,7 +11,7 @@ export const shelfTemplate: BackendTemplate = {
   tags: ['dart', 'shelf', 'api', 'rest', 'middleware', 'modular'],
   port: 8080,
   dependencies: {},
-  features: ['middleware', 'routing', 'cors', 'authentication', 'logging', 'static-files'],
+  features: ['middleware', 'routing', 'cors', 'authentication', 'logging', 'file-upload'],
   
   files: {
     // Dart project configuration
@@ -69,12 +69,12 @@ void main(List<String> args) async {
   var parser = ArgParser()
     ..addOption('port', abbr: 'p', defaultsTo: '8080')
     ..addOption('host', abbr: 'h', defaultsTo: '0.0.0.0')
-    ..addFlag('hot-reload', abbr: 'r', defaultsTo: true);
+    ..addFlag(, abbr: 'r', defaultsTo: true);
 
   var result = parser.parse(args);
   var port = int.tryParse(result['port'] as String) ?? 8080;
   var host = result['host'] as String;
-  var hotReload = result['hot-reload'] as bool;
+  var hotReload = result[] as bool;
 
   // Load configuration
   await Config.load();
@@ -146,8 +146,7 @@ Handler createApp() {
     return Response.ok(jsonResponse({
       'name': '{{projectName}} API',
       'version': '1.0.0',
-      'status': 'running',
-    }));
+      'status': 'running'}));
   });
 
   // Health check
@@ -156,8 +155,7 @@ Handler createApp() {
     return Response.ok(jsonResponse({
       'status': health ? 'healthy' : 'unhealthy',
       'timestamp': DateTime.now().toIso8601String(),
-      'database': health,
-    }));
+      'database': health}));
   });
 
   // API routes
@@ -607,8 +605,7 @@ class User {
     required this.passwordHash,
     required this.name,
     DateTime? createdAt,
-    DateTime? updatedAt,
-  })  : id = id ?? const Uuid().v4(),
+    DateTime? updatedAt})  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
@@ -630,8 +627,7 @@ class User {
       'password_hash': passwordHash,
       'name': name,
       'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
+      'updated_at': updatedAt.toIso8601String()};
   }
 
   Map<String, dynamic> toPublic() {
@@ -639,8 +635,7 @@ class User {
       'id': id,
       'email': email,
       'name': name,
-      'createdAt': createdAt.toIso8601String(),
-    };
+      'createdAt': createdAt.toIso8601String()};
   }
 
   static String hashPassword(String password) {
@@ -662,8 +657,7 @@ class CreateUserRequest {
   CreateUserRequest({
     required this.email,
     required this.password,
-    required this.name,
-  });
+    required this.name});
 
   factory CreateUserRequest.fromJson(Map<String, dynamic> json) {
     return CreateUserRequest(
@@ -693,8 +687,7 @@ class LoginRequest {
 
   LoginRequest({
     required this.email,
-    required this.password,
-  });
+    required this.password});
 
   factory LoginRequest.fromJson(Map<String, dynamic> json) {
     return LoginRequest(
@@ -710,8 +703,7 @@ class UpdateUserRequest {
 
   UpdateUserRequest({
     this.name,
-    this.email,
-  });
+    this.email});
 
   factory UpdateUserRequest.fromJson(Map<String, dynamic> json) {
     return UpdateUserRequest(
@@ -749,8 +741,7 @@ class Todo {
     this.description,
     this.completed = false,
     DateTime? createdAt,
-    DateTime? updatedAt,
-  })  : id = id ?? const Uuid().v4(),
+    DateTime? updatedAt})  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
@@ -774,8 +765,7 @@ class Todo {
       'description': description,
       'completed': completed ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
+      'updated_at': updatedAt.toIso8601String()};
   }
 
   Map<String, dynamic> toJson() {
@@ -785,8 +775,7 @@ class Todo {
       'description': description,
       'completed': completed,
       'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-    };
+      'updatedAt': updatedAt.toIso8601String()};
   }
 }
 
@@ -796,8 +785,7 @@ class CreateTodoRequest {
 
   CreateTodoRequest({
     required this.title,
-    this.description,
-  });
+    this.description});
 
   factory CreateTodoRequest.fromJson(Map<String, dynamic> json) {
     return CreateTodoRequest(
@@ -822,8 +810,7 @@ class UpdateTodoRequest {
   UpdateTodoRequest({
     this.title,
     this.description,
-    this.completed,
-  });
+    this.completed});
 
   factory UpdateTodoRequest.fromJson(Map<String, dynamic> json) {
     return UpdateTodoRequest(
@@ -855,8 +842,7 @@ class RefreshToken {
     required this.userId,
     String? token,
     DateTime? expiresAt,
-    DateTime? createdAt,
-  })  : id = id ?? const Uuid().v4(),
+    DateTime? createdAt})  : id = id ?? const Uuid().v4(),
         token = token ?? const Uuid().v4(),
         expiresAt = expiresAt ?? DateTime.now().add(const Duration(days: 30)),
         createdAt = createdAt ?? DateTime.now();
@@ -877,8 +863,7 @@ class RefreshToken {
       'user_id': userId,
       'token': token,
       'expires_at': expiresAt.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
-    };
+      'created_at': createdAt.toIso8601String()};
   }
 
   bool get isValid => expiresAt.isAfter(DateTime.now());
@@ -928,8 +913,7 @@ class UserRepository {
         user.passwordHash,
         user.name,
         user.createdAt.toIso8601String(),
-        user.updatedAt.toIso8601String(),
-      ],
+        user.updatedAt.toIso8601String()],
     );
 
     return user;
@@ -946,8 +930,7 @@ class UserRepository {
         user.email,
         user.name,
         DateTime.now().toIso8601String(),
-        user.id,
-      ],
+        user.id],
     );
 
     return user;
@@ -1006,8 +989,7 @@ class TodoRepository {
         todo.description,
         todo.completed ? 1 : 0,
         todo.createdAt.toIso8601String(),
-        todo.updatedAt.toIso8601String(),
-      ],
+        todo.updatedAt.toIso8601String()],
     );
 
     return todo;
@@ -1025,8 +1007,7 @@ class TodoRepository {
         todo.description,
         todo.completed ? 1 : 0,
         DateTime.now().toIso8601String(),
-        todo.id,
-      ],
+        todo.id],
     );
 
     return todo;
@@ -1064,8 +1045,7 @@ class TokenRepository {
         token.userId,
         token.token,
         token.expiresAt.toIso8601String(),
-        token.createdAt.toIso8601String(),
-      ],
+        token.createdAt.toIso8601String()],
     );
 
     return token;
@@ -1137,8 +1117,7 @@ class AuthController {
       return Response.ok(jsonResponse({
         'user': user.toPublic(),
         'accessToken': accessToken,
-        'refreshToken': refreshToken.token,
-      }));
+        'refreshToken': refreshToken.token}));
     } catch (e) {
       return Response.internalServerError(
         body: jsonResponse({'error': 'Registration failed'}),
@@ -1168,8 +1147,7 @@ class AuthController {
       return Response.ok(jsonResponse({
         'user': user.toPublic(),
         'accessToken': accessToken,
-        'refreshToken': refreshToken.token,
-      }));
+        'refreshToken': refreshToken.token}));
     } catch (e) {
       return Response.internalServerError(
         body: jsonResponse({'error': 'Login failed'}),
@@ -1215,8 +1193,7 @@ class AuthController {
 
       return Response.ok(jsonResponse({
         'accessToken': accessToken,
-        'refreshToken': newRefreshToken.token,
-      }));
+        'refreshToken': newRefreshToken.token}));
     } catch (e) {
       return Response.internalServerError(
         body: jsonResponse({'error': 'Token refresh failed'}),
@@ -1496,8 +1473,7 @@ class AuthService {
       subject: user.id,
       otherClaims: {
         'email': user.email,
-        'name': user.name,
-      },
+        'name': user.name},
       maxAge: Duration(minutes: Config.jwtExpiryMinutes),
     );
 
@@ -1564,8 +1540,7 @@ Middleware authMiddleware() {
       // Add user to request context
       final updatedRequest = request.change(context: {
         ...request.context,
-        'user': user,
-      });
+        'user': user});
 
       return innerHandler(updatedRequest);
     };
@@ -1589,8 +1564,7 @@ Middleware errorMiddleware() {
         return Response.internalServerError(
           body: jsonResponse({
             'error': 'Internal server error',
-            'message': e.toString(),
-          }),
+            'message': e.toString()}),
         );
       }
     };
@@ -1611,15 +1585,15 @@ Middleware loggingMiddleware() {
         final response = await innerHandler(request);
         
         logger.info(
-          '${request.method} ${request.url.path} '
-          '${response.statusCode} ${watch.elapsedMilliseconds}ms',
+          '\ \ '
+          '\ \ms',
         );
         
         return response;
       } catch (e) {
         logger.error(
-          '${request.method} ${request.url.path} '
-          'ERROR ${watch.elapsedMilliseconds}ms',
+          '\ \ '
+          'ERROR \ms',
           error: e,
         );
         rethrow;
@@ -1640,8 +1614,7 @@ Middleware validationMiddleware() {
         if (contentType == null || !contentType.contains('application/json')) {
           return Response.badRequest(
             body: jsonResponse({
-              'error': 'Content-Type must be application/json',
-            }),
+              'error': 'Content-Type must be application/json'}),
           );
         }
       }
@@ -2075,6 +2048,4 @@ analyzer:
     - build/**
     - "**/*.g.dart"
   errors:
-    invalid_annotation_target: ignore`,
-  },
-};
+    invalid_annotation_target: ignore`}};

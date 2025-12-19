@@ -8,7 +8,7 @@ export const ktorTemplate: BackendTemplate = {
   language: 'kotlin',
   framework: 'ktor',
   version: '2.3.7',
-  tags: ['kotlin', 'ktor', 'async', 'coroutines', 'api', 'rest', 'jvm'],
+  tags: ['kotlin', 'ktor', 'coroutines', 'api', 'rest', 'jvm'],
   port: 8080,
   dependencies: {},
   features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websockets'],

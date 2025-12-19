@@ -250,6 +250,7 @@ when@test:
   # Easy way to control access for large sections of your site
   # Note: Only the *first* access control that matches will be used
   access_control:
+    - { path: ^/api/health, roles: PUBLIC_ACCESS }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
     - { path: ^/api/register, roles: PUBLIC_ACCESS }
     - { path: ^/api/docs, roles: PUBLIC_ACCESS }
@@ -814,38 +815,27 @@ class UserType extends AbstractType
         $builder
             ->add('email', EmailType::class, [
                 'constraints' => [
-                    new NotBlank(['message' => 'Please enter an email']),
-                ],
-            ])
+                    new NotBlank(['message' => 'Please enter an email'])]])
             ->add('firstName', TextType::class, [
                 'constraints' => [
                     new NotBlank(['message' => 'Please enter a first name']),
                     new Length([
                         'min' => 2,
                         'minMessage' => 'First name should be at least {{ limit }} characters',
-                        'max' => 255,
-                    ]),
-                ],
-            ])
+                        'max' => 255])]])
             ->add('lastName', TextType::class, [
                 'constraints' => [
                     new NotBlank(['message' => 'Please enter a last name']),
                     new Length([
                         'min' => 2,
                         'minMessage' => 'Last name should be at least {{ limit }} characters',
-                        'max' => 255,
-                    ]),
-                ],
-            ])
+                        'max' => 255])]])
             ->add('phone', TextType::class, [
-                'required' => false,
-            ])
+                'required' => false])
             ->add('address', TextType::class, [
-                'required' => false,
-            ])
+                'required' => false])
             ->add('isActive', CheckboxType::class, [
-                'required' => false,
-            ]);
+                'required' => false]);
 
         // Only add password field for new users
         if (!$options['is_edit']) {
@@ -856,10 +846,7 @@ class UserType extends AbstractType
                     new Length([
                         'min' => 6,
                         'minMessage' => 'Your password should be at least {{ limit }} characters',
-                        'max' => 4096,
-                    ]),
-                ],
-            ]);
+                        'max' => 4096])]]);
         }
     }
 
@@ -914,8 +901,7 @@ class AuthController extends ApiController
                     new OA\\Property(property: 'email', type: 'string', format: 'email'),
                     new OA\\Property(property: 'password', type: 'string', minLength: 6),
                     new OA\\Property(property: 'firstName', type: 'string'),
-                    new OA\\Property(property: 'lastName', type: 'string'),
-                ]
+                    new OA\\Property(property: 'lastName', type: 'string')]
             )
         ),
         responses: [
@@ -925,8 +911,7 @@ class AuthController extends ApiController
                 content: new OA\\JsonContent(
                     properties: [
                         new OA\\Property(property: 'user', ref: new Model(type: User::class, groups: ['user:read'])),
-                        new OA\\Property(property: 'token', type: 'string'),
-                    ]
+                        new OA\\Property(property: 'token', type: 'string')]
                 )
             ),
             new OA\\Response(response: 400, description: 'Invalid input'),
@@ -990,12 +975,55 @@ class AuthController extends ApiController
     public function me(): Response
     {
         $user = $this->getUser();
-        
+
         if (!$user) {
             return $this->respondWithError('Unauthorized', 401);
         }
 
         return $this->respondWithSuccess($user);
+    }
+}`,
+
+    // Health Check Controller
+    'src/Controller/HealthController.php': `<?php
+
+namespace App\\Controller;
+
+use Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController;
+use Symfony\\Component\\HttpFoundation\\JsonResponse;
+use Symfony\\Component\\Routing\\Annotation\\Route;
+use OpenApi\\Attributes as OA;
+
+#[Route('/api')]
+class HealthController extends AbstractController
+{
+    #[Route('/health', name: 'api_health', methods: ['GET'])]
+    #[OA\\Get(
+        summary: 'Health check endpoint',
+        description: 'Returns the current health status of the application',
+        responses: [
+            new OA\\Response(
+                response: 200,
+                description: 'Application is healthy',
+                content: new OA\\JsonContent(
+                    properties: [
+                        new OA\\Property(property: 'status', type: 'string', example: 'healthy'),
+                        new OA\\Property(property: 'timestamp', type: 'string', format: 'date-time'),
+                        new OA\\Property(property: 'version', type: 'string'),
+                        new OA\\Property(property: 'environment', type: 'string')
+                    ]
+                )
+            )
+        ]
+    )]
+    public function health(): JsonResponse
+    {
+        return $this->json([
+            'status' => 'healthy',
+            'timestamp' => new \\DateTime(),
+            'version' => $this->getParameter('app.version') ?? '1.0.0',
+            'environment' => $this->getParameter('kernel.environment')
+        ]);
     }
 }`,
 
@@ -1039,6 +1067,69 @@ class AuthController extends ApiController
     </extensions>
 </phpunit>`,
 
+
+    // Graceful shutdown handler
+    'bin/shutdown.php': `#!/usr/bin/env php
+<?php
+
+/**
+ * Graceful shutdown handler for Symfony
+ *
+ * This script handles SIGTERM and SIGINT signals for graceful shutdown
+ * Run it with: php bin/shutdown.php
+ */
+
+use App\\Kernel;
+use Symfony\\Bundle\\FrameworkBundle\\Console\\Application;
+use Symfony\\Component\\Console\\Input\\ArgvInput;
+use Symfony\\Component\\Dotenv\\Dotenv;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+if (file_exists(dirname(__DIR__).'/bootstrap.php')) {
+    require dirname(__DIR__).'/bootstrap.php';
+}
+
+if ($_SERVER['APP_DEBUG']) {
+    umask(0000);
+}
+
+if (class_exists(Dotenv::class)) {
+    (new Dotenv())->bootEnv(dirname(__DIR__).'/.env');
+}
+
+// Signal handler function
+function handleSignal(int $signal): void
+{
+    $signalName = $signal === SIGTERM ? 'SIGTERM' : 'SIGINT';
+    echo "\\n{$signalName} signal received: initiating graceful shutdown\\n";
+
+    // Close database connections
+    echo "Closing database connections...\\n";
+    // Doctrine connections are automatically closed when script ends
+
+    // Clear cache if needed
+    echo "Flushing any pending operations...\\n";
+
+    echo "Graceful shutdown completed\\n";
+    exit(0);
+}
+
+// Register signal handlers
+pcntl_async_signals(true);
+pcntl_signal(SIGTERM, 'handleSignal');
+pcntl_signal(SIGINT, 'handleSignal');
+
+echo "Graceful shutdown handler registered. Press Ctrl+C to test.\\n";
+echo "Waiting for signals...\\n";
+
+// Keep script running
+while (true) {
+    sleep(1);
+}
+`,
+
+
     // Functional test example
     'tests/Controller/UserControllerTest.php': `<?php
 
@@ -1076,13 +1167,11 @@ class UserControllerTest extends WebTestCase
         $client = static::createClient();
 
         $client->request('POST', '/api/register', [], [], [
-            'CONTENT_TYPE' => 'application/json',
-        ], json_encode([
+            'CONTENT_TYPE' => 'application/json'], json_encode([
             'email' => 'test@example.com',
             'password' => 'password123',
             'firstName' => 'Test',
-            'lastName' => 'User',
-        ]));
+            'lastName' => 'User']));
 
         $this->assertResponseIsSuccessful();
         $this->assertResponseStatusCodeSame(201);
@@ -1112,8 +1201,7 @@ class UserControllerTest extends WebTestCase
         $token = $this->jwtManager->create($user);
 
         $client->request('GET', '/api/me', [], [], [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
-        ]);
+            'HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
 
         $this->assertResponseIsSuccessful();
         $response = json_decode($client->getResponse()->getContent(), true);

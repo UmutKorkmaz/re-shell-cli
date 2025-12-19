@@ -8,10 +8,10 @@ export const luminusCljTemplate: BackendTemplate = {
   language: 'clojure',
   framework: 'luminus',
   version: '1.0.0',
-  tags: ['clojure', 'luminus', 'full-stack', 'reagent', 'selmer', 'sql', 'websocket'],
+  tags: ['clojure', 'luminus', 'full-stack', 'reagent', 'selmer', 'sql', 'websockets'],
   port: 3000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websocket'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websockets'],
 
   files: {
     // Project configuration

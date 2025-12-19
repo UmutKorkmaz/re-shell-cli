@@ -8,10 +8,10 @@ export const yesodHsTemplate: BackendTemplate = {
   language: 'haskell',
   framework: 'yesod',
   version: '1.0.0',
-  tags: ['haskell', 'yesod', 'type-safe', 'full-stack', 'persistent', 'hamlet'],
+  tags: ['haskell', 'yesod', 'validation', 'full-stack', 'persistent', 'hamlet'],
   port: 3000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'type-safe'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'validation'],
 
   files: {
     // Package configuration (Cabal)

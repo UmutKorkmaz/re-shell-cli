@@ -11,7 +11,7 @@ export const polkaTemplate: BackendTemplate = {
   tags: ['nodejs', 'polka', 'micro', 'api', 'high-performance', 'minimal', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['minimal-overhead', 'routing', 'middleware', 'static-files', 'websockets', 'sessions', 'cors', 'body-parsing'],
+  features: ['rest-api', 'routing', 'middleware', 'file-upload', 'websockets', 'session-management', 'cors', 'middleware'],
   
   files: {
     // TypeScript project configuration
@@ -58,7 +58,7 @@ export const polkaTemplate: BackendTemplate = {
     "pino": "^9.0.0",
     "pino-pretty": "^11.0.0",
     "@prisma/client": "^5.13.0",
-    "prisma": "^5.13.0",
+    "database": "^5.13.0",
     "zod": "^3.23.5",
     "nanoid": "^5.0.7"
   },
@@ -1078,8 +1078,7 @@ import { logger } from '../utils/logger';
 const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' 
     ? ['query', 'info', 'warn', 'error']
-    : ['error'],
-});
+    : ['error']});
 
 // Log database events in development
 if (process.env.NODE_ENV === 'development') {

@@ -683,31 +683,24 @@ This project demonstrates idiomatic Clojure:
 ## License
 
 MIT
-`,
-  },
+`},
   prompts: [
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: 'my-compojure-app',
-    },
+      default: 'my-compojure-app'},
     {
       type: 'input',
       name: 'description',
       message: 'Project description:',
-      default: 'A Clojure web application built with Compojure',
-    },
+      default: 'A Clojure web application built with Compojure'},
     {
       type: 'input',
       name: 'author',
       message: 'Author:',
-      default: 'developer',
-    },
-  ],
+      default: 'developer'}],
   postInstall: [
     'lein deps',
     'echo "✨ {{projectName}} is ready!"',
-    'echo "Run: lein run"',
-  ],
-};
+    'echo "Run: lein run"']};

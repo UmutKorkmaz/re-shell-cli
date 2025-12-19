@@ -8,22 +8,19 @@ export const foaltsTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'foalts',
   version: '4.2.0',
-  tags: ['nodejs', 'foalts', 'api', 'rest', 'graphql', 'typescript', 'decorators', 'cli', 'auth', 'orm'],
+  tags: ['nodejs', 'foalts', 'api', 'rest', 'graphql', 'typescript', 'decorators', 'cli', 'auth', 'database'],
   port: 3001,
   dependencies: {},
   features: [
-    'decorators',
-    'cli-generator',
     'authentication',
     'authorization',
-    'openapi',
+    'swagger',
     'validation',
-    'orm-typeorm',
+    'database',
     'graphql',
-    'websocket',
+    'websockets',
     'file-upload',
-    'scheduled-jobs',
-    'shell-scripts',
+    'queue',
     'testing'
   ],
   
@@ -73,7 +70,7 @@ export const foaltsTemplate: BackendTemplate = {
     "sqlite3": "^5.1.6",
     "pg": "^8.11.3",
     "mysql2": "^3.6.5",
-    "redis": "^4.6.10",
+    "caching": "^4.6.10",
     "class-validator": "^0.14.0",
     "class-transformer": "^0.5.1",
     "graphql": "^16.8.1",
@@ -205,8 +202,7 @@ export const testDataSource = {
   dropSchema: true,
   entities: ['build/app/**/*.entity.js'],
   migrations: ['build/migrations/*.js'],
-  synchronize: true,
-};
+  synchronize: true};
 
 before(async () => {
   await createConnection(testDataSource as any);
@@ -233,8 +229,7 @@ export const dataSource = new DataSource({
     host: config.get('database.host'),
     port: config.get('database.port'),
     username: config.get('database.username'),
-    password: config.get('database.password'),
-  }),
+    password: config.get('database.password')}),
   
   entities: ['build/app/**/*.entity.js'],
   migrations: ['build/migrations/*.js'],
@@ -295,8 +290,7 @@ export class AppController implements IAppController {
     controller('/api', ApiController),
     controller('/graphql', GraphQLController),
     controller('/ws', WebSocketController),
-    controller('/swagger', SwaggerController),
-  ];
+    controller('/swagger', SwaggerController)];
 
   @dependency
   scheduler: SchedulerService;
@@ -384,8 +378,7 @@ import { TodoController } from './todo.controller';
 export class ApiController {
   subControllers = [
     controller('/users', UserController),
-    controller('/todos', TodoController),
-  ];
+    controller('/todos', TodoController)];
 }`,
 
     // Authentication Controller

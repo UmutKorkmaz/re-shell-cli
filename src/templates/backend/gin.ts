@@ -174,8 +174,7 @@ func main() {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "healthy",
-			"time":   time.Now().UTC(),
-		})
+			"time":   time.Now().UTC()})
 	})
 
 	// Swagger documentation
@@ -195,8 +194,7 @@ func main() {
 		Handler:      router,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
+		IdleTimeout:  60 * time.Second}
 
 	// Start server in goroutine
 	go func() {
@@ -290,8 +288,7 @@ func New() *Config {
 		RateLimitDuration: time.Duration(getEnvAsInt("RATE_LIMIT_DURATION_MINUTES", 1)) * time.Minute,
 		
 		// CORS
-		AllowedOrigins: []string{getEnv("ALLOWED_ORIGINS", "*")},
-	}
+		AllowedOrigins: []string{getEnv("ALLOWED_ORIGINS", "*")}}
 }
 
 func getEnv(key, defaultValue string) string {
@@ -433,8 +430,7 @@ func (u *User) ToResponse() UserResponse {
 		Name:      u.Name,
 		Role:      u.Role,
 		Active:    u.Active,
-		CreatedAt: u.CreatedAt,
-	}
+		CreatedAt: u.CreatedAt}
 }
 `,
 
@@ -596,8 +592,7 @@ func Logger() gin.HandlerFunc {
 			"method":      param.Method,
 			"path":        param.Path,
 			"request_id":  param.Request.Header.Get("X-Request-ID"),
-			"error":       param.ErrorMessage,
-		}).Info("HTTP Request")
+			"error":       param.ErrorMessage}).Info("HTTP Request")
 
 		return ""
 	})
@@ -629,13 +624,11 @@ func RateLimiter(cfg *config.Config) gin.HandlerFunc {
 	client := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisAddr,
 		Password: cfg.RedisPassword,
-		DB:       cfg.RedisDB,
-	})
+		DB:       cfg.RedisDB})
 
 	// Create store
 	store, err := redis.NewStoreWithOptions(client, limiter.StoreOptions{
-		Prefix: "rate_limit",
-	})
+		Prefix: "rate_limit"})
 	if err != nil {
 		// Fallback to memory store if Redis fails
 		store = limiter.NewMemoryStore()
@@ -644,8 +637,7 @@ func RateLimiter(cfg *config.Config) gin.HandlerFunc {
 	// Create rate limiter
 	rate := limiter.Rate{
 		Period: cfg.RateLimitDuration,
-		Limit:  int64(cfg.RateLimitRequests),
-	}
+		Limit:  int64(cfg.RateLimitRequests)}
 	
 	instance := limiter.New(store, rate)
 
@@ -740,8 +732,7 @@ func register(db *gorm.DB) gin.HandlerFunc {
 		// Create new user
 		user := models.User{
 			Email: req.Email,
-			Name:  req.Name,
-		}
+			Name:  req.Name}
 
 		if err := user.SetPassword(req.Password); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
@@ -803,8 +794,7 @@ func login(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{
 			"token": token,
-			"user":  user.ToResponse(),
-		})
+			"user":  user.ToResponse()})
 	}
 }
 `,
@@ -1052,8 +1042,7 @@ func listProducts(db *gorm.DB) gin.HandlerFunc {
 			"data":  products,
 			"total": total,
 			"page":  page,
-			"limit": limit,
-		})
+			"limit": limit})
 	}
 }
 
@@ -1108,8 +1097,7 @@ func createProduct(db *gorm.DB) gin.HandlerFunc {
 			Description: req.Description,
 			Price:       req.Price,
 			Stock:       req.Stock,
-			Active:      true,
-		}
+			Active:      true}
 
 		if err := db.Create(&product).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create product"})
@@ -1239,9 +1227,7 @@ func GenerateJWT(userID uint, email, role, secret string, expirationHours int) (
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expirationHours))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-		},
-	}
+			NotBefore: jwt.NewNumericDate(time.Now())}}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))

@@ -728,6 +728,5 @@ kubectl get svc
 ## License
 
 MIT
-`,
-  }
+`}
 };

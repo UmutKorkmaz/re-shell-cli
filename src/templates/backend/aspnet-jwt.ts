@@ -314,10 +314,9 @@ builder.Services.AddSwaggerGen(c =>
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 },
-                Scheme = "oauth2",
+                Scheme = "authorization",
                 Name = "Bearer",
-                In = ParameterLocation.Header,
-            },
+                In = ParameterLocation.Header},
             new List<string>()
         }
     });
@@ -614,8 +613,7 @@ public class JwtTokenService : IJwtTokenService
             new Claim(ClaimTypes.Name, user.UserName ?? ""),
             new Claim(ClaimTypes.Email, user.Email ?? ""),
             new Claim("jti", Guid.NewGuid().ToString()),
-            new Claim("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-        };
+            new Claim("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)};
 
         if (user.EmailConfirmed)
         {

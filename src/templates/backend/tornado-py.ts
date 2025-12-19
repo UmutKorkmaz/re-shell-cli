@@ -8,7 +8,7 @@ export const tornadoTemplate: BackendTemplate = {
   framework: 'tornado',
   language: 'python',
   version: '1.0.0',
-  tags: ['tornado', 'python', 'async', 'websockets', 'coroutines', 'high-performance', 'non-blocking'],
+  tags: ['tornado', 'python', 'websockets', 'coroutines', 'high-performance', 'non-blocking'],
   dependencies: {
     tornado: '^6.4',
     'motor': '^3.3.2',
@@ -202,8 +202,7 @@ def create_application(debug: bool = False) -> Application:
         (r"/ws/notifications", NotificationWebSocketHandler),
         
         # Static files (in production, use nginx)
-        (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": "static"}),
-    ]
+        (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": "static"})]
     
     app_settings = {
         "debug": debug,
@@ -213,8 +212,7 @@ def create_application(debug: bool = False) -> Application:
         "compress_response": True,
         "static_path": "static",
         "template_path": "templates",
-        "default_handler_class": NotFoundHandler,
-    }
+        "default_handler_class": NotFoundHandler}
     
     return Application(handlers, **app_settings)
 
@@ -1093,7 +1091,7 @@ class HealthCheckHandler(BaseHandler):
                 "timestamp": datetime.utcnow().isoformat(),
                 "response_time_ms": round(response_time, 2),
                 "services": {
-                    "redis": redis_status,
+                    "caching": redis_status,
                     "database": database_status
                 },
                 "system": system_metrics,
@@ -1151,7 +1149,7 @@ class StatusHandler(BaseHandler):
                     "uptime_seconds": time.time()  # In real app, track actual uptime
                 },
                 "websockets": websocket_stats,
-                "redis": redis_stats,
+                "caching": redis_stats,
                 "system": {
                     "python_version": f"{psutil.PYTHON_VERSION[0]}.{psutil.PYTHON_VERSION[1]}.{psutil.PYTHON_VERSION[2]}",
                     "cpu_count": psutil.cpu_count(),

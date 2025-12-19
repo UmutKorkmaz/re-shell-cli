@@ -222,8 +222,7 @@ return function (ContainerBuilder $containerBuilder) {
                 'logger' => [
                     'name' => $_ENV['APP_NAME'] ?? '{{serviceName}}',
                     'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
-                    'level' => $_ENV['LOG_LEVEL'] ?? Logger::DEBUG,
-                ],
+                    'level' => $_ENV['LOG_LEVEL'] ?? Logger::DEBUG],
                 'db' => [
                     'driver' => $_ENV['DB_DRIVER'] ?? 'mysql',
                     'host' => $_ENV['DB_HOST'] ?? 'localhost',
@@ -242,22 +241,16 @@ return function (ContainerBuilder $containerBuilder) {
                         // Emulate prepared statements
                         PDO::ATTR_EMULATE_PREPARES => true,
                         // Set default fetch mode to array
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    ],
-                ],
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]],
                 'jwt' => [
                     'secret' => $_ENV['JWT_SECRET'] ?? 'change-me',
                     'lifetime' => (int) ($_ENV['JWT_LIFETIME'] ?? 3600),
-                    'algorithm' => 'HS256',
-                ],
+                    'algorithm' => 'HS256'],
                 'cors' => [
                     'enabled' => $_ENV['CORS_ENABLED'] === 'true',
                     'origin' => $_ENV['CORS_ORIGIN'] ?? '*',
-                    'credentials' => $_ENV['CORS_CREDENTIALS'] === 'true',
-                ],
-            ]);
-        },
-    ]);
+                    'credentials' => $_ENV['CORS_CREDENTIALS'] === 'true']]);
+        }]);
 };`,
 
     // Dependencies configuration
@@ -303,8 +296,7 @@ return function (ContainerBuilder $containerBuilder) {
             );
             
             return new PDO($dsn, $dbSettings['username'], $dbSettings['password'], $dbSettings['options']);
-        },
-    ]);
+        }]);
 };`,
 
     // Routes configuration
@@ -335,8 +327,7 @@ return function (App $app) {
         $response->getBody()->write(json_encode([
             'status' => 'ok',
             'service' => '{{serviceName}}',
-            'timestamp' => date('c'),
-        ]));
+            'timestamp' => date('c')]));
         return $response->withHeader('Content-Type', 'application/json');
     });
 
@@ -396,8 +387,7 @@ return function (App $app) {
             'headers.allow' => ['Authorization', 'Content-Type'],
             'headers.expose' => [],
             'credentials' => $corsSettings['credentials'],
-            'cache' => 0,
-        ]));
+            'cache' => 0]));
     }
 };`,
 
@@ -476,8 +466,7 @@ class User implements JsonSerializable
             'email' => $this->email,
             'username' => $this->username,
             'createdAt' => $this->createdAt,
-            'updatedAt' => $this->updatedAt,
-        ];
+            'updatedAt' => $this->updatedAt];
     }
 }`,
 

@@ -174,8 +174,7 @@ let products: Product[] = [
     price: 29.99,
     stock: 100,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()},
   {
     id: 2,
     name: 'Sample Product 2',
@@ -183,8 +182,7 @@ let products: Product[] = [
     price: 49.99,
     stock: 50,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
+    updated_at: new Date().toISOString()}
 ];
 
 export const get: Handler = async ({ response }) => {
@@ -211,8 +209,7 @@ export const post: Handler = async ({ request, response }) => {
     price: parseFloat(body.price),
     stock: parseInt(body.stock) || 0,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+    updated_at: new Date().toISOString()};
 
   products.push(newProduct);
 
@@ -242,8 +239,7 @@ let products: Product[] = [
     price: 29.99,
     stock: 100,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
+    updated_at: new Date().toISOString()},
   {
     id: 2,
     name: 'Sample Product 2',
@@ -251,8 +247,7 @@ let products: Product[] = [
     price: 49.99,
     stock: 50,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
+    updated_at: new Date().toISOString()}
 ];
 
 export const get: Handler = async ({ params, response }) => {
@@ -339,8 +334,7 @@ const users: User[] = [
     name: 'Admin User',
     role: 'admin',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
+    updated_at: new Date().toISOString()}
 ];
 
 export const post: Handler = async ({ request, response }) => {
@@ -395,8 +389,7 @@ let users: User[] = [
     name: 'Admin User',
     role: 'admin',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
+    updated_at: new Date().toISOString()}
 ];
 
 export const post: Handler = async ({ request, response }) => {
@@ -417,8 +410,7 @@ export const post: Handler = async ({ request, response }) => {
     name: body.name,
     role: 'user',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+    updated_at: new Date().toISOString()};
 
   users.push(newUser);
 
@@ -528,8 +520,7 @@ Deno.test('API health check', async () => {
     params: {},
     headers: new Headers(),
     request: new Request('http://localhost/api/health'),
-    response: new Response(),
-  });
+    response: new Response()});
 
   const data = await response.json();
 

@@ -241,8 +241,7 @@ pub struct AppConfig {
     pub cors_allowed_methods: Vec<String>,
     pub cors_allowed_headers: Vec<String>,
     pub bcrypt_cost: u32,
-    pub secure_cookies: bool,
-}
+    pub secure_cookies: bool}
 
 impl AppConfig {
     pub fn from_env() -> Result<Self, figment::Error> {
@@ -298,8 +297,7 @@ impl AppConfig {
                     secure_cookies: env::var("SECURE_COOKIES")
                         .unwrap_or_else(|_| "false".to_string())
                         .parse()
-                        .unwrap_or(false),
-                })
+                        .unwrap_or(false)})
             })
     }
 }`,
@@ -328,8 +326,7 @@ pub struct User {
     pub is_active: bool,
     pub is_verified: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+    pub updated_at: DateTime<Utc>}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -342,8 +339,7 @@ pub struct UserProfile {
     pub is_active: bool,
     pub is_verified: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+    pub updated_at: DateTime<Utc>}
 
 #[derive(Debug, Deserialize, Validate)]
 #[serde(crate = "rocket::serde")]
@@ -357,8 +353,7 @@ pub struct CreateUserRequest {
     #[validate(length(max = 100))]
     pub first_name: Option<String>,
     #[validate(length(max = 100))]
-    pub last_name: Option<String>,
-}
+    pub last_name: Option<String>}
 
 #[derive(Debug, Deserialize, Validate)]
 #[serde(crate = "rocket::serde")]
@@ -368,8 +363,7 @@ pub struct UpdateUserRequest {
     #[validate(length(max = 100))]
     pub first_name: Option<String>,
     #[validate(length(max = 100))]
-    pub last_name: Option<String>,
-}
+    pub last_name: Option<String>}
 
 impl From<User> for UserProfile {
     fn from(user: User) -> Self {
@@ -382,8 +376,7 @@ impl From<User> for UserProfile {
             is_active: user.is_active,
             is_verified: user.is_verified,
             created_at: user.created_at,
-            updated_at: user.updated_at,
-        }
+            updated_at: user.updated_at}
     }
 }`,
 
@@ -396,8 +389,7 @@ pub struct LoginRequest {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = 1))]
-    pub password: String,
-}
+    pub password: String}
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -405,14 +397,12 @@ pub struct LoginResponse {
     pub access_token: String,
     pub refresh_token: String,
     pub token_type: String,
-    pub expires_in: u64,
-}
+    pub expires_in: u64}
 
 #[derive(Debug, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct RefreshTokenRequest {
-    pub refresh_token: String,
-}
+    pub refresh_token: String}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -546,8 +536,7 @@ pub async fn login(
         access_token,
         refresh_token,
         token_type: "Bearer".to_string(),
-        expires_in: config.jwt_expiration,
-    };
+        expires_in: config.jwt_expiration};
 
     Ok(Json(response))
 }
@@ -577,8 +566,7 @@ pub async fn refresh_token(
         access_token,
         refresh_token: request.refresh_token.clone(),
         token_type: "Bearer".to_string(),
-        expires_in: config.jwt_expiration,
-    };
+        expires_in: config.jwt_expiration};
 
     Ok(Json(response))
 }
@@ -680,8 +668,7 @@ use crate::errors::ApiError;
 
 pub struct AuthGuard {
     pub user_id: Uuid,
-    pub email: String,
-}
+    pub email: String}
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AuthGuard {
@@ -690,13 +677,11 @@ impl<'r> FromRequest<'r> for AuthGuard {
     async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
         let config = match req.guard::<&State<AppConfig>>().await {
             request::Outcome::Success(config) => config,
-            _ => return request::Outcome::Failure((Status::InternalServerError, ApiError::InternalServerError)),
-        };
+            _ => return request::Outcome::Failure((Status::InternalServerError, ApiError::InternalServerError))};
 
         let auth_header = match req.headers().get_one("Authorization") {
             Some(header) => header,
-            None => return request::Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized("Missing authorization header".to_string()))),
-        };
+            None => return request::Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized("Missing authorization header".to_string())))};
 
         if !auth_header.starts_with("Bearer ") {
             return request::Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized("Invalid authorization header format".to_string())));
@@ -713,20 +698,16 @@ impl<'r> FromRequest<'r> for AuthGuard {
                 match Uuid::parse_str(&claims.sub) {
                     Ok(user_id) => request::Outcome::Success(AuthGuard {
                         user_id,
-                        email: claims.email,
-                    }),
-                    Err(_) => request::Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized("Invalid user ID in token".to_string()))),
-                }
+                        email: claims.email}),
+                    Err(_) => request::Outcome::Failure((Status::Unauthorized, ApiError::Unauthorized("Invalid user ID in token".to_string())))}
             }
-            Err(err) => request::Outcome::Failure((Status::Unauthorized, err)),
-        }
+            Err(err) => request::Outcome::Failure((Status::Unauthorized, err))}
     }
 }
 
 pub struct AdminGuard {
     pub user_id: Uuid,
-    pub email: String,
-}
+    pub email: String}
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AdminGuard {
@@ -737,15 +718,13 @@ impl<'r> FromRequest<'r> for AdminGuard {
         let auth = match AuthGuard::from_request(req).await {
             request::Outcome::Success(auth) => auth,
             request::Outcome::Failure(failure) => return request::Outcome::Failure(failure),
-            request::Outcome::Forward(forward) => return request::Outcome::Forward(forward),
-        };
+            request::Outcome::Forward(forward) => return request::Outcome::Forward(forward)};
 
         // TODO: Add admin role check here
         // For now, we'll just pass through the auth guard
         request::Outcome::Success(AdminGuard {
             user_id: auth.user_id,
-            email: auth.email,
-        })
+            email: auth.email})
     }
 }`,
 
@@ -757,8 +736,7 @@ pub fn cors_fairing() -> rocket_cors::Cors {
         "http://localhost:3000",
         "http://localhost:8080",
         "http://127.0.0.1:3000",
-        "http://127.0.0.1:8080",
-    ]);
+        "http://127.0.0.1:8080"]);
 
     CorsOptions {
         allowed_origins,
@@ -767,15 +745,13 @@ pub fn cors_fairing() -> rocket_cors::Cors {
             rocket::http::Method::Post,
             rocket::http::Method::Put,
             rocket::http::Method::Delete,
-            rocket::http::Method::Options,
-        ]
+            rocket::http::Method::Options]
         .into_iter()
         .collect(),
         allowed_headers: rocket_cors::AllowedHeaders::some(&[
             "Authorization",
             "Accept",
-            "Content-Type",
-        ]),
+            "Content-Type"]),
         allow_credentials: true,
         ..Default::default()
     }
@@ -790,8 +766,7 @@ impl Fairing for SecurityFairing {
     fn info(&self) -> Info {
         Info {
             name: "Security Headers",
-            kind: Kind::Response,
-        }
+            kind: Kind::Response}
     }
 
     async fn on_response<'r>(&self, _request: &'r rocket::Request<'_>, response: &mut rocket::Response<'r>) {
@@ -814,8 +789,7 @@ impl Fairing for RateLimitFairing {
     fn info(&self) -> Info {
         Info {
             name: "Rate Limiting",
-            kind: Kind::Request,
-        }
+            kind: Kind::Request}
     }
 
     async fn on_request(&self, _request: &mut rocket::Request<'_>, _data: &mut rocket::Data<'_>) {
@@ -872,8 +846,7 @@ pub fn generate_token(
         email: email.to_string(),
         exp: (now + expiration) as usize,
         iat: now as usize,
-        token_type: token_type.to_string(),
-    };
+        token_type: token_type.to_string()};
 
     encode(
         &Header::default(),
@@ -906,8 +879,7 @@ pub enum ApiError {
     NotFound(String),
     InternalServerError,
     ValidationError(ValidationErrors),
-    DatabaseError(sqlx::Error),
-}
+    DatabaseError(sqlx::Error)}
 
 impl From<ValidationErrors> for ApiError {
     fn from(errors: ValidationErrors) -> Self {
@@ -932,8 +904,7 @@ impl From<ApiError> for Status {
             ApiError::NotFound(_) => Status::NotFound,
             ApiError::InternalServerError => Status::InternalServerError,
             ApiError::ValidationError(_) => Status::BadRequest,
-            ApiError::DatabaseError(_) => Status::InternalServerError,
-        }
+            ApiError::DatabaseError(_) => Status::InternalServerError}
     }
 }
 
@@ -985,8 +956,7 @@ pub struct ApiResponse<T> {
     pub success: bool,
     pub data: Option<T>,
     pub message: Option<String>,
-    pub error: Option<String>,
-}
+    pub error: Option<String>}
 
 impl<T> ApiResponse<T> {
     pub fn success(data: T) -> Self {
@@ -994,8 +964,7 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             message: None,
-            error: None,
-        }
+            error: None}
     }
 
     pub fn success_with_message(data: T, message: String) -> Self {
@@ -1003,8 +972,7 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             message: Some(message),
-            error: None,
-        }
+            error: None}
     }
 
     pub fn error(error: String) -> ApiResponse<()> {
@@ -1012,8 +980,7 @@ impl<T> ApiResponse<T> {
             success: false,
             data: None,
             message: None,
-            error: Some(error),
-        }
+            error: Some(error)}
     }
 }
 
@@ -1023,14 +990,12 @@ pub mod route_helpers {
     use std::collections::HashMap;
 
     pub struct TypeSafeRouter {
-        routes: HashMap<String, Vec<Route>>,
-    }
+        routes: HashMap<String, Vec<Route>>}
 
     impl TypeSafeRouter {
         pub fn new() -> Self {
             Self {
-                routes: HashMap::new(),
-            }
+                routes: HashMap::new()}
         }
 
         pub fn add_route_group(&mut self, prefix: String, routes: Vec<Route>) {
@@ -1254,8 +1219,7 @@ pub async fn get_profile(
 \`\`\`rust
 pub struct AuthGuard {
     pub user_id: Uuid,
-    pub email: String,
-}
+    pub email: String}
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AuthGuard {

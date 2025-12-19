@@ -219,8 +219,7 @@ pub struct Config {
     pub cors_allowed_methods: Vec<String>,
     pub cors_allowed_headers: Vec<String>,
     pub bcrypt_cost: u32,
-    pub secure_cookies: bool,
-}
+    pub secure_cookies: bool}
 
 impl Config {
     pub fn from_env() -> Result<Self, env::VarError> {
@@ -277,8 +276,7 @@ impl Config {
             secure_cookies: env::var("SECURE_COOKIES")
                 .unwrap_or_else(|_| "false".to_string())
                 .parse()
-                .expect("SECURE_COOKIES must be a boolean"),
-        })
+                .expect("SECURE_COOKIES must be a boolean")})
     }
 }`,
 
@@ -305,8 +303,7 @@ pub struct User {
     pub is_active: bool,
     pub is_verified: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+    pub updated_at: DateTime<Utc>}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserProfile {
@@ -318,8 +315,7 @@ pub struct UserProfile {
     pub is_active: bool,
     pub is_verified: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+    pub updated_at: DateTime<Utc>}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateUserRequest {
@@ -332,8 +328,7 @@ pub struct CreateUserRequest {
     #[validate(length(max = 100))]
     pub first_name: Option<String>,
     #[validate(length(max = 100))]
-    pub last_name: Option<String>,
-}
+    pub last_name: Option<String>}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct UpdateUserRequest {
@@ -342,8 +337,7 @@ pub struct UpdateUserRequest {
     #[validate(length(max = 100))]
     pub first_name: Option<String>,
     #[validate(length(max = 100))]
-    pub last_name: Option<String>,
-}
+    pub last_name: Option<String>}
 
 impl From<User> for UserProfile {
     fn from(user: User) -> Self {
@@ -356,8 +350,7 @@ impl From<User> for UserProfile {
             is_active: user.is_active,
             is_verified: user.is_verified,
             created_at: user.created_at,
-            updated_at: user.updated_at,
-        }
+            updated_at: user.updated_at}
     }
 }`,
 
@@ -369,21 +362,18 @@ pub struct LoginRequest {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = 1))]
-    pub password: String,
-}
+    pub password: String}
 
 #[derive(Debug, Serialize)]
 pub struct LoginResponse {
     pub access_token: String,
     pub refresh_token: String,
     pub token_type: String,
-    pub expires_in: u64,
-}
+    pub expires_in: u64}
 
 #[derive(Debug, Deserialize)]
 pub struct RefreshTokenRequest {
-    pub refresh_token: String,
-}
+    pub refresh_token: String}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -511,8 +501,7 @@ pub async fn login(
         access_token,
         refresh_token,
         token_type: "Bearer".to_string(),
-        expires_in: config.jwt_expiration,
-    };
+        expires_in: config.jwt_expiration};
 
     Ok(reply::json(&response))
 }
@@ -537,8 +526,7 @@ pub async fn refresh_token(
         access_token,
         refresh_token: req.refresh_token,
         token_type: "Bearer".to_string(),
-        expires_in: config.jwt_expiration,
-    };
+        expires_in: config.jwt_expiration};
 
     Ok(reply::json(&response))
 }
@@ -832,8 +820,7 @@ pub fn generate_token(user_id: &str, email: &str, token_type: &str, secret: &str
         email: email.to_string(),
         exp: (now + expiration) as usize,
         iat: now as usize,
-        token_type: token_type.to_string(),
-    };
+        token_type: token_type.to_string()};
 
     encode(
         &Header::default(),
@@ -891,8 +878,7 @@ pub enum AppError {
     NotFound(String),
     InternalServerError,
     ValidationError,
-    DatabaseError,
-}
+    DatabaseError}
 
 impl warp::reject::Reject for AppError {}
 
@@ -906,8 +892,7 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
             AppError::NotFound(msg) => (warp::http::StatusCode::NOT_FOUND, msg.as_str()),
             AppError::InternalServerError => (warp::http::StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error"),
             AppError::ValidationError => (warp::http::StatusCode::BAD_REQUEST, "Validation Error"),
-            AppError::DatabaseError => (warp::http::StatusCode::INTERNAL_SERVER_ERROR, "Database Error"),
-        }
+            AppError::DatabaseError => (warp::http::StatusCode::INTERNAL_SERVER_ERROR, "Database Error")}
     } else if err.find::<warp::filters::body::BodyDeserializeError>().is_some() {
         (warp::http::StatusCode::BAD_REQUEST, "Invalid JSON body")
     } else if err.find::<warp::reject::MethodNotAllowed>().is_some() {
@@ -932,8 +917,7 @@ pub struct ApiResponse<T> {
     pub success: bool,
     pub data: Option<T>,
     pub message: Option<String>,
-    pub error: Option<String>,
-}
+    pub error: Option<String>}
 
 impl<T> ApiResponse<T> {
     pub fn success(data: T) -> Self {
@@ -941,8 +925,7 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             message: None,
-            error: None,
-        }
+            error: None}
     }
 
     pub fn success_with_message(data: T, message: String) -> Self {
@@ -950,8 +933,7 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             message: Some(message),
-            error: None,
-        }
+            error: None}
     }
 
     pub fn error(error: String) -> ApiResponse<()> {
@@ -959,8 +941,7 @@ impl<T> ApiResponse<T> {
             success: false,
             data: None,
             message: None,
-            error: Some(error),
-        }
+            error: Some(error)}
     }
 }
 

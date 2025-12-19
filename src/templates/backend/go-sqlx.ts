@@ -158,8 +158,7 @@ func main() {
 		Handler:      router,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
+		WriteTimeout: 30 * time.Second}
 
 	// Start server
 	go func() {
@@ -233,8 +232,7 @@ func Load() *Config {
 		LogLevel:     getEnv("LOG_LEVEL", "info"),
 		RedisURL:     getEnv("REDIS_URL", "redis://localhost:6379/0"),
 		JWTExpiry:    time.Duration(getEnvAsInt("JWT_EXPIRY_MINUTES", 15)) * time.Minute,
-		RefreshExpiry: time.Duration(getEnvAsInt("REFRESH_EXPIRY_DAYS", 7)) * 24 * time.Hour,
-	}
+		RefreshExpiry: time.Duration(getEnvAsInt("REFRESH_EXPIRY_DAYS", 7)) * 24 * time.Hour}
 }
 
 func getEnv(key, defaultValue string) string {
@@ -659,8 +657,7 @@ func NewPaginationResponse(total, page, limit int) PaginationResponse {
 		Total: total,
 		Page:  page,
 		Limit: limit,
-		Pages: pages,
-	}
+		Pages: pages}
 }
 `,
 
@@ -684,8 +681,7 @@ func New(db *sqlx.DB, logger *zerolog.Logger, config *config.Config) *Handlers {
 	return &Handlers{
 		db:     db,
 		logger: logger,
-		config: config,
-	}
+		config: config}
 }
 `,
 
@@ -735,8 +731,7 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{
 		Email: req.Email,
 		Name:  req.Name,
-		Role:  req.Role,
-	}
+		Role:  req.Role}
 
 	if user.Role == "" {
 		user.Role = "user"
@@ -960,8 +955,7 @@ func (h *Handlers) ListUsers(w http.ResponseWriter, r *http.Request) {
 
 	render.JSON(w, r, map[string]interface{}{
 		"users":      users,
-		"pagination": pagination,
-	})
+		"pagination": pagination})
 }
 
 // Login godoc
@@ -1026,8 +1020,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	response := models.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		User:         &user,
-	}
+		User:         &user}
 
 	render.JSON(w, r, response)
 }
@@ -1269,8 +1262,7 @@ func (h *Handlers) ListProducts(w http.ResponseWriter, r *http.Request) {
 		MinPrice: utils.ParseFloatOrDefault(r.URL.Query().Get("min_price"), 0),
 		MaxPrice: utils.ParseFloatOrDefault(r.URL.Query().Get("max_price"), 0),
 		Page:     utils.ParseIntOrDefault(r.URL.Query().Get("page"), 1),
-		Limit:    utils.ParseIntOrDefault(r.URL.Query().Get("limit"), 10),
-	}
+		Limit:    utils.ParseIntOrDefault(r.URL.Query().Get("limit"), 10)}
 
 	if req.Page < 1 {
 		req.Page = 1
@@ -1304,8 +1296,7 @@ func (h *Handlers) ListProducts(w http.ResponseWriter, r *http.Request) {
 
 	render.JSON(w, r, map[string]interface{}{
 		"products":   products,
-		"pagination": pagination,
-	})
+		"pagination": pagination})
 }
 `,
 
@@ -1342,8 +1333,7 @@ func Setup(h *handlers.Handlers, cfg *config.Config) chi.Router {
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
-		MaxAge:           300,
-	}))
+		MaxAge:           300}))
 
 	// Rate limiting
 	r.Use(middleware.RateLimiter(cfg.RedisURL))
@@ -1525,8 +1515,7 @@ func ErrBadRequest(err error) render.Renderer {
 		Err:            err,
 		HTTPStatusCode: http.StatusBadRequest,
 		StatusText:     "Bad request",
-		ErrorText:      err.Error(),
-	}
+		ErrorText:      err.Error()}
 }
 
 func ErrValidation(err error) render.Renderer {
@@ -1545,40 +1534,35 @@ func ErrValidation(err error) render.Renderer {
 		Err:            err,
 		HTTPStatusCode: http.StatusBadRequest,
 		StatusText:     "Validation failed",
-		ErrorText:      errText,
-	}
+		ErrorText:      errText}
 }
 
 func ErrUnauthorized(message string) render.Renderer {
 	return &ErrorResponse{
 		HTTPStatusCode: http.StatusUnauthorized,
 		StatusText:     "Unauthorized",
-		ErrorText:      message,
-	}
+		ErrorText:      message}
 }
 
 func ErrForbidden(message string) render.Renderer {
 	return &ErrorResponse{
 		HTTPStatusCode: http.StatusForbidden,
 		StatusText:     "Forbidden",
-		ErrorText:      message,
-	}
+		ErrorText:      message}
 }
 
 func ErrNotFound(message string) render.Renderer {
 	return &ErrorResponse{
 		HTTPStatusCode: http.StatusNotFound,
 		StatusText:     "Not found",
-		ErrorText:      message,
-	}
+		ErrorText:      message}
 }
 
 func ErrConflict(message string) render.Renderer {
 	return &ErrorResponse{
 		HTTPStatusCode: http.StatusConflict,
 		StatusText:     "Conflict",
-		ErrorText:      message,
-	}
+		ErrorText:      message}
 }
 
 func ErrInternalServer(err error) render.Renderer {
@@ -1586,16 +1570,14 @@ func ErrInternalServer(err error) render.Renderer {
 		Err:            err,
 		HTTPStatusCode: http.StatusInternalServerError,
 		StatusText:     "Internal server error",
-		ErrorText:      "An error occurred processing your request",
-	}
+		ErrorText:      "An error occurred processing your request"}
 }
 
 func ErrTooManyRequests(message string) render.Renderer {
 	return &ErrorResponse{
 		HTTPStatusCode: http.StatusTooManyRequests,
 		StatusText:     "Too many requests",
-		ErrorText:      message,
-	}
+		ErrorText:      message}
 }
 
 func formatValidationError(e validator.FieldError) string {
@@ -1635,8 +1617,7 @@ func GenerateToken(userID, tokenType, secret string, expiry time.Duration) (stri
 		"type":    tokenType,
 		"exp":     time.Now().Add(expiry).Unix(),
 		"iat":     time.Now().Unix(),
-		"jti":     uuid.New().String(),
-	}
+		"jti":     uuid.New().String()}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))

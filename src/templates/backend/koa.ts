@@ -8,10 +8,10 @@ export const koaTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'koa',
   version: '2.15.2',
-  tags: ['nodejs', 'koa', 'api', 'rest', 'middleware', 'async', 'typescript'],
+  tags: ['nodejs', 'koa', 'api', 'rest', 'middleware', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['middleware', 'async-await', 'routing', 'error-handling', 'validation', 'authentication'],
+  features: ['middleware', 'rest-api', 'routing', 'middleware', 'validation', 'authentication'],
   
   files: {
     // Package configuration
@@ -69,7 +69,7 @@ export const koaTemplate: BackendTemplate = {
     "mysql2": "^3.9.7",
     "sqlite3": "^5.1.7",
     "objection": "^3.1.4",
-    "redis": "^4.6.13",
+    "caching": "^4.6.13",
     "ioredis": "^5.3.2",
     "winston": "^3.13.0",
     "winston-daily-rotate-file": "^5.0.0",

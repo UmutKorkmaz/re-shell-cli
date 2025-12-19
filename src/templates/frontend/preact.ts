@@ -127,7 +127,7 @@ export class PreactTemplate extends BaseTemplate {
     return files;
   }
 
-  protected generatePackageJson() {
+  protected generatePackageJson(): any {
     return {
       name: this.context.normalizedName,
       version: '0.0.1',
@@ -160,8 +160,8 @@ export class PreactTemplate extends BaseTemplate {
     };
   }
 
-  protected generateTsConfig() {
-    return {
+  protected generateTsConfig(): string {
+    return JSON.stringify({
       compilerOptions: {
         target: 'ES2020',
         useDefineForClassFields: true,
@@ -189,10 +189,10 @@ export class PreactTemplate extends BaseTemplate {
       },
       include: ['src'],
       references: [{ path: './tsconfig.node.json' }]
-    };
+    }, null, 2);
   }
 
-  private generateViteConfig() {
+  protected generateViteConfig(): string {
     return `import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
 import path from 'path';
@@ -589,11 +589,11 @@ export function TodoList() {
             <input
               type="checkbox"
               checked={todo.completed}
-              onChange={() => toggleTodo(todo.id)}
+              onChange={ => toggleTodo(todo.id)}
             />
             <span class="todo-text">{todo.text}</span>
             <button
-              onClick={() => deleteTodo(todo.id)}
+              onClick={ => deleteTodo(todo.id)}
               class="btn btn-danger btn-sm"
               aria-label="Delete todo"
             >
@@ -778,7 +778,7 @@ export interface Feature {
 `;
   }
 
-  protected generateReadme() {
+  protected generateReadme(): string {
     return `# ${this.context.name}
 
 A Preact application built with Vite, TypeScript, and modern tooling.

@@ -1,63 +1,24 @@
-import { BackendTemplate } from '../../types';
+import { BackendTemplate } from '../types';
 
 export const apolloServerTemplate: BackendTemplate = {
   id: 'apollo-server',
   name: 'Apollo Server',
   description: 'Community-driven, open-source GraphQL server with TypeScript, subscriptions, and caching',
-  category: 'backend',
+  displayName: 'Apollo Server',
+  framework: 'apollo',
+  version: '4.10.0',
+  tags: ['graphql', 'apollo', 'typescript', 'subscriptions'],
+  port: 4000,
   language: 'typescript',
   features: [
-    'Apollo Server 4 with Express integration',
-    'TypeScript with full type definitions',
-    'GraphQL subscriptions with WebSockets',
-    'DataLoader for N+1 query optimization',
-    'File uploads with graphql-upload',
-    'Redis caching and rate limiting',
-    'Apollo Studio integration',
-    'Comprehensive testing setup'
+    'graphql',
+    'websockets',
+    'file-upload',
+    'caching',
+    'testing'
   ],
-  dependencies: {
-    '@apollo/server': '^4.10.0',
-    '@apollo/server-plugin-response-cache': '^4.1.3',
-    '@apollo/server-plugin-landing-page-graphql-playground': '^4.0.1',
-    'express': '^4.18.2',
-    'cors': '^2.8.5',
-    'body-parser': '^1.20.2',
-    'graphql': '^16.8.1',
-    'graphql-subscriptions': '^2.0.0',
-    'graphql-ws': '^5.14.3',
-    'ws': '^8.16.0',
-    'dataloader': '^2.2.2',
-    'graphql-upload': '^16.0.2',
-    'redis': '^4.6.11',
-    'ioredis': '^5.3.2',
-    'jsonwebtoken': '^9.0.2',
-    'bcryptjs': '^2.4.3',
-    'uuid': '^9.0.1',
-    'dotenv': '^16.3.1',
-    'winston': '^3.11.0',
-    'graphql-rate-limit': '^3.3.0',
-    'graphql-depth-limit': '^1.1.0',
-    'graphql-cost-analysis': '^1.1.0'
-  },
-  devDependencies: {
-    '@types/node': '^20.10.4',
-    '@types/express': '^4.17.21',
-    '@types/cors': '^2.8.17',
-    '@types/jsonwebtoken': '^9.0.5',
-    '@types/bcryptjs': '^2.4.6',
-    '@types/ws': '^8.5.10',
-    'typescript': '^5.3.3',
-    'ts-node': '^10.9.2',
-    'tsx': '^4.7.0',
-    'nodemon': '^3.0.2',
-    '@types/jest': '^29.5.11',
-    'jest': '^29.7.0',
-    'ts-jest': '^29.1.1',
-    'supertest': '^6.3.3',
-    '@types/supertest': '^6.0.2'
-  },
-  structure: {
+  dependencies: {},
+  files: {
     'src/index.ts': `import 'dotenv/config';
 import express from 'express';
 import { ApolloServer } from '@apollo/server';
@@ -91,8 +52,7 @@ async function startApolloServer() {
   // Create WebSocket server for subscriptions
   const wsServer = new WebSocketServer({
     server: httpServer,
-    path: '/graphql',
-  });
+    path: '/graphql'});
 
   // Set up WebSocket server
   const serverCleanup = useServer(
@@ -100,8 +60,7 @@ async function startApolloServer() {
       schema,
       context: async (ctx, msg, args) => {
         return createContext({ req: ctx.extra.request, redis });
-      },
-    },
+      }},
     wsServer
   );
 
@@ -115,12 +74,9 @@ async function startApolloServer() {
           return {
             async drainServer() {
               await serverCleanup.dispose();
-            },
-          };
-        },
-      },
-      ...plugins,
-    ],
+            }};
+        }},
+      ...plugins],
     formatError: (err) => {
       logger.error('GraphQL Error:', err);
       
@@ -130,8 +86,7 @@ async function startApolloServer() {
       }
       
       return err;
-    },
-  });
+    }});
 
   await server.start();
 
@@ -142,8 +97,7 @@ async function startApolloServer() {
     bodyParser.json({ limit: '50mb' }),
     graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }),
     expressMiddleware(server, {
-      context: async ({ req }) => createContext({ req, redis, dataSources }),
-    })
+      context: async ({ req }) => createContext({ req, redis, dataSources })})
   );
 
   // Health check
@@ -213,8 +167,7 @@ export const typeDefs = [
   baseTypeDefs,
   userTypeDefs,
   postTypeDefs,
-  fileTypeDefs,
-];`,
+  fileTypeDefs];`,
 
     'src/schema/user.ts': `import { gql } from 'graphql-tag';
 
@@ -423,20 +376,16 @@ export const resolvers = {
   Upload: GraphQLUpload,
   Query: {
     ...userResolvers.Query,
-    ...postResolvers.Query,
-  },
+    ...postResolvers.Query},
   Mutation: {
     ...userResolvers.Mutation,
     ...postResolvers.Mutation,
-    ...fileResolvers.Mutation,
-  },
+    ...fileResolvers.Mutation},
   Subscription: {
     ...userResolvers.Subscription,
-    ...postResolvers.Subscription,
-  },
+    ...postResolvers.Subscription},
   User: userResolvers.User,
-  Post: postResolvers.Post,
-};`,
+  Post: postResolvers.Post};`,
 
     'src/resolvers/user.ts': `import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -459,8 +408,7 @@ export const userResolvers = {
 
     users: async (_: any, { limit, offset }: any, { dataSources }: any) => {
       return dataSources.userAPI.findAll({ limit, offset });
-    },
-  },
+    }},
 
   Mutation: {
     register: async (_: any, { input }: any, { dataSources }: any) => {
@@ -472,8 +420,7 @@ export const userResolvers = {
       const hashedPassword = await bcrypt.hash(input.password, 10);
       const user = await dataSources.userAPI.create({
         ...input,
-        password: hashedPassword,
-      });
+        password: hashedPassword});
 
       const token = jwt.sign(
         { id: user.id, email: user.email },
@@ -506,9 +453,7 @@ export const userResolvers = {
         userStatusChanged: {
           userId: user.id,
           status: 'online',
-          lastSeen: new Date().toISOString(),
-        },
-      });
+          lastSeen: new Date().toISOString()}});
 
       return { token, user };
     },
@@ -531,8 +476,7 @@ export const userResolvers = {
 
       const hashedPassword = await bcrypt.hash(input.newPassword, 10);
       return dataSources.userAPI.update(user.id, { password: hashedPassword });
-    },
-  },
+    }},
 
   Subscription: {
     userStatusChanged: {
@@ -541,16 +485,12 @@ export const userResolvers = {
         (payload, variables) => {
           return payload.userStatusChanged.userId === variables.userId;
         }
-      ),
-    },
-  },
+      )}},
 
   User: {
     posts: async (parent: any, _: any, { loaders }: any) => {
       return loaders.postsByUserLoader.load(parent.id);
-    },
-  },
-};`,
+    }}};`,
 
     'src/resolvers/post.ts': `import { GraphQLError } from 'graphql';
 import { withFilter } from 'graphql-subscriptions';
@@ -572,8 +512,7 @@ export const postResolvers = {
 
     searchPosts: async (_: any, { query }: any, { dataSources }: any) => {
       return dataSources.postAPI.search(query);
-    },
-  },
+    }},
 
   Mutation: {
     createPost: async (_: any, { input }: any, { user, dataSources }: any) => {
@@ -581,8 +520,7 @@ export const postResolvers = {
 
       const post = await dataSources.postAPI.create({
         ...input,
-        authorId: user.id,
-      });
+        authorId: user.id});
 
       // Publish to subscribers
       pubsub.publish(POST_ADDED, { postAdded: post });
@@ -631,18 +569,14 @@ export const postResolvers = {
         postLiked: {
           post,
           user,
-          totalLikes: post.likes,
-        },
-      });
+          totalLikes: post.likes}});
 
       return post;
-    },
-  },
+    }},
 
   Subscription: {
     postAdded: {
-      subscribe: () => pubsub.asyncIterator([POST_ADDED]),
-    },
+      subscribe: () => pubsub.asyncIterator([POST_ADDED])},
 
     postUpdated: {
       subscribe: withFilter(
@@ -650,8 +584,7 @@ export const postResolvers = {
         (payload, variables) => {
           return payload.postUpdated.id === variables.id;
         }
-      ),
-    },
+      )},
 
     postLiked: {
       subscribe: withFilter(
@@ -659,9 +592,7 @@ export const postResolvers = {
         (payload, variables) => {
           return payload.postLiked.post.id === variables.id;
         }
-      ),
-    },
-  },
+      )}},
 
   Post: {
     author: async (parent: any, _: any, { loaders }: any) => {
@@ -678,9 +609,7 @@ export const postResolvers = {
 
     excerpt: (parent: any) => {
       return parent.content.substring(0, 150) + '...';
-    },
-  },
-};`,
+    }}};`,
 
     'src/resolvers/file.ts': `import { GraphQLError } from 'graphql';
 import { v4 as uuidv4 } from 'uuid';
@@ -739,8 +668,7 @@ export const fileResolvers = {
         encoding,
         size,
         url: \`/uploads/\${newFilename}\`,
-        uploadedById: user.id,
-      });
+        uploadedById: user.id});
 
       return fileRecord;
     },
@@ -771,9 +699,7 @@ export const fileResolvers = {
 
       // Delete from database
       return dataSources.fileAPI.delete(id);
-    },
-  },
-};`,
+    }}};`,
 
     'src/context.ts': `import jwt from 'jsonwebtoken';
 import { Request } from 'express';
@@ -789,8 +715,7 @@ interface Context {
 export async function createContext({
   req,
   redis,
-  dataSources,
-}: {
+  dataSources}: {
   req: Request;
   redis: any;
   dataSources?: any;
@@ -814,8 +739,7 @@ export async function createContext({
     user,
     loaders,
     redis,
-    dataSources,
-  };
+    dataSources};
 }`,
 
     'src/loaders/index.ts': `import DataLoader from 'dataloader';
@@ -855,8 +779,7 @@ export function createLoaders() {
     likedByLoader: new DataLoader<string, any>(async (postIds) => {
       // Simulate fetching users who liked posts
       return postIds.map(() => []);
-    }),
-  };
+    })};
 }`,
 
     'src/datasources/index.ts': `import { UserAPI } from './UserAPI';
@@ -866,8 +789,7 @@ import { FileAPI } from './FileAPI';
 export const dataSources = () => ({
   userAPI: new UserAPI(),
   postAPI: new PostAPI(),
-  fileAPI: new FileAPI(),
-});`,
+  fileAPI: new FileAPI()});`,
 
     'src/datasources/UserAPI.ts': `import { RESTDataSource } from '@apollo/datasource-rest';
 
@@ -891,8 +813,7 @@ export class UserAPI extends RESTDataSource {
     const allUsers = Array.from(this.users.values());
     const edges = allUsers.slice(offset, offset + limit).map((user: any) => ({
       node: user,
-      cursor: Buffer.from(user.id).toString('base64'),
-    }));
+      cursor: Buffer.from(user.id).toString('base64')}));
 
     return {
       edges,
@@ -900,10 +821,8 @@ export class UserAPI extends RESTDataSource {
         hasNextPage: offset + limit < allUsers.length,
         hasPreviousPage: offset > 0,
         startCursor: edges[0]?.cursor,
-        endCursor: edges[edges.length - 1]?.cursor,
-      },
-      totalCount: allUsers.length,
-    };
+        endCursor: edges[edges.length - 1]?.cursor},
+      totalCount: allUsers.length};
   }
 
   async create(input: any) {
@@ -911,8 +830,7 @@ export class UserAPI extends RESTDataSource {
       id: Date.now().toString(),
       ...input,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     this.users.set(user.id, user);
     return user;
   }
@@ -924,8 +842,7 @@ export class UserAPI extends RESTDataSource {
     const updated = {
       ...user,
       ...input,
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     this.users.set(id, updated);
     return updated;
   }
@@ -977,8 +894,7 @@ export class PostAPI extends RESTDataSource {
 
     const edges = allPosts.slice(offset, offset + limit).map((post: any) => ({
       node: post,
-      cursor: Buffer.from(post.id).toString('base64'),
-    }));
+      cursor: Buffer.from(post.id).toString('base64')}));
 
     return {
       edges,
@@ -986,10 +902,8 @@ export class PostAPI extends RESTDataSource {
         hasNextPage: offset + limit < allPosts.length,
         hasPreviousPage: offset > 0,
         startCursor: edges[0]?.cursor,
-        endCursor: edges[edges.length - 1]?.cursor,
-      },
-      totalCount: allPosts.length,
-    };
+        endCursor: edges[edges.length - 1]?.cursor},
+      totalCount: allPosts.length};
   }
 
   async search(query: string) {
@@ -1006,8 +920,7 @@ export class PostAPI extends RESTDataSource {
       ...input,
       likes: 0,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     this.posts.set(post.id, post);
     return post;
   }
@@ -1019,8 +932,7 @@ export class PostAPI extends RESTDataSource {
     const updated = {
       ...post,
       ...input,
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     this.posts.set(id, updated);
     return updated;
   }
@@ -1062,8 +974,7 @@ export class FileAPI extends RESTDataSource {
   async create(input: any) {
     const file = {
       ...input,
-      createdAt: new Date().toISOString(),
-    };
+      createdAt: new Date().toISOString()};
     this.files.set(file.id, file);
     return file;
   }
@@ -1083,15 +994,13 @@ import { loggingPlugin } from './logging';
 export const plugins = [
   responseCachePlugin({
     sessionId: ({ request }) => 
-      request.http?.headers.get('authorization') || 'anonymous',
-  }),
+      request.http?.headers.get('authorization') || 'anonymous'}),
   process.env.NODE_ENV !== 'production' && 
     ApolloServerPluginLandingPageGraphQLPlayground(),
   rateLimitPlugin(),
   depthLimitPlugin(5),
   costAnalysisPlugin({ maximumCost: 1000 }),
-  loggingPlugin(),
-].filter(Boolean);`,
+  loggingPlugin()].filter(Boolean);`,
 
     'src/plugins/rateLimit.ts': `import { GraphQLError } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
@@ -1111,10 +1020,8 @@ export function rateLimitPlugin() {
               rateLimitMap.delete(key);
             }
           }
-        },
-      };
-    },
-  };
+        }};
+    }};
 }
 
 export function rateLimitDirectiveTransformer(schema: any) {
@@ -1148,8 +1055,7 @@ export function rateLimitDirectiveTransformer(schema: any) {
       }
 
       return fieldConfig;
-    },
-  });
+    }});
 }
 
 function parseWindow(window: string): number {
@@ -1175,10 +1081,8 @@ export function depthLimitPlugin(maxDepth: number) {
           if (errors) {
             throw errors;
           }
-        },
-      };
-    },
-  };
+        }};
+    }};
 }`,
 
     'src/plugins/costAnalysis.ts': `import costAnalysis from 'graphql-cost-analysis';
@@ -1191,16 +1095,13 @@ export function costAnalysisPlugin(options: any) {
           const cost = costAnalysis({
             ...options,
             query: requestContext.request.query,
-            variables: requestContext.request.variables,
-          });
+            variables: requestContext.request.variables});
 
           if (cost > options.maximumCost) {
             throw new Error(\`Query cost \${cost} exceeds maximum cost \${options.maximumCost}\`);
           }
-        },
-      };
-    },
-  };
+        }};
+    }};
 }`,
 
     'src/plugins/logging.ts': `import { logger } from '../utils/logger';
@@ -1219,18 +1120,14 @@ export function loggingPlugin() {
             query: request.query,
             variables: request.variables,
             duration: \`\${duration}ms\`,
-            errors: response.body.singleResult.errors,
-          });
+            errors: response.body.singleResult.errors});
         },
 
         async didEncounterErrors(requestContext: any) {
           logger.error('GraphQL Errors', {
-            errors: requestContext.errors,
-          });
-        },
-      };
-    },
-  };
+            errors: requestContext.errors});
+        }};
+    }};
 }`,
 
     'src/utils/logger.ts': `import winston from 'winston';
@@ -1247,17 +1144,14 @@ export const logger = winston.createLogger({
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.simple()
-      ),
-    }),
+      )}),
     new winston.transports.File({ 
       filename: 'error.log', 
       level: 'error' 
     }),
     new winston.transports.File({ 
       filename: 'combined.log' 
-    }),
-  ],
-});`,
+    })]});`,
 
     'src/utils/pubsub.ts': `import { PubSub } from 'graphql-subscriptions';
 
@@ -1275,8 +1169,7 @@ export async function setupRedis() {
     retryStrategy: (times) => {
       const delay = Math.min(times * 50, 2000);
       return delay;
-    },
-  });
+    }});
 
   redis.on('connect', () => {
     logger.info('Connected to Redis');
@@ -1305,14 +1198,12 @@ export function authDirectiveTransformer(schema: any) {
         fieldConfig.resolve = async function (source, args, context, info) {
           if (!context.user) {
             throw new GraphQLError('Not authenticated', {
-              extensions: { code: 'UNAUTHENTICATED' },
-            });
+              extensions: { code: 'UNAUTHENTICATED' }});
           }
 
           if (requires && context.user.role !== requires && requires !== 'USER') {
             throw new GraphQLError('Not authorized', {
-              extensions: { code: 'FORBIDDEN' },
-            });
+              extensions: { code: 'FORBIDDEN' }});
           }
 
           return originalResolve(source, args, context, info);
@@ -1320,8 +1211,7 @@ export function authDirectiveTransformer(schema: any) {
       }
 
       return fieldConfig;
-    },
-  });
+    }});
 }`,
 
     'src/tests/server.test.ts': `import request from 'supertest';
@@ -1376,9 +1266,7 @@ describe('Apollo Server', () => {
         input: {
           username: 'testuser',
           email: 'test@example.com',
-          password: 'password123',
-        },
-      };
+          password: 'password123'}};
 
       const result = await server.executeOperation({ 
         query: mutation, 
@@ -1558,16 +1446,13 @@ UPLOAD_DIR=./uploads`,
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
+    '^.+\\.ts$': 'ts-jest'},
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
-    '!src/**/index.ts',
-  ],
+    '!src/**/index.ts'],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
-};`,
+  coverageReporters: ['text', 'lcov', 'html']};`,
 
     'README.md': `# Apollo Server GraphQL API
 
@@ -1704,8 +1589,4 @@ Connect to Apollo Studio for monitoring:
 1. Set \`APOLLO_KEY\` and \`APOLLO_GRAPH_REF\` in environment
 2. Access Studio at https://studio.apollographql.com
 `
-  },
-  scripts: {
-    postInstall: `echo "Apollo Server setup complete! Run 'npm run dev' to start the server."`
-  }
-};
+  }};

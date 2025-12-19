@@ -63,7 +63,7 @@ development_dependencies:
 
     'src/{{projectName}}.cr': `require "kemal"
 require "json"
-require "jwt"
+require "authentication"
 require "dotenv"
 
 # Load environment variables
@@ -157,8 +157,7 @@ module JWTHelper
     payload = {
       "user_id" => user_id,
       "exp"     => expires_at.to_unix,
-      "iat"     => Time.utc.to_unix,
-    }
+      "iat"     => Time.utc.to_unix}
     token = JWT.encode(payload, JWT_SECRET, JWT_ALGORITHM)
     TokenResponse.new(token, expires_at.to_unix)
   end
@@ -236,8 +235,7 @@ get "/" do
     version:     "1.0.0",
     framework:   "Kemal",
     language:    "Crystal",
-    description: "{{description}}",
-  }.to_json
+    description: "{{description}}"}.to_json
 end
 
 # Authentication endpoints
@@ -397,8 +395,7 @@ end
 def auth_headers(token : String)
   HTTP::Headers{
     "Content-Type"  => "application/json",
-    "Authorization" => "Bearer #{token}",
-  }
+    "Authorization" => "Bearer #{token}"}
 end
 
 def parse_json(body : String)
@@ -757,31 +754,24 @@ docker-compose up -d
 ## License
 
 MIT
-`,
-  },
+`},
   prompts: [
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: 'my-kemal-app',
-    },
+      default: 'my-kemal-app'},
     {
       type: 'input',
       name: 'description',
       message: 'Project description:',
-      default: 'A Crystal web application built with Kemal',
-    },
+      default: 'A Crystal web application built with Kemal'},
     {
       type: 'input',
       name: 'author',
       message: 'Author:',
-      default: 'Developer',
-    },
-  ],
+      default: 'Developer'}],
   postInstall: [
     'shards install',
     'echo "✨ {{projectName}} is ready!"',
-    'echo "Run: crystal run src/{{projectName}}.cr"',
-  ],
-};
+    'echo "Run: crystal run src/{{projectName}}.cr"']};

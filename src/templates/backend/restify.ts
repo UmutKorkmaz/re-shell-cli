@@ -11,7 +11,7 @@ export const restifyTemplate: BackendTemplate = {
   tags: ['nodejs', 'restify', 'api', 'rest', 'microservices', 'throttling', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['api-versioning', 'throttling', 'request-validation', 'bunyan-logging', 'dtrace', 'error-handling', 'authentication', 'swagger'],
+  features: ['rest-api', 'rate-limiting', 'validation', 'logging', 'monitoring', 'middleware', 'authentication', 'swagger'],
   
   files: {
     // TypeScript project configuration
@@ -49,7 +49,7 @@ export const restifyTemplate: BackendTemplate = {
     "dotenv": "^16.4.5",
     "pg": "^8.11.5",
     "pg-pool": "^3.6.2",
-    "redis": "^4.6.13",
+    "caching": "^4.6.13",
     "ioredis": "^5.3.2",
     "uuid": "^9.0.1",
     "lodash": "^4.17.21",
@@ -1601,8 +1601,7 @@ export const pool = new Pool({
   min: config.database.pool.min,
   max: config.database.pool.max,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+  connectionTimeoutMillis: 2000});
 
 pool.on('error', (err) => {
   logger.error('Unexpected database error on idle client', err);
@@ -1779,40 +1778,27 @@ const options = {
       description: 'Restify REST API with TypeScript',
       license: {
         name: 'MIT',
-        url: 'https://spdx.org/licenses/MIT.html',
-      },
+        url: 'https://spdx.org/licenses/MIT.html'},
       contact: {
         name: 'API Support',
-        email: 'support@example.com',
-      },
-    },
+        email: 'support@example.com'}},
     servers: [
       {
         url: \`http://localhost:\${config.port}/api/v1\`,
-        description: 'Development server',
-      },
+        description: 'Development server'},
       {
         url: process.env.API_URL || 'https://api.example.com/v1',
-        description: 'Production server',
-      },
-    ],
+        description: 'Production server'}],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
+          bearerFormat: 'JWT'}}},
     security: [
       {
-        bearerAuth: [],
-      },
-    ],
-  },
-  apis: ['./src/routes/*.ts', './src/models/*.ts'],
-};
+        bearerAuth: []}]},
+  apis: ['./src/routes/*.ts', './src/models/*.ts']};
 
 export function setupSwagger(server: restify.Server): void {
   const specs = swaggerJsdoc(options);

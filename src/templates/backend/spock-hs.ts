@@ -8,10 +8,10 @@ export const spockHsTemplate: BackendTemplate = {
   language: 'haskell',
   framework: 'spock',
   version: '1.0.0',
-  tags: ['haskell', 'spock', 'type-safe', 'routing', 'middleware', 'postgresql'],
+  tags: ['haskell', 'spock', 'validation', 'routing', 'middleware', 'postgresql'],
   port: 3000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'type-safe'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'validation'],
 
   files: {
     // Package configuration

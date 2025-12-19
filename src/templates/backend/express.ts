@@ -11,7 +11,7 @@ export const expressTemplate: BackendTemplate = {
   tags: ['nodejs', 'express', 'api', 'rest', 'middleware', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['middleware', 'routing', 'cors', 'authentication', 'validation', 'error-handling', 'rate-limiting', 'logging'],
+  features: ['middleware', 'routing', 'cors', 'authentication', 'validation', 'middleware', 'rate-limiting', 'logging'],
   
   files: {
     // TypeScript project configuration
@@ -46,9 +46,9 @@ export const expressTemplate: BackendTemplate = {
     "dotenv": "^16.4.5",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^5.13.0",
+    "database": "^5.13.0",
     "@prisma/client": "^5.13.0",
-    "redis": "^4.6.13",
+    "caching": "^4.6.13",
     "ioredis": "^5.3.2",
     "swagger-ui-express": "^5.0.0",
     "swagger-jsdoc": "^6.2.8",
@@ -1041,8 +1041,7 @@ export const rateLimiter = rateLimit({
   max: 100, // Limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
-  legacyHeaders: false,
-});
+  legacyHeaders: false});
 
 // Strict rate limit for auth endpoints
 export const authRateLimiter = rateLimit({
@@ -1053,8 +1052,7 @@ export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // Limit each IP to 5 requests per windowMs
   message: 'Too many authentication attempts, please try again later.',
-  skipSuccessfulRequests: true,
-});
+  skipSuccessfulRequests: true});
 
 // File upload rate limit
 export const uploadRateLimiter = rateLimit({
@@ -1064,8 +1062,7 @@ export const uploadRateLimiter = rateLimit({
   }),
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // Limit each IP to 10 uploads per hour
-  message: 'Upload limit exceeded, please try again later.',
-});`,
+  message: 'Upload limit exceeded, please try again later.'});`,
 
     // Database configuration (Prisma)
     'src/config/database.ts': `import { PrismaClient } from '@prisma/client';
@@ -1076,9 +1073,7 @@ const prisma = new PrismaClient({
     { emit: 'event', level: 'query' },
     { emit: 'event', level: 'error' },
     { emit: 'event', level: 'info' },
-    { emit: 'event', level: 'warn' },
-  ],
-});
+    { emit: 'event', level: 'warn' }]});
 
 // Log database queries in development
 if (process.env.NODE_ENV === 'development') {
@@ -1281,40 +1276,27 @@ const options: swaggerJsdoc.Options = {
       description: 'Express.js API with TypeScript',
       license: {
         name: 'MIT',
-        url: 'https://spdx.org/licenses/MIT.html',
-      },
+        url: 'https://spdx.org/licenses/MIT.html'},
       contact: {
         name: 'API Support',
-        email: 'support@example.com',
-      },
-    },
+        email: 'support@example.com'}},
     servers: [
       {
         url: 'http://localhost:3000/api/v1',
-        description: 'Development server',
-      },
+        description: 'Development server'},
       {
         url: process.env.API_URL || 'https://api.example.com/v1',
-        description: 'Production server',
-      },
-    ],
+        description: 'Production server'}],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
+          bearerFormat: 'JWT'}}},
     security: [
       {
-        bearerAuth: [],
-      },
-    ],
-  },
-  apis: ['./src/routes/*.ts', './src/models/*.ts'],
-};
+        bearerAuth: []}]},
+  apis: ['./src/routes/*.ts', './src/models/*.ts']};
 
 const swaggerSpec = swaggerJsdoc(options);
 
@@ -1340,8 +1322,7 @@ const levels = {
   warn: 1,
   info: 2,
   http: 3,
-  debug: 4,
-};
+  debug: 4};
 
 const level = () => {
   const env = process.env.NODE_ENV || 'development';
@@ -1354,8 +1335,7 @@ const colors = {
   warn: 'yellow',
   info: 'green',
   http: 'magenta',
-  debug: 'white',
-};
+  debug: 'white'};
 
 winston.addColors(colors);
 
@@ -1371,19 +1351,16 @@ const transports = [
   new winston.transports.Console(),
   new winston.transports.File({
     filename: path.join(logDir, 'error.log'),
-    level: 'error',
-  }),
+    level: 'error'}),
   new winston.transports.File({
     filename: path.join(logDir, 'all.log')
-  }),
-];
+  })];
 
 export const logger = winston.createLogger({
   level: level(),
   levels,
   format,
-  transports,
-});`,
+  transports});`,
 
     // Environment variables
     '.env.example': `# Application
@@ -1607,16 +1584,14 @@ Dockerfile
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
+    '^.+\\.ts$': 'ts-jest'},
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.spec.ts',
     '!src/**/*.test.ts',
     '!src/__tests__/**',
-    '!src/index.ts',
-  ],
+    '!src/index.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
@@ -1628,11 +1603,9 @@ Dockerfile
     '^@routes/(.*)$': '<rootDir>/src/routes/$1',
     '^@services/(.*)$': '<rootDir>/src/services/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
-    '^@types/(.*)$': '<rootDir>/src/types/$1',
-  },
+    '^@types/(.*)$': '<rootDir>/src/types/$1'},
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
-  testTimeout: 10000,
-};`,
+  testTimeout: 10000};`,
 
     // README
     'README.md': `# {{projectName}}
@@ -1739,6 +1712,4 @@ src/
 ## License
 
 MIT
-`,
-  },
-};
+`}};

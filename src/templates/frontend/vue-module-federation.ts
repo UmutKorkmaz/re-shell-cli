@@ -252,7 +252,7 @@ module.exports = {
     }, null, 2);
   }
 
-  private generateEslintConfig() {
+  protected generateEslintConfig() {
     return `module.exports = {
   root: true,
   env: {

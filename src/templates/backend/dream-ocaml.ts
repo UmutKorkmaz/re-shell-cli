@@ -8,7 +8,7 @@ export const dreamOcamlTemplate: BackendTemplate = {
   language: 'ocaml',
   framework: 'dream',
   version: '1.0.0',
-  tags: ['ocaml', 'dream', 'modern', 'type-safe', 'middleware', 'async'],
+  tags: ['ocaml', 'dream', 'modern', 'type-safe', 'middleware'],
   port: 8080,
   dependencies: {},
   features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing'],

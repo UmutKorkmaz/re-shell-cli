@@ -522,8 +522,7 @@ return $config
                 'parenthesis_brace_block',
                 'square_brace_block',
                 'throw',
-                'use',
-            ]
+                'use']
         ],
         'no_leading_namespace_whitespace' => true,
         'no_mixed_echo_print' => ['use' => 'echo'],
@@ -578,8 +577,7 @@ return $config
         'trim_array_spaces' => true,
         'types_spaces' => true,
         'unary_operator_spaces' => true,
-        'whitespace_after_comma_in_array' => true,
-    ])
+        'whitespace_after_comma_in_array' => true])
     ->setFinder($finder);`
   });
 

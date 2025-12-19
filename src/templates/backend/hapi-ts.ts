@@ -2436,9 +2436,7 @@ const prisma = globalThis.__prisma || new PrismaClient({
     { level: 'query', emit: 'event' },
     { level: 'error', emit: 'event' },
     { level: 'info', emit: 'event' },
-    { level: 'warn', emit: 'event' },
-  ],
-});
+    { level: 'warn', emit: 'event' }]});
 
 // Log database queries in development
 if (process.env.NODE_ENV === 'development') {

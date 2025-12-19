@@ -11,7 +11,7 @@ export const nestjsTemplate: BackendTemplate = {
   tags: ['nodejs', 'nestjs', 'api', 'rest', 'graphql', 'microservices', 'typescript'],
   port: 3000,
   dependencies: {},
-  features: ['dependency-injection', 'modular-architecture', 'graphql', 'websocket', 'microservices', 'testing', 'swagger', 'validation'],
+  features: ['middleware', 'microservices', 'graphql', 'websockets', 'microservices', 'testing', 'swagger', 'validation'],
   
   files: {
     // Package configuration
@@ -94,7 +94,7 @@ export const nestjsTemplate: BackendTemplate = {
     "handlebars": "^4.7.8",
     "amqplib": "^0.10.4",
     "kafkajs": "^2.2.4",
-    "redis": "^4.6.13"
+    "caching": "^4.6.13"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.2",
@@ -223,8 +223,7 @@ async function bootstrap() {
   // Create app with custom logger
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: WinstonModule.createLogger(winstonConfig),
-    cors: true,
-  });
+    cors: true});
 
   const configService = app.get(ConfigService);
   const port = configService.get('PORT', 3000);
@@ -238,8 +237,7 @@ async function bootstrap() {
   // Enable CORS
   app.enableCors({
     origin: configService.get('CORS_ORIGINS', '*').split(','),
-    credentials: true,
-  });
+    credentials: true});
 
   // Global prefix
   app.setGlobalPrefix('api');
@@ -247,8 +245,7 @@ async function bootstrap() {
   // Versioning
   app.enableVersioning({
     type: VersioningType.URI,
-    defaultVersion: '1',
-  });
+    defaultVersion: '1'});
 
   // Global pipes
   app.useGlobalPipes(
@@ -257,9 +254,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true,
-      },
-    }),
+        enableImplicitConversion: true}}),
   );
 
   // Global filters
@@ -291,9 +286,7 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document, {
       swaggerOptions: {
-        persistAuthorization: true,
-      },
-    });
+        persistAuthorization: true}});
   }
 
   // Health check
@@ -302,8 +295,7 @@ async function bootstrap() {
       status: 'ok',
       timestamp: new Date().toISOString(),
       environment,
-      uptime: process.uptime(),
-    });
+      uptime: process.uptime()});
   });
 
   // Graceful shutdown
@@ -348,8 +340,7 @@ import { validationSchema } from './config/validation';
       isGlobal: true,
       load: [configuration],
       validationSchema,
-      cache: true,
-    }),
+      cache: true}),
 
     // Database
     DatabaseModule,
@@ -357,8 +348,7 @@ import { validationSchema } from './config/validation';
     // Rate limiting
     ThrottlerModule.forRoot([{
       ttl: 60000,
-      limit: 100,
-    }]),
+      limit: 100}]),
 
     // Caching
     CacheModule.registerAsync({
@@ -369,9 +359,7 @@ import { validationSchema } from './config/validation';
         store: redisStore as any,
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),
-        ttl: configService.get('CACHE_TTL', 300),
-      }),
-    }),
+        ttl: configService.get('CACHE_TTL', 300)})}),
 
     // Queue
     BullModule.forRootAsync({
@@ -381,10 +369,7 @@ import { validationSchema } from './config/validation';
         redis: {
           host: configService.get('REDIS_HOST'),
           port: configService.get('REDIS_PORT'),
-          password: configService.get('REDIS_PASSWORD'),
-        },
-      }),
-    }),
+          password: configService.get('REDIS_PASSWORD')}})}),
 
     // Scheduling
     ScheduleModule.forRoot(),
@@ -395,8 +380,7 @@ import { validationSchema } from './config/validation';
     // Static files
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
-      serveRoot: '/public',
-    }),
+      serveRoot: '/public'}),
 
     // Feature modules
     CommonModule,
@@ -406,9 +390,7 @@ import { validationSchema } from './config/validation';
     HealthModule,
     WebSocketModule,
     EmailModule,
-    FileModule,
-  ],
-})
+    FileModule]})
 export class AppModule {}`,
 
     // Auth module
@@ -435,16 +417,11 @@ import { UsersModule } from '../modules/users/users.module';
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get('JWT_EXPIRES_IN', '1h'),
-        },
-      }),
-    }),
-    TypeOrmModule.forFeature([User]),
-  ],
+          expiresIn: configService.get('JWT_EXPIRES_IN', '1h')}})}),
+    TypeOrmModule.forFeature([User])],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy, RefreshTokenStrategy],
-  exports: [AuthService],
-})
+  exports: [AuthService]})
 export class AuthModule {}`,
 
     // Auth controller
@@ -457,8 +434,7 @@ export class AuthModule {}`,
   HttpCode,
   HttpStatus,
   Get,
-  Param,
-} from '@nestjs/common';
+  Param} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -588,8 +564,7 @@ export class AuthController {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+  ConflictException} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -630,10 +605,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
-      },
-      ...tokens,
-    };
+        role: user.role},
+      ...tokens};
   }
 
   async register(registerDto: RegisterDto) {
@@ -654,8 +627,7 @@ export class AuthService {
       ...registerDto,
       password: hashedPassword,
       verificationToken,
-      isEmailVerified: false,
-    });
+      isEmailVerified: false});
 
     // Send verification email
     await this.emailService.sendVerificationEmail(user.email, verificationToken);
@@ -669,10 +641,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
-      },
-      ...tokens,
-    };
+        role: user.role},
+      ...tokens};
   }
 
   async logout(userId: string) {
@@ -714,8 +684,7 @@ export class AuthService {
 
     await this.userRepository.update(user.id, {
       resetToken,
-      resetTokenExpiry,
-    });
+      resetTokenExpiry});
 
     await this.emailService.sendPasswordResetEmail(email, resetToken);
 
@@ -724,8 +693,7 @@ export class AuthService {
 
   async resetPassword(token: string, newPassword: string) {
     const user = await this.userRepository.findOne({
-      where: { resetToken: token },
-    });
+      where: { resetToken: token }});
 
     if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
       throw new BadRequestException('Invalid or expired reset token');
@@ -736,8 +704,7 @@ export class AuthService {
     await this.userRepository.update(user.id, {
       password: hashedPassword,
       resetToken: null,
-      resetTokenExpiry: null,
-    });
+      resetTokenExpiry: null});
 
     return { message: 'Password reset successful' };
   }
@@ -758,8 +725,7 @@ export class AuthService {
 
   async verifyEmail(token: string) {
     const user = await this.userRepository.findOne({
-      where: { verificationToken: token },
-    });
+      where: { verificationToken: token }});
 
     if (!user) {
       throw new BadRequestException('Invalid verification token');
@@ -767,8 +733,7 @@ export class AuthService {
 
     await this.userRepository.update(user.id, {
       isEmailVerified: true,
-      verificationToken: null,
-    });
+      verificationToken: null});
 
     return { message: 'Email verified successfully' };
   }
@@ -778,36 +743,29 @@ export class AuthService {
       this.jwtService.signAsync(
         {
           sub: userId,
-          email,
-        },
+          email},
         {
           secret: this.configService.get('JWT_SECRET'),
-          expiresIn: this.configService.get('JWT_EXPIRES_IN', '15m'),
-        },
+          expiresIn: this.configService.get('JWT_EXPIRES_IN', '15m')},
       ),
       this.jwtService.signAsync(
         {
           sub: userId,
-          email,
-        },
+          email},
         {
           secret: this.configService.get('JWT_REFRESH_SECRET'),
-          expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'),
-        },
-      ),
-    ]);
+          expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d')},
+      )]);
 
     return {
       accessToken,
-      refreshToken,
-    };
+      refreshToken};
   }
 
   private async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     await this.userRepository.update(userId, {
-      refreshToken: hashedRefreshToken,
-    });
+      refreshToken: hashedRefreshToken});
   }
 }`,
 
@@ -820,16 +778,14 @@ export class AuthService {
   UpdateDateColumn,
   OneToMany,
   BeforeInsert,
-  BeforeUpdate,
-} from 'typeorm';
+  BeforeUpdate} from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { ApiHideProperty } from '@nestjs/swagger';
 import { Todo } from '../../todos/entities/todo.entity';
 
 export enum UserRole {
   USER = 'user',
-  ADMIN = 'admin',
-}
+  ADMIN = 'admin'}
 
 @Entity('users')
 export class User {
@@ -850,8 +806,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.USER,
-  })
+    default: UserRole.USER})
   role: UserRole;
 
   @Column({ default: true })
@@ -913,21 +868,18 @@ export class User {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+  JoinColumn} from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
 export enum TodoStatus {
   PENDING = 'pending',
   IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-}
+  COMPLETED = 'completed'}
 
 export enum TodoPriority {
   LOW = 'low',
   MEDIUM = 'medium',
-  HIGH = 'high',
-}
+  HIGH = 'high'}
 
 @Entity('todos')
 export class Todo {
@@ -943,15 +895,13 @@ export class Todo {
   @Column({
     type: 'enum',
     enum: TodoStatus,
-    default: TodoStatus.PENDING,
-  })
+    default: TodoStatus.PENDING})
   status: TodoStatus;
 
   @Column({
     type: 'enum',
     enum: TodoPriority,
-    default: TodoPriority.MEDIUM,
-  })
+    default: TodoPriority.MEDIUM})
   priority: TodoPriority;
 
   @Column({ nullable: true })
@@ -988,14 +938,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+      useClass: JwtAuthGuard},
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
-})
+      useClass: ThrottlerGuard}]})
 export class CommonModule {}`,
 
     // Database module
@@ -1021,12 +967,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         migrations: [__dirname + '/migrations/*{.ts,.js}'],
         migrationsTableName: 'migrations',
         ssl: configService.get('DB_SSL') === 'true' ? {
-          rejectUnauthorized: false,
-        } : false,
-      }),
-    }),
-  ],
-})
+          rejectUnauthorized: false} : false})})]})
 export class DatabaseModule {}`,
 
     // Configuration
@@ -1040,21 +981,18 @@ export class DatabaseModule {}`,
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
     database: process.env.DB_DATABASE || '{{projectName}}',
-    ssl: process.env.DB_SSL === 'true',
-  },
+    ssl: process.env.DB_SSL === 'true'},
   
   jwt: {
     secret: process.env.JWT_SECRET || 'supersecret',
     expiresIn: process.env.JWT_EXPIRES_IN || '1h',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'refreshsecret',
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-  },
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d'},
   
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-    password: process.env.REDIS_PASSWORD,
-  },
+    password: process.env.REDIS_PASSWORD},
   
   email: {
     host: process.env.SMTP_HOST,
@@ -1062,27 +1000,21 @@ export class DatabaseModule {}`,
     secure: process.env.SMTP_SECURE === 'true',
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
-    from: process.env.EMAIL_FROM || 'noreply@example.com',
-  },
+    from: process.env.EMAIL_FROM || 'noreply@example.com'},
   
   cors: {
-    origins: process.env.CORS_ORIGINS || 'http://localhost:3000',
-  },
+    origins: process.env.CORS_ORIGINS || 'http://localhost:3000'},
   
   throttle: {
     ttl: parseInt(process.env.THROTTLE_TTL, 10) || 60,
-    limit: parseInt(process.env.THROTTLE_LIMIT, 10) || 100,
-  },
+    limit: parseInt(process.env.THROTTLE_LIMIT, 10) || 100},
   
   cache: {
-    ttl: parseInt(process.env.CACHE_TTL, 10) || 300,
-  },
+    ttl: parseInt(process.env.CACHE_TTL, 10) || 300},
   
   upload: {
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE, 10) || 10 * 1024 * 1024,
-    uploadDir: process.env.UPLOAD_DIR || './uploads',
-  },
-});`,
+    uploadDir: process.env.UPLOAD_DIR || './uploads'}});`,
 
     // Environment variables
     '.env.example': `# Application

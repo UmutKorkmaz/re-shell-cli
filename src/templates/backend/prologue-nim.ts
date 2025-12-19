@@ -8,10 +8,10 @@ export const prologueNimTemplate: BackendTemplate = {
   language: 'nim',
   framework: 'prologue',
   version: '1.0.0',
-  tags: ['nim', 'prologue', 'full-stack', 'orm', 'authentication', 'type-safe'],
+  tags: ['nim', 'prologue', 'full-stack', 'database', 'authentication', 'type-safe'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'orm'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'database'],
 
   files: {
     // Configuration

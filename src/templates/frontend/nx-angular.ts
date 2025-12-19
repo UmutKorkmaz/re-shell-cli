@@ -79,6 +79,46 @@ export class NxAngularTemplate extends BaseTemplate {
       content: this.generateReadme()
     });
 
+    // Dockerfile for production deployment
+    files.push({
+      path: 'Dockerfile',
+      content: this.generateDockerfile()
+    });
+
+    // Docker Compose for local development
+    files.push({
+      path: 'docker-compose.yml',
+      content: this.generateDockerCompose()
+    });
+
+    // Docker Compose for development
+    files.push({
+      path: 'docker-compose.dev.yml',
+      content: this.generateDockerComposeDev()
+    });
+
+    // Nginx configuration for production
+    files.push({
+      path: 'nginx.conf',
+      content: this.generateNginxConfig()
+    });
+
+    // Environment configuration
+    files.push({
+      path: '.env.example',
+      content: this.generateEnvExample()
+    });
+
+    files.push({
+      path: 'apps/app1/src/environments/environment.ts',
+      content: this.generateEnvironment()
+    });
+
+    files.push({
+      path: 'apps/app1/src/environments/environment.prod.ts',
+      content: this.generateEnvironmentProd()
+    });
+
     // Application files
     files.push({
       path: 'apps/app1/project.json',
@@ -280,7 +320,7 @@ export class NxAngularTemplate extends BaseTemplate {
     }, null, 2);
   }
 
-  private generateTsConfigBase() {
+  protected generateTsConfigBase() {
     return JSON.stringify({
       'compileOnSave': false,
       'compilerOptions': {
@@ -305,7 +345,7 @@ export class NxAngularTemplate extends BaseTemplate {
     }, null, 2);
   }
 
-  private generateTsConfig() {
+  protected generateTsConfig() {
     return JSON.stringify({
       'extends': './tsconfig.base.json',
       'files': [],
@@ -376,7 +416,7 @@ node_modules
 `;
   }
 
-  private generateEslintConfig() {
+  protected generateEslintConfig() {
     return JSON.stringify({
       'root': true,
       'ignorePatterns': ['**/*'],
@@ -459,7 +499,7 @@ coverage
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     const { name, description } = this.context;
     return `# ${name}
 
@@ -994,6 +1034,157 @@ export class UiLibComponent {
 
   private generateLibIndex() {
     return `export * from './lib/ui-lib.component';
+`;
+  }
+
+  private generateDockerfile() {
+    return `# Multi-stage Dockerfile for Nx Angular workspace
+
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Stage 2: Build
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build affected projects or all projects
+RUN npx nx run-many -t=build --all --parallel=1
+
+# Stage 3: Production server
+FROM nginx:alpine AS production
+
+# Copy built app from build stage
+COPY --from=build /app/dist/apps/app1 /usr/share/nginx/html
+
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+`;
+  }
+
+  private generateDockerCompose() {
+    return `version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: unless-stopped
+`;
+  }
+
+  private generateDockerComposeDev() {
+    return `version: '3.8'
+
+services:
+  app:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "4200:4200"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npx nx serve app1
+    environment:
+      - NODE_ENV=development
+`;
+  }
+
+  private generateNginxConfig() {
+    return `server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript application/json;
+
+    # SPA fallback - all routes go to index.html
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+
+    # Cache static assets
+    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'self';" always;
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+}
+`;
+  }
+
+  private generateEnvExample() {
+    return `# Environment Configuration for Nx Angular
+
+# API Configuration
+API_URL=http://localhost:3000/api
+API_KEY=your-api-key-here
+
+# Feature Flags
+FEATURE_DARK_MODE=true
+FEATURE_ANALYTICS=false
+
+# Analytics
+GA_TRACKING_ID=
+
+# Application Title
+APP_TITLE=${this.context.name || 'Nx Angular App'}
+`;
+  }
+
+  private generateEnvironment() {
+    return `export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:3000/api',
+  apiKey: 'dev-key',
+  featureFlags: {
+    darkMode: true,
+    analytics: false,
+  },
+  gaTrackingId: '',
+  appTitle: '${this.context.name || 'Nx Angular App'}',
+};
+`;
+  }
+
+  private generateEnvironmentProd() {
+    return `export const environment = {
+  production: true,
+  apiUrl: process.env['API_URL'] || 'https://api.example.com',
+  apiKey: process.env['API_KEY'] || '',
+  featureFlags: {
+    darkMode: true,
+    analytics: true,
+  },
+  gaTrackingId: process.env['GA_TRACKING_ID'] || '',
+  appTitle: process.env['APP_TITLE'] || '${this.context.name || 'Nx Angular App'}',
+};
 `;
   }
 }

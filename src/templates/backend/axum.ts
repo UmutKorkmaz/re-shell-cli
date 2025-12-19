@@ -8,7 +8,7 @@ export const axumTemplate: BackendTemplate = {
   framework: 'axum',
   language: 'rust',
   version: '1.0.0',
-  tags: ['rust', 'axum', 'tower', 'async', 'extractors', 'api', 'postgresql', 'authentication'],
+  tags: ['rust', 'axum', 'tower', 'extractors', 'api', 'postgresql', 'authentication'],
   port: 8080,
   features: [
     'authentication',
@@ -163,16 +163,14 @@ use std::time::Duration;
 use axum::{
     routing::{get, post, put, delete},
     Router,
-    middleware::from_fn,
-};
+    middleware::from_fn};
 use tower::{ServiceBuilder, limit::ConcurrencyLimitLayer, timeout::TimeoutLayer};
 use tower_http::{
     cors::CorsLayer,
     compression::CompressionLayer,
     trace::TraceLayer,
     request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
-    services::ServeDir,
-};
+    services::ServeDir};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::config::Config;
@@ -285,12 +283,10 @@ fn cors_layer(config: &Config) -> CorsLayer {
                 axum::http::Method::POST,
                 axum::http::Method::PUT,
                 axum::http::Method::DELETE,
-                axum::http::Method::OPTIONS,
-            ])
+                axum::http::Method::OPTIONS])
             .allow_headers([
                 axum::http::header::CONTENT_TYPE,
-                axum::http::header::AUTHORIZATION,
-            ])
+                axum::http::header::AUTHORIZATION])
     }
 }`,
 
@@ -317,8 +313,7 @@ pub struct Config {
     pub tower_timeout_seconds: u64,
     pub tower_concurrency_limit: usize,
     pub tower_rate_limit_requests: u64,
-    pub tower_rate_limit_window: u64,
-}
+    pub tower_rate_limit_window: u64}
 
 impl Config {
     pub fn from_env() -> anyhow::Result<Self> {
@@ -379,8 +374,7 @@ impl Config {
                 .parse()?,
             tower_rate_limit_window: env::var("TOWER_RATE_LIMIT_WINDOW")
                 .unwrap_or_else(|_| "60".to_string())
-                .parse()?,
-        })
+                .parse()?})
     }
 }`,
 
@@ -390,8 +384,7 @@ use crate::config::Config;
 #[derive(Clone)]
 pub struct AppState {
     pub config: Config,
-    pub db: PgPool,
-}
+    pub db: PgPool}
 
 impl AppState {
     pub fn new(config: Config, db: PgPool) -> Self {
@@ -422,8 +415,7 @@ pub struct User {
     pub is_active: bool,
     pub is_verified: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+    pub updated_at: DateTime<Utc>}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserProfile {
@@ -435,8 +427,7 @@ pub struct UserProfile {
     pub is_active: bool,
     pub is_verified: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+    pub updated_at: DateTime<Utc>}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateUserRequest {
@@ -449,8 +440,7 @@ pub struct CreateUserRequest {
     #[validate(length(max = 100))]
     pub first_name: Option<String>,
     #[validate(length(max = 100))]
-    pub last_name: Option<String>,
-}
+    pub last_name: Option<String>}
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct UpdateUserRequest {
@@ -459,8 +449,7 @@ pub struct UpdateUserRequest {
     #[validate(length(max = 100))]
     pub first_name: Option<String>,
     #[validate(length(max = 100))]
-    pub last_name: Option<String>,
-}
+    pub last_name: Option<String>}
 
 impl From<User> for UserProfile {
     fn from(user: User) -> Self {
@@ -473,8 +462,7 @@ impl From<User> for UserProfile {
             is_active: user.is_active,
             is_verified: user.is_verified,
             created_at: user.created_at,
-            updated_at: user.updated_at,
-        }
+            updated_at: user.updated_at}
     }
 }`,
 
@@ -486,21 +474,18 @@ pub struct LoginRequest {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = 1))]
-    pub password: String,
-}
+    pub password: String}
 
 #[derive(Debug, Serialize)]
 pub struct LoginResponse {
     pub access_token: String,
     pub refresh_token: String,
     pub token_type: String,
-    pub expires_in: u64,
-}
+    pub expires_in: u64}
 
 #[derive(Debug, Deserialize)]
 pub struct RefreshTokenRequest {
-    pub refresh_token: String,
-}
+    pub refresh_token: String}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -628,8 +613,7 @@ pub async fn login(
         access_token,
         refresh_token,
         token_type: "Bearer".to_string(),
-        expires_in: state.config.jwt_expiration,
-    };
+        expires_in: state.config.jwt_expiration};
 
     Ok(Json(response))
 }
@@ -658,8 +642,7 @@ pub async fn refresh_token(
         access_token,
         refresh_token: request.refresh_token,
         token_type: "Bearer".to_string(),
-        expires_in: state.config.jwt_expiration,
-    };
+        expires_in: state.config.jwt_expiration};
 
     Ok(Json(response))
 }
@@ -754,8 +737,7 @@ pub mod security;`,
     'src/middleware/auth.rs': `use axum::{
     extract::{Request, State},
     middleware::Next,
-    response::Response,
-};
+    response::Response};
 
 use crate::state::AppState;
 use crate::auth::verify_token;
@@ -796,8 +778,7 @@ pub async fn auth_middleware(
     'src/middleware/security.rs': `use axum::{
     extract::Request,
     middleware::Next,
-    response::Response,
-};
+    response::Response};
 
 pub async fn security_middleware(
     request: Request,
@@ -834,16 +815,14 @@ pub async fn security_middleware(
     'src/extractors/mod.rs': `use axum::{
     async_trait,
     extract::{FromRequestParts, Request},
-    http::request::Parts,
-};
+    http::request::Parts};
 use uuid::Uuid;
 
 use crate::errors::AppError;
 
 pub struct AuthUser {
     pub user_id: Uuid,
-    pub email: String,
-}
+    pub email: String}
 
 #[async_trait]
 impl<S> FromRequestParts<S> for AuthUser
@@ -870,8 +849,7 @@ where
 }
 
 pub struct OptionalAuthUser {
-    pub user: Option<AuthUser>,
-}
+    pub user: Option<AuthUser>}
 
 #[async_trait]
 impl<S> FromRequestParts<S> for OptionalAuthUser
@@ -886,8 +864,7 @@ where
 
         let user = match (user_id, email) {
             (Some(user_id), Some(email)) => Some(AuthUser { user_id, email }),
-            _ => None,
-        };
+            _ => None};
 
         Ok(OptionalAuthUser { user })
     }
@@ -937,8 +914,7 @@ pub fn generate_token(
         email: email.to_string(),
         exp: (now + expiration) as usize,
         iat: now as usize,
-        token_type: token_type.to_string(),
-    };
+        token_type: token_type.to_string()};
 
     encode(
         &Header::default(),
@@ -961,8 +937,7 @@ pub fn verify_token(token: &str, secret: &str) -> Result<Claims, AppError> {
     'src/errors.rs': `use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
-    Json,
-};
+    Json};
 use serde_json::json;
 use validator::ValidationErrors;
 
@@ -973,8 +948,7 @@ pub enum AppError {
     NotFound(String),
     InternalServerError(String),
     ValidationError(ValidationErrors),
-    DatabaseError(sqlx::Error),
-}
+    DatabaseError(sqlx::Error)}
 
 impl From<ValidationErrors> for AppError {
     fn from(errors: ValidationErrors) -> Self {
@@ -1004,8 +978,7 @@ impl IntoResponse for AppError {
             AppError::NotFound(message) => (StatusCode::NOT_FOUND, message),
             AppError::InternalServerError(message) => (StatusCode::INTERNAL_SERVER_ERROR, message),
             AppError::ValidationError(_) => (StatusCode::BAD_REQUEST, "Validation error".to_string()),
-            AppError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error".to_string()),
-        };
+            AppError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error".to_string())};
 
         let body = Json(json!({
             "error": error_message,
@@ -1023,8 +996,7 @@ pub struct ApiResponse<T> {
     pub success: bool,
     pub data: Option<T>,
     pub message: Option<String>,
-    pub error: Option<String>,
-}
+    pub error: Option<String>}
 
 impl<T> ApiResponse<T> {
     pub fn success(data: T) -> Self {
@@ -1032,8 +1004,7 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             message: None,
-            error: None,
-        }
+            error: None}
     }
 
     pub fn success_with_message(data: T, message: String) -> Self {
@@ -1041,8 +1012,7 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             message: Some(message),
-            error: None,
-        }
+            error: None}
     }
 
     pub fn error(error: String) -> ApiResponse<()> {
@@ -1050,8 +1020,7 @@ impl<T> ApiResponse<T> {
             success: false,
             data: None,
             message: None,
-            error: Some(error),
-        }
+            error: Some(error)}
     }
 }
 
@@ -1313,8 +1282,7 @@ pub async fn protected_handler(
 #[derive(Clone)]
 pub struct AppState {
     pub config: Config,
-    pub db: PgPool,
-}
+    pub db: PgPool}
 \`\`\`
 
 ## API Endpoints

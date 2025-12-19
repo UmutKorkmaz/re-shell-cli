@@ -8,10 +8,10 @@ export const conduitTemplate: BackendTemplate = {
   language: 'dart',
   framework: 'conduit',
   version: '4.0.0',
-  tags: ['dart', 'conduit', 'api', 'rest', 'orm', 'oauth2', 'openapi', 'postgresql'],
+  tags: ['dart', 'conduit', 'api', 'rest', 'database', 'authorization', 'swagger', 'postgresql'],
   port: 8888,
   dependencies: {},
-  features: ['orm', 'oauth2', 'openapi', 'migration', 'validation', 'testing'],
+  features: ['database', 'authorization', 'swagger', 'database', 'validation', 'testing'],
   
   files: {
     // Dart project configuration
@@ -197,8 +197,7 @@ class User extends ManagedObject<_User> implements _User, ManagedAuthResourceOwn
       'id': id,
       'username': username,
       'email': email,
-      'createdAt': createdAt?.toIso8601String(),
-    };
+      'createdAt': createdAt?.toIso8601String()};
   }
 }
 
@@ -243,8 +242,7 @@ class RegisterRequest extends Serializable {
       'username': username,
       'password': password,
       'email': email,
-      'name': name,
-    };
+      'name': name};
   }
   
   @override
@@ -280,8 +278,7 @@ class LoginRequest extends Serializable {
   Map<String, dynamic> asMap() {
     return {
       'username': username,
-      'password': password,
-    };
+      'password': password};
   }
   
   @override
@@ -327,8 +324,7 @@ class CreateTodoRequest extends Serializable {
   Map<String, dynamic> asMap() {
     return {
       'title': title,
-      'description': description,
-    };
+      'description': description};
   }
   
   @override
@@ -355,8 +351,7 @@ class UpdateTodoRequest extends Serializable {
     return {
       'title': title,
       'description': description,
-      'completed': completed,
-    };
+      'completed': completed};
   }
   
   @override
@@ -431,8 +426,7 @@ class RegisterController extends ResourceController {
 
     return Response.ok({
       'user': insertedUser.toPublic(),
-      'token': token!.asMap(),
-    });
+      'token': token!.asMap()});
   }
 }`,
 
@@ -464,8 +458,7 @@ class AuthController extends ResourceController {
 
     return Response.ok({
       'user': user?.toPublic(),
-      'token': token.asMap(),
-    });
+      'token': token.asMap()});
   }
 
   @Operation.post('refresh')
@@ -490,8 +483,7 @@ class AuthController extends ResourceController {
     }
 
     return Response.ok({
-      'token': newToken.asMap(),
-    });
+      'token': newToken.asMap()});
   }
 }`,
 
@@ -691,8 +683,7 @@ class HealthController extends ResourceController {
     final health = {
       'status': 'healthy',
       'timestamp': DateTime.now().toIso8601String(),
-      'version': '1.0.0',
-    };
+      'version': '1.0.0'};
 
     // Check database connection
     try {
@@ -746,8 +737,7 @@ class Migration1 extends Migration {
       SchemaColumn("createdAt", ManagedPropertyType.datetime,
           isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false),
       SchemaColumn("updatedAt", ManagedPropertyType.datetime,
-          isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false),
-    ]));
+          isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false)]));
 
     // Create todos table
     database.createTable(SchemaTable("todos", [
@@ -762,8 +752,7 @@ class Migration1 extends Migration {
       SchemaColumn("createdAt", ManagedPropertyType.datetime,
           isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false),
       SchemaColumn("updatedAt", ManagedPropertyType.datetime,
-          isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false),
-    ]));
+          isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false)]));
 
     // Add foreign key for todos.user_id
     database.addColumn("todos", SchemaColumn.relationship("user", ManagedPropertyType.bigInteger,
@@ -790,8 +779,7 @@ class Migration1 extends Migration {
       SchemaColumn("issuedAt", ManagedPropertyType.datetime,
           isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false),
       SchemaColumn("expiresAt", ManagedPropertyType.datetime,
-          isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false),
-    ]));
+          isPrimaryKey: false, autoincrement: false, isIndexed: false, isNullable: true, isUnique: false)]));
 
     // Add foreign keys for auth tokens
     database.addColumn("auth_tokens", SchemaColumn.relationship("resourceOwner", ManagedPropertyType.bigInteger,
@@ -840,26 +828,22 @@ class Harness extends TestHarness<{{projectName}}Channel> {
     String username = 'testuser',
     String password = 'password123',
     String email = 'test@example.com',
-    String name = 'Test User',
-  }) async {
+    String name = 'Test User'}) async {
     final response = await agent!.post('/auth/register', body: {
       'username': username,
       'password': password,
       'email': email,
-      'name': name,
-    });
+      'name': name});
     
     return response.body.as<Map<String, dynamic>>();
   }
   
   Future<String> getAuthToken({
     String username = 'testuser',
-    String password = 'password123',
-  }) async {
+    String password = 'password123'}) async {
     final response = await agent!.post('/auth/login', body: {
       'username': username,
-      'password': password,
-    });
+      'password': password});
     
     final body = response.body.as<Map<String, dynamic>>();
     return body['token']['access_token'] as String;
@@ -877,8 +861,7 @@ void main() {
         'username': 'newuser',
         'password': 'password123',
         'email': 'new@example.com',
-        'name': 'New User',
-      });
+        'name': 'New User'});
 
       expectResponse(response, 200);
       expect(response.body.as<Map>()['user']['username'], 'newuser');
@@ -890,8 +873,7 @@ void main() {
 
       final response = await harness.agent!.post('/auth/login', body: {
         'username': 'testuser',
-        'password': 'password123',
-      });
+        'password': 'password123'});
 
       expectResponse(response, 200);
       expect(response.body.as<Map>()['token'], isNotNull);
@@ -901,8 +883,7 @@ void main() {
     test('POST /auth/login with invalid credentials returns 401', () async {
       final response = await harness.agent!.post('/auth/login', body: {
         'username': 'wronguser',
-        'password': 'wrongpassword',
-      });
+        'password': 'wrongpassword'});
 
       expectResponse(response, 401);
     });
@@ -938,8 +919,7 @@ void main() {
         headers: {'Authorization': 'Bearer $authToken'},
         body: {
           'title': 'Test Todo',
-          'description': 'Test Description',
-        },
+          'description': 'Test Description'},
       );
 
       expectResponse(response, 200);
@@ -1264,6 +1244,4 @@ linter:
     - prefer_void_to_null
     - test_types_in_equals
     - throw_in_finally
-    - unnecessary_statements`,
-  },
-};
+    - unnecessary_statements`}};

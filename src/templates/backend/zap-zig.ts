@@ -8,7 +8,7 @@ export const zapZigTemplate: BackendTemplate = {
   language: 'zig',
   framework: 'zap',
   version: '1.0.0',
-  tags: ['zig', 'zap', 'high-performance', 'async', 'middleware', 'composable'],
+  tags: ['zig', 'zap', 'high-performance', 'middleware', 'composable'],
   port: 3000,
   dependencies: {},
   features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'testing'],
@@ -26,8 +26,7 @@ pub fn main() !void {
     // Create Zap server
     var server = zap.Server.init(std.heap.page_allocator, .{
         .port = 3000,
-        .on_request = {{projectNamePascal}}.Handlers.on_request,
-    });
+        .on_request = {{projectNamePascal}}.Handlers.on_request});
 
     std.debug.print("🚀 Server running at http://localhost:3000\\n", .{});
     std.debug.print("📚 API docs: http://localhost:3000/api/v1/health\\n", .{});
@@ -126,8 +125,7 @@ fn home_handler(r: zap.Request, s: *zap.Server) !void {
 
     try s.respond(html, .{
         .status = .ok,
-        .header = "Content-Type: text/html",
-    });
+        .header = "Content-Type: text/html"});
 }
 
 fn health_handler(r: zap.Request, s: *zap.Server) !void {
@@ -139,8 +137,7 @@ fn health_handler(r: zap.Request, s: *zap.Server) !void {
 
     try s.respond(response, .{
         .status = .ok,
-        .header = "Content-Type: application/json",
-    });
+        .header = "Content-Type: application/json"});
 }
 
 fn register_handler(r: zap.Request, s: *zap.Server) !void {
@@ -160,8 +157,7 @@ fn register_handler(r: zap.Request, s: *zap.Server) !void {
 
         try s.respond(response, .{
             .status = .conflict,
-            .header = "Content-Type: application/json",
-        });
+            .header = "Content-Type: application/json"});
         return;
     }
 
@@ -177,8 +173,7 @@ fn register_handler(r: zap.Request, s: *zap.Server) !void {
 
     try s.respond(response, .{
         .status = .created,
-        .header = "Content-Type: application/json",
-    });
+        .header = "Content-Type: application/json"});
 }
 
 fn login_handler(r: zap.Request, s: *zap.Server) !void {
@@ -192,8 +187,7 @@ fn login_handler(r: zap.Request, s: *zap.Server) !void {
         const response = \\\\{{"error": "Invalid credentials"}\\};
         try s.respond(response, .{
             .status = .unauthorized,
-            .header = "Content-Type: application/json",
-        });
+            .header = "Content-Type: application/json"});
         return;
     };
 
@@ -201,8 +195,7 @@ fn login_handler(r: zap.Request, s: *zap.Server) !void {
         const response = \\\\{{"error": "Invalid credentials"}\\};
         try s.respond(response, .{
             .status = .unauthorized,
-            .header = "Content-Type: application/json",
-        });
+            .header = "Content-Type: application/json"});
         return;
     }
 
@@ -216,8 +209,7 @@ fn login_handler(r: zap.Request, s: *zap.Server) !void {
 
     try s.respond(response, .{
         .status = .ok,
-        .header = "Content-Type: application/json",
-    });
+        .header = "Content-Type: application/json"});
 }
 
 fn list_products_handler(r: zap.Request, s: *zap.Server) !void {
@@ -245,8 +237,7 @@ fn list_products_handler(r: zap.Request, s: *zap.Server) !void {
 
     try s.respond(response.items, .{
         .status = .ok,
-        .header = "Content-Type: application/json",
-    });
+        .header = "Content-Type: application/json"});
 }
 
 fn get_product_handler(r: zap.Request, s: *zap.Server, id: usize) !void {
@@ -255,8 +246,7 @@ fn get_product_handler(r: zap.Request, s: *zap.Server, id: usize) !void {
         const response = \\\\{{"error": "Product not found"}\\};
         try s.respond(response, .{
             .status = .not_found,
-            .header = "Content-Type: application/json",
-        });
+            .header = "Content-Type: application/json"});
         return;
     };
 
@@ -268,8 +258,7 @@ fn get_product_handler(r: zap.Request, s: *zap.Server, id: usize) !void {
 
     try s.respond(response, .{
         .status = .ok,
-        .header = "Content-Type: application/json",
-    });
+        .header = "Content-Type: application/json"});
 }
 
 fn create_product_handler(r: zap.Request, s: *zap.Server) !void {
@@ -291,8 +280,7 @@ fn create_product_handler(r: zap.Request, s: *zap.Server) !void {
 
     try s.respond(response, .{
         .status = .created,
-        .header = "Content-Type: application/json",
-    });
+        .header = "Content-Type: application/json"});
 }
 
 fn update_product_handler(r: zap.Request, s: *zap.Server, id: usize) !void {
@@ -303,8 +291,7 @@ fn update_product_handler(r: zap.Request, s: *zap.Server, id: usize) !void {
         const response = \\\\{{"error": "Product not found"}\\};
         try s.respond(response, .{
             .status = .not_found,
-            .header = "Content-Type: application/json",
-        });
+            .header = "Content-Type: application/json"});
         return;
     };
 
@@ -316,8 +303,7 @@ fn update_product_handler(r: zap.Request, s: *zap.Server, id: usize) !void {
 
     try s.respond(response, .{
         .status = .ok,
-        .header = "Content-Type: application/json",
-    });
+        .header = "Content-Type: application/json"});
 }
 
 fn delete_product_handler(r: zap.Request, s: *zap.Server, id: usize) !void {
@@ -329,8 +315,7 @@ fn delete_product_handler(r: zap.Request, s: *zap.Server, id: usize) !void {
         const response = \\\\{{"error": "Product not found"}\\};
         try s.respond(response, .{
             .status = .not_found,
-            .header = "Content-Type: application/json",
-        });
+            .header = "Content-Type: application/json"});
         return;
     }
 
@@ -348,8 +333,7 @@ pub const User = struct {
     name: []const u8,
     role: []const u8,
     created_at: []const u8,
-    updated_at: []const u8,
-};
+    updated_at: []const u8};
 
 pub const Product = struct {
     id: usize,
@@ -358,8 +342,7 @@ pub const Product = struct {
     price: f64,
     stock: u32,
     created_at: []const u8,
-    updated_at: []const u8,
-};
+    updated_at: []const u8};
 
 var users = std.ArrayList(User).init(std.heap.page_allocator);
 var products = std.ArrayList(Product).init(std.heap.page_allocator);
@@ -374,8 +357,7 @@ pub fn init() !void {
         .name = "Admin User",
         .role = "admin",
         .created_at = "2024-01-01T00:00:00Z",
-        .updated_at = "2024-01-01T00:00:00Z",
-    });
+        .updated_at = "2024-01-01T00:00:00Z"});
 
     try products.append(.{
         .id = 1,
@@ -384,8 +366,7 @@ pub fn init() !void {
         .price = 29.99,
         .stock = 100,
         .created_at = "2024-01-01T00:00:00Z",
-        .updated_at = "2024-01-01T00:00:00Z",
-    });
+        .updated_at = "2024-01-01T00:00:00Z"});
 
     try products.append(.{
         .id = 2,
@@ -394,8 +375,7 @@ pub fn init() !void {
         .price = 49.99,
         .stock = 50,
         .created_at = "2024-01-01T00:00:00Z",
-        .updated_at = "2024-01-01T00:00:00Z",
-    });
+        .updated_at = "2024-01-01T00:00:00Z"});
 
     std.debug.print("📦 Database initialized\\n", .{});
     std.debug.print("👤 Default admin: admin@example.com / admin123\\n", .{});
@@ -418,8 +398,7 @@ pub fn create_user(email: []const u8, password: []const u8, name: []const u8) !*
         .name = name,
         .role = "user",
         .created_at = "2024-01-01T00:00:00Z",
-        .updated_at = "2024-01-01T00:00:00Z",
-    };
+        .updated_at = "2024-01-01T00:00:00Z"};
     user_id_counter += 1;
     try users.append(user);
     return &users.items[users.items.len - 1];
@@ -446,8 +425,7 @@ pub fn create_product(name: []const u8, description: []const u8, price: f64, sto
         .price = price,
         .stock = stock,
         .created_at = "2024-01-01T00:00:00Z",
-        .updated_at = "2024-01-01T00:00:00Z",
-    };
+        .updated_at = "2024-01-01T00:00:00Z"};
     product_id_counter += 1;
     try products.append(product);
     return &products.items[products.items.len - 1];
@@ -499,14 +477,12 @@ pub fn build(b: *std.Build) void {
         .name = "{{projectName}}",
         .root_source_file = "src/main.zig",
         .target = target,
-        .optimize = optimize,
-    });
+        .optimize = optimize});
 
     // Import Zap package
     const zap = b.dependency("zap", .{
         .target = target,
-        .optimize = optimize,
-    });
+        .optimize = optimize});
     exe.addModule("zap", zap.module("zap"));
 
     b.installArtifact(exe);
@@ -528,10 +504,7 @@ pub fn build(b: *std.Build) void {
     .dependencies = .{
         .zap = .{
             .url = "https://github.com/zigzap/zap/archive/refs/tags/main.tar.gz",
-            .hash = "122098a8c6876e1db2bc47eefd6dba01af7d31e5fbf8cf2e2e4335a5028c76d42d",
-        },
-    },
-}
+            .hash = "122098a8c6876e1db2bc47eefd6dba01af7d31e5fbf8cf2e2e4335a5028c76d42d"}}}
 `,
 
     // Dockerfile

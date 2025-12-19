@@ -136,7 +136,7 @@ export class AlpineTemplate extends BaseTemplate {
     };
   }
 
-  private generateViteConfig() {
+  protected generateViteConfig() {
     return `import { defineConfig } from 'vite';
 
 export default defineConfig({

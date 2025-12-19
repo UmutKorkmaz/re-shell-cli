@@ -116,8 +116,7 @@ app.use('*', logger());
 app.use('*', prettyJSON());
 app.use('*', cors({
   origin: config.corsOrigin,
-  credentials: true,
-}));
+  credentials: true}));
 
 // Error handler
 app.use('*', errorHandler);
@@ -130,8 +129,7 @@ app.get('/health', (c) => {
   return c.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
-  });
+    version: '1.0.0'});
 });
 
 // API routes
@@ -148,9 +146,7 @@ app.get('/', (c) => {
     endpoints: {
       health: '/health',
       api: '/api/v1',
-      docs: '/api/v1/docs',
-    },
-  });
+      docs: '/api/v1/docs'}});
 });
 
 // Start server
@@ -160,8 +156,7 @@ console.log(\`📚 API docs at http://localhost:\${port}/api/v1/docs\`);
 
 export default {
   port,
-  fetch: app.fetch,
-};
+  fetch: app.fetch};
 `,
 
     // Configuration
@@ -181,8 +176,7 @@ export default {
   rateLimitWindow: Number(process.env.RATE_LIMIT_WINDOW) || 60000, // 1 minute
 
   // Database
-  dbPath: process.env.DB_PATH || './data/db.json',
-} as const;
+  dbPath: process.env.DB_PATH || './data/db.json'} as const;
 
 export { config };
 `,
@@ -220,8 +214,7 @@ interface Database {
 class InMemoryDatabase {
   private data: Database = {
     users: [],
-    products: [],
-  };
+    products: []};
 
   async initialize() {
     console.log('📦 Using in-memory database');
@@ -237,8 +230,7 @@ class InMemoryDatabase {
         name: 'Admin User',
         role: 'admin',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+        updatedAt: new Date().toISOString()});
       console.log('👤 Default admin user created (admin@example.com / admin123)');
     }
 
@@ -252,8 +244,7 @@ class InMemoryDatabase {
           price: 29.99,
           stock: 100,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
+          updatedAt: new Date().toISOString()},
         {
           id: '2',
           name: 'Sample Product 2',
@@ -261,8 +252,7 @@ class InMemoryDatabase {
           price: 49.99,
           stock: 50,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
+          updatedAt: new Date().toISOString()}
       );
       console.log('📦 Sample products created');
     }
@@ -287,8 +277,7 @@ class InMemoryDatabase {
       ...user,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     this.data.users.push(newUser);
     return newUser;
   }
@@ -300,8 +289,7 @@ class InMemoryDatabase {
     this.data.users[index] = {
       ...this.data.users[index],
       ...updates,
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     return { ...this.data.users[index], password: '' };
   }
 
@@ -326,8 +314,7 @@ class InMemoryDatabase {
       ...product,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     this.data.products.push(newProduct);
     return newProduct;
   }
@@ -339,8 +326,7 @@ class InMemoryDatabase {
     this.data.products[index] = {
       ...this.data.products[index],
       ...updates,
-      updatedAt: new Date().toISOString(),
-    };
+      updatedAt: new Date().toISOString()};
     return this.data.products[index];
   }
 
@@ -405,8 +391,7 @@ export const errorHandler: MiddlewareHandler = async (c, next) => {
     console.error('Error:', err);
     return c.json(
       {
-        error: err instanceof Error ? err.message : 'Internal server error',
-      },
+        error: err instanceof Error ? err.message : 'Internal server error'},
       500
     );
   }
@@ -428,8 +413,7 @@ export const rateLimiter: MiddlewareHandler = async (c, next) => {
   if (!record || now > record.resetTime) {
     record = {
       count: 0,
-      resetTime: now + config.rateLimitWindow,
-    };
+      resetTime: now + config.rateLimitWindow};
     requests.set(ip, record);
   }
 
@@ -453,32 +437,27 @@ export const rateLimiter: MiddlewareHandler = async (c, next) => {
 export const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-});
+  name: z.string().min(2, 'Name must be at least 2 characters')});
 
 export const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
-  password: z.string().min(1, 'Password is required'),
-});
+  password: z.string().min(1, 'Password is required')});
 
 export const createProductSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   price: z.number().min(0, 'Price must be non-negative'),
-  stock: z.number().min(0, 'Stock must be non-negative').default(0),
-});
+  stock: z.number().min(0, 'Stock must be non-negative').default(0)});
 
 export const updateProductSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
   price: z.number().min(0).optional(),
-  stock: z.number().min(0).optional(),
-});
+  stock: z.number().min(0).optional()});
 
 export const updateProfileSchema = z.object({
   name: z.string().min(2).optional(),
-  email: z.string().email().optional(),
-});
+  email: z.string().email().optional()});
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -515,8 +494,7 @@ authRoutes.post('/register', zValidator('json', registerSchema), async (c) => {
     email: body.email,
     password: hashedPassword,
     name: body.name,
-    role: 'user',
-  });
+    role: 'user'});
 
   // Generate token
   const token = await sign(
@@ -530,9 +508,7 @@ authRoutes.post('/register', zValidator('json', registerSchema), async (c) => {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
-    },
-  }, 201);
+      role: user.role}}, 201);
 });
 
 // Login
@@ -563,9 +539,7 @@ authRoutes.post('/login', zValidator('json', loginSchema), async (c) => {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
-    },
-  });
+      role: user.role}});
 });
 
 export { authRoutes };
@@ -653,8 +627,7 @@ productRoutes.get('/', (c) => {
   const products = db.getProducts();
   return c.json({
     products,
-    count: products.length,
-  });
+    count: products.length});
 });
 
 // Get product by ID (public)
@@ -794,9 +767,7 @@ describe('{{projectName}} API', () => {
         body: JSON.stringify({
           email: \`test-\${Date.now()}@example.com\`,
           password: 'password123',
-          name: 'Test User',
-        }),
-      });
+          name: 'Test User'})});
 
       expect(response.status).toBe(201);
       const body = await response.json();
@@ -811,9 +782,7 @@ describe('{{projectName}} API', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'admin@example.com',
-          password: 'admin123',
-        }),
-      });
+          password: 'admin123'})});
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -826,9 +795,7 @@ describe('{{projectName}} API', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'admin@example.com',
-          password: 'wrongpassword',
-        }),
-      });
+          password: 'wrongpassword'})});
 
       expect(response.status).toBe(401);
     });

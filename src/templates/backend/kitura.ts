@@ -8,10 +8,10 @@ export const kituraTemplate: BackendTemplate = {
   language: 'swift',
   framework: 'kitura',
   version: '2.9.0',
-  tags: ['swift', 'kitura', 'api', 'rest', 'ibm', 'cloud', 'openapi'],
+  tags: ['swift', 'kitura', 'api', 'rest', 'ibm', 'docker', 'swagger'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'openapi', 'health', 'metrics', 'logging', 'cors', 'cloud'],
+  features: ['authentication', 'swagger', 'monitoring', 'monitoring', 'logging', 'cors', 'docker'],
   
   files: {
     // Swift Package Manager configuration
@@ -46,8 +46,7 @@ let package = Package(
         .package(url: "https://github.com/Kitura/Kitura-CORS.git", from: "2.1.1"),
         .package(url: "https://github.com/Kitura/Kitura-Compression.git", from: "2.2.2"),
         .package(url: "https://github.com/Kitura/CloudEnvironment.git", from: "9.1.0"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3"),
-    ],
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3")],
     targets: [
         .executableTarget(
             name: "{{projectName}}",
@@ -67,8 +66,7 @@ let package = Package(
                 .product(name: "KituraCORS", package: "Kitura-CORS"),
                 .product(name: "KituraCompression", package: "Kitura-Compression"),
                 .product(name: "CloudEnvironment", package: "CloudEnvironment"),
-                .product(name: "Logging", package: "swift-log"),
-            ],
+                .product(name: "Logging", package: "swift-log")],
             path: "Sources/{{projectName}}"
         ),
         .testTarget(
@@ -1442,6 +1440,4 @@ node_modules/
 Tests/
 README.md
 docker-compose.yml
-Dockerfile`,
-  },
-};
+Dockerfile`}};

@@ -24,8 +24,7 @@ pub fn build(b: *std.Build) void {
         .name = "{{projectName}}",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
-        .optimize = optimize,
-    });
+        .optimize = optimize});
 
     b.installArtifact(exe);
 
@@ -42,8 +41,7 @@ pub fn build(b: *std.Build) void {
     const unit_tests = b.addTest(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
-        .optimize = optimize,
-    });
+        .optimize = optimize});
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
 
@@ -123,8 +121,7 @@ pub const Method = enum {
             .{ "DELETE", .DELETE },
             .{ "PATCH", .PATCH },
             .{ "OPTIONS", .OPTIONS },
-            .{ "HEAD", .HEAD },
-        });
+            .{ "HEAD", .HEAD }});
         return methods.get(method);
     }
 };
@@ -146,8 +143,7 @@ pub const Request = struct {
             .body = "",
             .params = std.StringHashMap([]const u8).init(allocator),
             .query = std.StringHashMap([]const u8).init(allocator),
-            .allocator = allocator,
-        };
+            .allocator = allocator};
     }
 
     pub fn deinit(self: *Request) void {
@@ -168,8 +164,7 @@ pub const Response = struct {
             .status_code = 200,
             .headers = std.StringHashMap([]const u8).init(allocator),
             .body = std.ArrayList(u8).init(allocator),
-            .allocator = allocator,
-        };
+            .allocator = allocator};
         response.headers.put("Content-Type", "application/json") catch {};
         return response;
     }
@@ -203,8 +198,7 @@ pub const Server = struct {
         return Server{
             .allocator = allocator,
             .router = app_router,
-            .middleware = std.ArrayList(MiddlewareFn).init(allocator),
-        };
+            .middleware = std.ArrayList(MiddlewareFn).init(allocator)};
     }
 
     pub fn deinit(self: *Server) void {
@@ -218,8 +212,7 @@ pub const Server = struct {
     pub fn listen(self: *Server, port: u16) !void {
         const address = net.Address.initIp4(.{ 0, 0, 0, 0 }, port);
         var server = try address.listen(.{
-            .reuse_address = true,
-        });
+            .reuse_address = true});
         defer server.deinit();
 
         while (true) {
@@ -322,8 +315,7 @@ pub const Server = struct {
             403 => "Forbidden",
             404 => "Not Found",
             500 => "Internal Server Error",
-            else => "Unknown",
-        };
+            else => "Unknown"};
     }
 };
 `,
@@ -336,8 +328,7 @@ pub const HandlerFn = *const fn (*http.Request, *http.Response) void;
 const Route = struct {
     method: http.Method,
     pattern: []const u8,
-    handler: HandlerFn,
-};
+    handler: HandlerFn};
 
 pub const Router = struct {
     allocator: std.mem.Allocator,
@@ -346,8 +337,7 @@ pub const Router = struct {
     pub fn init(allocator: std.mem.Allocator) Router {
         return Router{
             .allocator = allocator,
-            .routes = std.ArrayList(Route).init(allocator),
-        };
+            .routes = std.ArrayList(Route).init(allocator)};
     }
 
     pub fn deinit(self: *Router) void {
@@ -418,8 +408,7 @@ var next_id: u32 = 1;
 const User = struct {
     id: u32,
     name: []const u8,
-    email: []const u8,
-};
+    email: []const u8};
 
 pub fn handleRoot(_: *http.Request, response: *http.Response) void {
     response.json(
@@ -455,8 +444,7 @@ pub fn handleCreateUser(request: *http.Request, response: *http.Response) void {
     const user = User{
         .id = next_id,
         .name = name,
-        .email = email,
-    };
+        .email = email};
 
     users[user_count] = user;
     user_count += 1;
@@ -468,8 +456,7 @@ pub fn handleCreateUser(request: *http.Request, response: *http.Response) void {
     const result = std.fmt.bufPrint(&buffer, "{{\\"id\\": {d}, \\"name\\": \\"{s}\\", \\"email\\": \\"{s}\\"}}", .{
         user.id,
         user.name,
-        user.email,
-    }) catch {
+        user.email}) catch {
         response.json(
             \\\\{"error": "internal_error"}
         );
@@ -493,8 +480,7 @@ pub fn handleGetUsers(_: *http.Request, response: *http.Response) void {
             std.fmt.format(writer, "{{\\"id\\": {d}, \\"name\\": \\"{s}\\", \\"email\\": \\"{s}\\"}}", .{
                 user.id,
                 user.name,
-                user.email,
-            }) catch return;
+                user.email}) catch return;
         }
     }
 
@@ -526,8 +512,7 @@ pub fn handleGetUser(request: *http.Request, response: *http.Response) void {
                 const result = std.fmt.bufPrint(&buffer, "{{\\"id\\": {d}, \\"name\\": \\"{s}\\", \\"email\\": \\"{s}\\"}}", .{
                     user.id,
                     user.name,
-                    user.email,
-                }) catch return;
+                    user.email}) catch return;
                 response.json(result);
                 return;
             }
@@ -816,24 +801,18 @@ docker run -p 3000:3000 {{projectName}}
 ## License
 
 MIT
-`,
-  },
+`},
   prompts: [
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: 'my-zig-server',
-    },
+      default: 'my-zig-server'},
     {
       type: 'input',
       name: 'description',
       message: 'Project description:',
-      default: 'A high-performance HTTP server built with Zig',
-    },
-  ],
+      default: 'A high-performance HTTP server built with Zig'}],
   postInstall: [
     'echo "✨ {{projectName}} is ready!"',
-    'echo "Run: zig build run"',
-  ],
-};
+    'echo "Run: zig build run"']};

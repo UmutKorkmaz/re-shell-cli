@@ -181,36 +181,31 @@ func main() {
 		ReadTimeout:           10 * time.Second,
 		WriteTimeout:          10 * time.Second,
 		IdleTimeout:           120 * time.Second,
-		ErrorHandler:          middleware.CustomErrorHandler,
-	})
+		ErrorHandler:          middleware.CustomErrorHandler})
 
 	// Global middleware
 	app.Use(recover.New())
 	app.Use(requestid.New())
 	app.Use(fiberzap.New(fiberzap.Config{
 		Logger: logger,
-		Fields: []string{"requestId", "latency", "status", "method", "url", "ip"},
-	}))
+		Fields: []string{"requestId", "latency", "status", "method", "url", "ip"}}))
 	app.Use(helmet.New())
 	app.Use(compress.New(compress.Config{
-		Level: compress.LevelBestSpeed,
-	}))
+		Level: compress.LevelBestSpeed}))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowedOrigins,
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS,PATCH",
 		AllowHeaders:     "Origin,Content-Type,Accept,Authorization,X-Request-ID",
 		ExposeHeaders:    "X-Request-ID",
 		AllowCredentials: true,
-		MaxAge:           86400,
-	}))
+		MaxAge:           86400}))
 	app.Use(middleware.RateLimiter(cfg))
 
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status": "healthy",
-			"time":   time.Now().UTC(),
-		})
+			"time":   time.Now().UTC()})
 	})
 
 	// Swagger documentation
@@ -331,8 +326,7 @@ func New() *Config {
 		
 		// Session
 		SessionSecret:     getEnv("SESSION_SECRET", "session-secret-change-this"),
-		SessionExpiration: time.Duration(getEnvAsInt("SESSION_EXPIRATION_HOURS", 24)) * time.Hour,
-	}
+		SessionExpiration: time.Duration(getEnvAsInt("SESSION_EXPIRATION_HOURS", 24)) * time.Hour}
 }
 
 func getEnv(key, defaultValue string) string {
@@ -396,8 +390,7 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 	// Configure GORM
 	gormConfig := &gorm.Config{
 		PrepareStmt: true,
-		QueryFields: true,
-	}
+		QueryFields: true}
 	if cfg.Environment == "development" {
 		gormConfig.Logger = logger.Default.LogMode(logger.Info)
 	} else {
@@ -547,8 +540,7 @@ func (u *User) ToResponse() UserResponse {
 		Role:      u.Role,
 		Active:    u.Active,
 		Verified:  u.Verified,
-		CreatedAt: u.CreatedAt,
-	}
+		CreatedAt: u.CreatedAt}
 }
 `,
 
@@ -653,8 +645,7 @@ func NewHandler(db *gorm.DB, cfg *config.Config, logger *zap.Logger) *Handler {
 		db:       db,
 		cfg:      cfg,
 		logger:   logger,
-		validate: v,
-	}
+		validate: v}
 }
 
 // Custom validation functions
@@ -698,15 +689,13 @@ func (h *Handler) formatValidationErrors(err error) ValidationErrorResponse {
 		for _, e := range validationErrors {
 			errors = append(errors, ValidationError{
 				Field:   e.Field(),
-				Message: h.getErrorMessage(e),
-			})
+				Message: h.getErrorMessage(e)})
 		}
 	}
 	
 	return ValidationErrorResponse{
 		Error:  "Validation failed",
-		Fields: errors,
-	}
+		Fields: errors}
 }
 
 func (h *Handler) getErrorMessage(e validator.FieldError) string {
@@ -741,26 +730,22 @@ func (h *Handler) getErrorMessage(e validator.FieldError) string {
 // Common error responses
 func (h *Handler) unauthorizedError() fiber.Map {
 	return fiber.Map{
-		"error": "Unauthorized",
-	}
+		"error": "Unauthorized"}
 }
 
 func (h *Handler) forbiddenError() fiber.Map {
 	return fiber.Map{
-		"error": "Forbidden",
-	}
+		"error": "Forbidden"}
 }
 
 func (h *Handler) notFoundError(resource string) fiber.Map {
 	return fiber.Map{
-		"error": fmt.Sprintf("%s not found", resource),
-	}
+		"error": fmt.Sprintf("%s not found", resource)}
 }
 
 func (h *Handler) internalError() fiber.Map {
 	return fiber.Map{
-		"error": "Internal server error",
-	}
+		"error": "Internal server error"}
 }
 `,
 
@@ -794,8 +779,7 @@ func (h *Handler) Register(c *fiber.Ctx) error {
 	var req models.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request format",
-		})
+			"error": "Invalid request format"})
 	}
 
 	if err := h.validate.Struct(&req); err != nil {
@@ -806,15 +790,13 @@ func (h *Handler) Register(c *fiber.Ctx) error {
 	var existingUser models.User
 	if err := h.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"error": "Email already registered",
-		})
+			"error": "Email already registered"})
 	}
 
 	// Create new user
 	user := models.User{
 		Email: req.Email,
-		Name:  req.Name,
-	}
+		Name:  req.Name}
 
 	if err := user.SetPassword(req.Password); err != nil {
 		h.logger.Error("Failed to hash password", zap.Error(err))
@@ -844,8 +826,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	var req models.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request format",
-		})
+			"error": "Invalid request format"})
 	}
 
 	if err := h.validate.Struct(&req); err != nil {
@@ -856,22 +837,19 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	var user models.User
 	if err := h.db.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid credentials",
-		})
+			"error": "Invalid credentials"})
 	}
 
 	// Check password
 	if !user.CheckPassword(req.Password) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid credentials",
-		})
+			"error": "Invalid credentials"})
 	}
 
 	// Check if user is active
 	if !user.Active {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Account is disabled",
-		})
+			"error": "Account is disabled"})
 	}
 
 	// Generate tokens
@@ -891,8 +869,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	refreshTokenModel := models.RefreshToken{
 		Token:     refreshToken,
 		UserID:    user.ID,
-		ExpiresAt: time.Now().Add(h.cfg.JWTRefreshExpiration),
-	}
+		ExpiresAt: time.Now().Add(h.cfg.JWTRefreshExpiration)}
 
 	if err := h.db.Create(&refreshTokenModel).Error; err != nil {
 		h.logger.Error("Failed to save refresh token", zap.Error(err))
@@ -903,8 +880,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	session := models.Session{
 		ID:        uuid.New().String(),
 		UserID:    user.ID,
-		ExpiresAt: time.Now().Add(h.cfg.SessionExpiration),
-	}
+		ExpiresAt: time.Now().Add(h.cfg.SessionExpiration)}
 
 	if err := h.db.Create(&session).Error; err != nil {
 		h.logger.Error("Failed to create session", zap.Error(err))
@@ -917,8 +893,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		Expires:  session.ExpiresAt,
 		HTTPOnly: true,
 		Secure:   h.cfg.Environment == "production",
-		SameSite: "Lax",
-	})
+		SameSite: "Lax"})
 
 	h.logger.Info("User logged in", zap.Uint("user_id", user.ID), zap.String("email", user.Email))
 
@@ -926,8 +901,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		TokenType:    "Bearer",
-		ExpiresIn:    int(h.cfg.JWTAccessExpiration.Seconds()),
-	})
+		ExpiresIn:    int(h.cfg.JWTAccessExpiration.Seconds())})
 }
 
 // @Summary Refresh access token
@@ -944,8 +918,7 @@ func (h *Handler) RefreshToken(c *fiber.Ctx) error {
 	var req models.RefreshTokenRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request format",
-		})
+			"error": "Invalid request format"})
 	}
 
 	if err := h.validate.Struct(&req); err != nil {
@@ -956,24 +929,21 @@ func (h *Handler) RefreshToken(c *fiber.Ctx) error {
 	var refreshToken models.RefreshToken
 	if err := h.db.Where("token = ?", req.RefreshToken).First(&refreshToken).Error; err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid refresh token",
-		})
+			"error": "Invalid refresh token"})
 	}
 
 	// Check if expired
 	if time.Now().After(refreshToken.ExpiresAt) {
 		h.db.Delete(&refreshToken)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Refresh token expired",
-		})
+			"error": "Refresh token expired"})
 	}
 
 	// Get user
 	var user models.User
 	if err := h.db.First(&user, refreshToken.UserID).Error; err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "User not found",
-		})
+			"error": "User not found"})
 	}
 
 	// Generate new access token
@@ -987,8 +957,7 @@ func (h *Handler) RefreshToken(c *fiber.Ctx) error {
 		AccessToken:  accessToken,
 		RefreshToken: req.RefreshToken,
 		TokenType:    "Bearer",
-		ExpiresIn:    int(h.cfg.JWTAccessExpiration.Seconds()),
-	})
+		ExpiresIn:    int(h.cfg.JWTAccessExpiration.Seconds())})
 }
 
 // @Summary Logout user
@@ -1018,14 +987,12 @@ func (h *Handler) Logout(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(-time.Hour),
 		HTTPOnly: true,
 		Secure:   h.cfg.Environment == "production",
-		SameSite: "Lax",
-	})
+		SameSite: "Lax"})
 
 	h.logger.Info("User logged out", zap.Uint("user_id", userID))
 
 	return c.JSON(fiber.Map{
-		"message": "Successfully logged out",
-	})
+		"message": "Successfully logged out"})
 }
 
 func (h *Handler) generateRefreshToken() (string, error) {
@@ -1096,8 +1063,7 @@ func (h *Handler) ListUsers(c *fiber.Ctx) error {
 		Limit:      limit,
 		TotalPages: totalPages,
 		HasNext:    page < totalPages,
-		HasPrev:    page > 1,
-	})
+		HasPrev:    page > 1})
 }
 
 // @Summary Get user by ID
@@ -1116,8 +1082,7 @@ func (h *Handler) GetUser(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
-		})
+			"error": "Invalid user ID"})
 	}
 
 	var user models.User
@@ -1170,8 +1135,7 @@ func (h *Handler) UpdateProfile(c *fiber.Ctx) error {
 	var req models.UpdateProfileRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request format",
-		})
+			"error": "Invalid request format"})
 	}
 
 	if err := h.validate.Struct(&req); err != nil {
@@ -1220,8 +1184,7 @@ func (h *Handler) ChangePassword(c *fiber.Ctx) error {
 	var req models.ChangePasswordRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request format",
-		})
+			"error": "Invalid request format"})
 	}
 
 	if err := h.validate.Struct(&req); err != nil {
@@ -1231,8 +1194,7 @@ func (h *Handler) ChangePassword(c *fiber.Ctx) error {
 	// Check current password
 	if !user.CheckPassword(req.CurrentPassword) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Current password is incorrect",
-		})
+			"error": "Current password is incorrect"})
 	}
 
 	// Set new password
@@ -1251,8 +1213,7 @@ func (h *Handler) ChangePassword(c *fiber.Ctx) error {
 
 	h.logger.Info("User password changed", zap.Uint("user_id", user.ID))
 	return c.JSON(fiber.Map{
-		"message": "Password changed successfully",
-	})
+		"message": "Password changed successfully"})
 }
 
 // @Summary Delete user
@@ -1272,8 +1233,7 @@ func (h *Handler) DeleteUser(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid user ID",
-		})
+			"error": "Invalid user ID"})
 	}
 
 	result := h.db.Delete(&models.User{}, id)
@@ -1327,8 +1287,7 @@ func (h *Handler) ListProducts(c *fiber.Ctx) error {
 	// Parse query parameters
 	if err := c.QueryParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid query parameters",
-		})
+			"error": "Invalid query parameters"})
 	}
 
 	// Set defaults
@@ -1403,8 +1362,7 @@ func (h *Handler) ListProducts(c *fiber.Ctx) error {
 		Limit:      req.Limit,
 		TotalPages: totalPages,
 		HasNext:    req.Page < totalPages,
-		HasPrev:    req.Page > 1,
-	})
+		HasPrev:    req.Page > 1})
 }
 
 // @Summary Get product by ID
@@ -1421,8 +1379,7 @@ func (h *Handler) GetProduct(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid product ID",
-		})
+			"error": "Invalid product ID"})
 	}
 
 	var product models.Product
@@ -1453,8 +1410,7 @@ func (h *Handler) CreateProduct(c *fiber.Ctx) error {
 	var req models.CreateProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request format",
-		})
+			"error": "Invalid request format"})
 	}
 
 	if err := h.validate.Struct(&req); err != nil {
@@ -1465,8 +1421,7 @@ func (h *Handler) CreateProduct(c *fiber.Ctx) error {
 	var existingProduct models.Product
 	if err := h.db.Where("sku = ?", req.SKU).First(&existingProduct).Error; err == nil {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"error": "Product with this SKU already exists",
-		})
+			"error": "Product with this SKU already exists"})
 	}
 
 	product := models.Product{
@@ -1478,8 +1433,7 @@ func (h *Handler) CreateProduct(c *fiber.Ctx) error {
 		Category:    req.Category,
 		Tags:        req.Tags,
 		Images:      req.Images,
-		Active:      true,
-	}
+		Active:      true}
 
 	if err := h.db.Create(&product).Error; err != nil {
 		h.logger.Error("Failed to create product", zap.Error(err))
@@ -1507,8 +1461,7 @@ func (h *Handler) UpdateProduct(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid product ID",
-		})
+			"error": "Invalid product ID"})
 	}
 
 	var product models.Product
@@ -1523,8 +1476,7 @@ func (h *Handler) UpdateProduct(c *fiber.Ctx) error {
 	var req models.UpdateProductRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request format",
-		})
+			"error": "Invalid request format"})
 	}
 
 	if err := h.validate.Struct(&req); err != nil {
@@ -1585,8 +1537,7 @@ func (h *Handler) DeleteProduct(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid product ID",
-		})
+			"error": "Invalid product ID"})
 	}
 
 	result := h.db.Delete(&models.Product{}, id)
@@ -1639,8 +1590,7 @@ func (h *Handler) WebSocketHandler(c *websocket.Conn) {
 	client := &WebSocketClient{
 		Conn:   c,
 		UserID: userID,
-		Send:   make(chan WebSocketMessage, 256),
-	}
+		Send:   make(chan WebSocketMessage, 256)}
 	
 	clients[userID] = client
 	defer func() {
@@ -1653,8 +1603,7 @@ func (h *Handler) WebSocketHandler(c *websocket.Conn) {
 	// Send welcome message
 	welcome := WebSocketMessage{
 		Type:    "welcome",
-		Payload: json.RawMessage(\`{"message":"Connected to WebSocket","user_id":\` + strconv.Itoa(int(userID)) + \`}\`),
-	}
+		Payload: json.RawMessage(\`{"message":"Connected to WebSocket","user_id":\` + strconv.Itoa(int(userID)) + \`}\`)}
 	
 	if err := c.WriteJSON(welcome); err != nil {
 		h.logger.Error("Failed to send welcome message", zap.Error(err))
@@ -1693,8 +1642,7 @@ func (c *WebSocketClient) readPump(logger *zap.Logger) {
 		case "ping":
 			c.Send <- WebSocketMessage{
 				Type:    "pong",
-				Payload: msg.Payload,
-			}
+				Payload: msg.Payload}
 		
 		case "broadcast":
 			// Broadcast message to all connected clients
@@ -1703,8 +1651,7 @@ func (c *WebSocketClient) readPump(logger *zap.Logger) {
 		default:
 			c.Send <- WebSocketMessage{
 				Type:    "error",
-				Payload: json.RawMessage(\`{"message":"Unknown message type"}\`),
-			}
+				Payload: json.RawMessage(\`{"message":"Unknown message type"}\`)}
 		}
 	}
 }
@@ -1829,12 +1776,10 @@ import (
 func JWT(cfg *config.Config) fiber.Handler {
 	return jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{
-			Key: []byte(cfg.JWTSecret),
-		},
+			Key: []byte(cfg.JWTSecret)},
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid or expired token",
-			})
+				"error": "Invalid or expired token"})
 		},
 		SuccessHandler: func(c *fiber.Ctx) error {
 			user := c.Locals("user").(*jwt.Token)
@@ -1851,8 +1796,7 @@ func JWT(cfg *config.Config) fiber.Handler {
 			return c.Next()
 		},
 		TokenLookup: "header:Authorization",
-		AuthScheme:  "Bearer",
-	})
+		AuthScheme:  "Bearer"})
 }
 
 func RequireRole(roles ...string) fiber.Handler {
@@ -1860,8 +1804,7 @@ func RequireRole(roles ...string) fiber.Handler {
 		userRole, ok := c.Locals("userRole").(string)
 		if !ok {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": "Access denied",
-			})
+				"error": "Access denied"})
 		}
 
 		for _, role := range roles {
@@ -1871,8 +1814,7 @@ func RequireRole(roles ...string) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"error": "Insufficient permissions",
-		})
+			"error": "Insufficient permissions"})
 	}
 }
 
@@ -1920,8 +1862,7 @@ func RateLimiter(cfg *config.Config) fiber.Handler {
 	storage := redis.New(redis.Config{
 		Host:     cfg.RedisAddr,
 		Password: cfg.RedisPassword,
-		Database: cfg.RedisDB,
-	})
+		Database: cfg.RedisDB})
 
 	// Test connection
 	if err := storage.Set("test", []byte("test"), 1*time.Second); err != nil {
@@ -1937,12 +1878,10 @@ func RateLimiter(cfg *config.Config) fiber.Handler {
 		},
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "Rate limit exceeded",
-			})
+				"error": "Rate limit exceeded"})
 		},
 		SkipFailedRequests:     false,
-		SkipSuccessfulRequests: false,
-	}
+		SkipSuccessfulRequests: false}
 
 	if storage != nil {
 		config.Storage = storage
@@ -1974,8 +1913,7 @@ func CustomErrorHandler(c *fiber.Ctx, err error) error {
 
 	return c.Status(code).JSON(fiber.Map{
 		"error": message,
-		"code":  code,
-	})
+		"code":  code})
 }
 `,
 
@@ -2004,9 +1942,7 @@ func GenerateAccessToken(userID uint, email, role, secret string, expiration tim
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-		},
-	}
+			NotBefore: jwt.NewNumericDate(time.Now())}}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))

@@ -8,7 +8,7 @@ export const drogonTemplate: BackendTemplate = {
   framework: 'drogon',
   language: 'cpp',
   version: '1.9.3',
-  tags: ['cpp', 'drogon', 'api', 'rest', 'websocket', 'orm', 'http2', 'async', 'high-performance'],
+  tags: ['cpp', 'drogon', 'api', 'rest', 'websockets', 'database', 'http2', 'high-performance'],
   port: 8080,
   features: ['routing', 'middleware', 'database', 'caching', 'websockets', 'testing', 'docker', 'cors', 'logging', 'authentication', 'validation', 'session-management'],
   dependencies: {},
@@ -186,7 +186,7 @@ int main() {
         "client_max_memory_body_size": "1M",
         "client_max_websocket_message_size": "128K"
     },
-    "plugins": [
+    "microservices": [
         {
             "name": "drogon::plugin::SecureSSLRedirector",
             "dependencies": [],

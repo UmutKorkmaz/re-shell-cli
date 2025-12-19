@@ -11,7 +11,7 @@ export const eggjsTemplate: BackendTemplate = {
   tags: ['nodejs', 'eggjs', 'koa', 'api', 'rest', 'enterprise', 'microservices', 'typescript'],
   port: 7001,
   dependencies: {},
-  features: ['plugin-system', 'multi-process', 'security', 'orm', 'scheduler', 'i18n', 'websocket', 'testing'],
+  features: [, 'security', 'database', 'queue', 'websockets', 'testing'],
   
   files: {
     // Package configuration
@@ -184,31 +184,25 @@ export default (appInfo: EggAppInfo) => {
   config.cluster = {
     listen: {
       port: 7001,
-      hostname: '0.0.0.0',
-    },
-  };
+      hostname: '0.0.0.0'}};
 
   // security
   config.security = {
     csrf: {
       enable: false, // Disable for API, enable for web
     },
-    domainWhiteList: ['http://localhost:3000', 'http://localhost:5173'],
-  };
+    domainWhiteList: ['http://localhost:3000', 'http://localhost:5173']};
 
   // cors
   config.cors = {
     credentials: true,
-    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH,OPTIONS',
-  };
+    allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH,OPTIONS'};
 
   // view
   config.view = {
     defaultViewEngine: 'nunjucks',
     mapping: {
-      '.nj': 'nunjucks',
-    },
-  };
+      '.nj': 'nunjucks'}};
 
   // static
   config.static = {
@@ -217,8 +211,7 @@ export default (appInfo: EggAppInfo) => {
     dynamic: true,
     preload: false,
     buffer: true,
-    maxFiles: 1000,
-  };
+    maxFiles: 1000};
 
   // multipart
   config.multipart = {
@@ -228,19 +221,16 @@ export default (appInfo: EggAppInfo) => {
       '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp',
       '.mp4', '.webm', '.avi', '.mov',
       '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
-      '.zip', '.rar', '.7z', '.tar', '.gz',
-    ],
+      '.zip', '.rar', '.7z', '.tar', '.gz'],
     tmpdir: appInfo.baseDir + '/app/public/temp',
     cleanSchedule: {
       cron: '0 30 4 * * *', // Clean temp files at 4:30 AM daily
-    },
-  };
+    }};
 
   // i18n
   config.i18n = {
     defaultLocale: 'en-US',
-    dirs: [appInfo.baseDir + '/config/locale'],
-  };
+    dirs: [appInfo.baseDir + '/config/locale']};
 
   // logger
   config.logger = {
@@ -251,8 +241,7 @@ export default (appInfo: EggAppInfo) => {
     appLogName: \`\${appInfo.name}-web.log\`,
     coreLogName: 'egg-web.log',
     agentLogName: 'egg-agent.log',
-    errorLogName: 'common-error.log',
-  };
+    errorLogName: 'common-error.log'};
 
   // logrotator
   config.logrotator = {
@@ -262,36 +251,30 @@ export default (appInfo: EggAppInfo) => {
     maxFileSize: 50 * 1024 * 1024,
     maxFiles: 10,
     rotateDuration: 60000,
-    maxDays: 31,
-  };
+    maxDays: 31};
 
   // custom config
   config.api = {
     prefix: '/api/v1',
     pagination: {
       pageSize: 20,
-      maxPageSize: 100,
-    },
-  };
+      maxPageSize: 100}};
 
   // jwt
   config.jwt = {
     secret: process.env.JWT_SECRET || 'your-secret-key',
     expiresIn: '1h',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'your-refresh-secret',
-    refreshExpiresIn: '7d',
-  };
+    refreshExpiresIn: '7d'};
 
   // add your special config in here
   const bizConfig = {
-    sourceUrl: \`https://github.com/eggjs/examples/tree/master/\${appInfo.name}\`,
-  };
+    sourceUrl: \`https://github.com/eggjs/examples/tree/master/\${appInfo.name}\`};
 
   // the return config will combines to EggAppConfig
   return {
     ...config,
-    ...bizConfig,
-  };
+    ...bizConfig};
 };`,
 
     // Local development config
@@ -311,11 +294,9 @@ export default () => {
     define: {
       underscored: true,
       freezeTableName: true,
-      timestamps: true,
-    },
+      timestamps: true},
     timezone: '+08:00',
-    logging: console.log,
-  };
+    logging: console.log};
 
   // Redis
   config.redis = {
@@ -323,17 +304,14 @@ export default () => {
       port: parseInt(process.env.REDIS_PORT || '6379'),
       host: process.env.REDIS_HOST || 'localhost',
       password: process.env.REDIS_PASSWORD || '',
-      db: 0,
-    },
-  };
+      db: 0}};
 
   // Session
   config.sessionRedis = {
     key: 'EGG_SESSION',
     maxAge: 24 * 3600 * 1000, // 1 day
     httpOnly: true,
-    encrypt: true,
-  };
+    encrypt: true};
 
   return config;
 };`,
@@ -355,16 +333,13 @@ export default () => {
     pool: {
       max: 20,
       min: 5,
-      idle: 10000,
-    },
+      idle: 10000},
     define: {
       underscored: true,
       freezeTableName: true,
-      timestamps: true,
-    },
+      timestamps: true},
     timezone: '+08:00',
-    logging: false,
-  };
+    logging: false};
 
   // Redis
   config.redis = {
@@ -372,22 +347,18 @@ export default () => {
       port: parseInt(process.env.REDIS_PORT!),
       host: process.env.REDIS_HOST!,
       password: process.env.REDIS_PASSWORD!,
-      db: 0,
-    },
-  };
+      db: 0}};
 
   // Logger
   config.logger = {
     level: 'ERROR',
-    consoleLevel: 'ERROR',
-  };
+    consoleLevel: 'ERROR'};
 
   // Static
   config.static = {
     maxAge: 31536000,
     buffer: true,
-    gzip: true,
-  };
+    gzip: true};
 
   return config;
 };`,
@@ -402,92 +373,76 @@ const plugin: EggPlugin = {
   view: true,
   nunjucks: {
     enable: true,
-    package: 'egg-view-nunjucks',
-  },
+    package: 'egg-view-nunjucks'},
 
   // database
   sequelize: {
     enable: true,
-    package: 'egg-sequelize',
-  },
+    package: 'egg-sequelize'},
 
   // redis
   redis: {
     enable: true,
-    package: 'egg-redis',
-  },
+    package: 'egg-redis'},
 
   sessionRedis: {
     enable: true,
-    package: 'egg-session-redis',
-  },
+    package: 'egg-session-redis'},
 
   // validation
   validate: {
     enable: true,
-    package: 'egg-validate',
-  },
+    package: 'egg-validate'},
 
   // security
   cors: {
     enable: true,
-    package: 'egg-cors',
-  },
+    package: 'egg-cors'},
 
   // jwt
   jwt: {
     enable: true,
-    package: 'egg-jwt',
-  },
+    package: 'egg-jwt'},
 
   // bcrypt
   bcrypt: {
     enable: true,
-    package: 'egg-bcrypt',
-  },
+    package: 'egg-bcrypt'},
 
   // socket.io
   io: {
     enable: true,
-    package: 'egg-socket.io',
-  },
+    package: 'egg-socket.io'},
 
   // file upload
   multipart: {
     enable: true,
-    package: 'egg-multipart',
-  },
+    package: 'egg-multipart'},
 
   // object storage
   oss: {
     enable: false,
-    package: 'egg-oss',
-  },
+    package: 'egg-oss'},
 
   // scheduler
   schedule: {
     enable: true,
-    package: 'egg-schedule',
-  },
+    package: 'egg-schedule'},
 
   // i18n
   i18n: {
     enable: true,
-    package: 'egg-i18n',
-  },
+    package: 'egg-i18n'},
 
   // swagger
   swaggerdoc: {
     enable: true,
-    package: 'egg-swagger-doc',
-  },
+    package: 'egg-swagger-doc'},
 
   // queue
   bull: {
     enable: true,
-    package: 'egg-bull',
-  },
-};
+    package: 'egg-bull'}};
 
 export default plugin;`,
 
@@ -643,8 +598,7 @@ export default class AuthController extends Controller {
     const user = await service.user.create({
       email,
       password,
-      name,
-    });
+      name});
 
     // Send verification email
     await service.email.sendVerificationEmail(user);
@@ -658,9 +612,7 @@ export default class AuthController extends Controller {
       data: {
         user: user.toJSON(),
         accessToken,
-        refreshToken,
-      },
-    };
+        refreshToken}};
   }
 
   async login() {
@@ -697,9 +649,7 @@ export default class AuthController extends Controller {
       message: ctx.__('auth.login.success'),
       data: {
         user: user.toJSON(),
-        accessToken,
-      },
-    };
+        accessToken}};
   }
 
   async refresh() {
@@ -714,8 +664,7 @@ export default class AuthController extends Controller {
 
     ctx.body = {
       success: true,
-      data: tokens,
-    };
+      data: tokens};
   }
 
   async verify() {
@@ -726,8 +675,7 @@ export default class AuthController extends Controller {
 
     ctx.body = {
       success: true,
-      message: ctx.__('auth.verify.success'),
-    };
+      message: ctx.__('auth.verify.success')};
   }
 
   async forgotPassword() {
@@ -739,8 +687,7 @@ export default class AuthController extends Controller {
       // Don't reveal if user exists
       ctx.body = {
         success: true,
-        message: ctx.__('auth.forgot.sent'),
-      };
+        message: ctx.__('auth.forgot.sent')};
       return;
     }
 
@@ -749,8 +696,7 @@ export default class AuthController extends Controller {
 
     ctx.body = {
       success: true,
-      message: ctx.__('auth.forgot.sent'),
-    };
+      message: ctx.__('auth.forgot.sent')};
   }
 
   async resetPassword() {
@@ -761,8 +707,7 @@ export default class AuthController extends Controller {
 
     ctx.body = {
       success: true,
-      message: ctx.__('auth.reset.success'),
-    };
+      message: ctx.__('auth.reset.success')};
   }
 }`,
 
@@ -779,13 +724,11 @@ export default class UserController extends Controller {
       limit: Number(limit),
       search,
       role,
-      status,
-    });
+      status});
 
     ctx.body = {
       success: true,
-      data: result,
-    };
+      data: result};
   }
 
   async get() {
@@ -799,8 +742,7 @@ export default class UserController extends Controller {
 
     ctx.body = {
       success: true,
-      data: user.toJSON(),
-    };
+      data: user.toJSON()};
   }
 
   async getCurrentUser() {
@@ -808,8 +750,7 @@ export default class UserController extends Controller {
     
     ctx.body = {
       success: true,
-      data: ctx.state.user.toJSON(),
-    };
+      data: ctx.state.user.toJSON()};
   }
 
   async updateProfile() {
@@ -827,8 +768,7 @@ export default class UserController extends Controller {
     ctx.body = {
       success: true,
       message: ctx.__('user.update.success'),
-      data: user.toJSON(),
-    };
+      data: user.toJSON()};
   }
 
   async update() {
@@ -841,8 +781,7 @@ export default class UserController extends Controller {
     ctx.body = {
       success: true,
       message: ctx.__('user.update.success'),
-      data: user.toJSON(),
-    };
+      data: user.toJSON()};
   }
 
   async delete() {
@@ -853,8 +792,7 @@ export default class UserController extends Controller {
 
     ctx.body = {
       success: true,
-      message: ctx.__('user.delete.success'),
-    };
+      message: ctx.__('user.delete.success')};
   }
 
   async changePassword() {
@@ -869,8 +807,7 @@ export default class UserController extends Controller {
 
     ctx.body = {
       success: true,
-      message: ctx.__('user.password.changed'),
-    };
+      message: ctx.__('user.password.changed')};
   }
 
   async uploadAvatar() {
@@ -879,16 +816,14 @@ export default class UserController extends Controller {
 
     const avatarUrl = await service.file.uploadImage(stream, {
       folder: 'avatars',
-      resize: { width: 200, height: 200 },
-    });
+      resize: { width: 200, height: 200 }});
 
     await service.user.update(ctx.state.user.id, { avatarUrl });
 
     ctx.body = {
       success: true,
       message: ctx.__('user.avatar.uploaded'),
-      data: { avatarUrl },
-    };
+      data: { avatarUrl }};
   }
 }`,
 
@@ -907,13 +842,11 @@ export default class TodoController extends Controller {
       status,
       priority,
       sortBy,
-      order: order.toUpperCase() as 'ASC' | 'DESC',
-    });
+      order: order.toUpperCase() as 'ASC' | 'DESC'});
 
     ctx.body = {
       success: true,
-      data: result,
-    };
+      data: result};
   }
 
   async get() {
@@ -927,24 +860,21 @@ export default class TodoController extends Controller {
 
     ctx.body = {
       success: true,
-      data: todo.toJSON(),
-    };
+      data: todo.toJSON()};
   }
 
   async create() {
     const { ctx, service } = this;
     const data = {
       ...ctx.request.body,
-      userId: ctx.state.user.id,
-    };
+      userId: ctx.state.user.id};
 
     const todo = await service.todo.create(data);
 
     ctx.body = {
       success: true,
       message: ctx.__('todo.create.success'),
-      data: todo.toJSON(),
-    };
+      data: todo.toJSON()};
   }
 
   async update() {
@@ -957,8 +887,7 @@ export default class TodoController extends Controller {
     ctx.body = {
       success: true,
       message: ctx.__('todo.update.success'),
-      data: todo.toJSON(),
-    };
+      data: todo.toJSON()};
   }
 
   async delete() {
@@ -969,8 +898,7 @@ export default class TodoController extends Controller {
 
     ctx.body = {
       success: true,
-      message: ctx.__('todo.delete.success'),
-    };
+      message: ctx.__('todo.delete.success')};
   }
 
   async bulkOperation() {
@@ -995,8 +923,7 @@ export default class TodoController extends Controller {
     ctx.body = {
       success: true,
       message: ctx.__('todo.bulk.success', { count: result }),
-      data: { affected: result },
-    };
+      data: { affected: result }};
   }
 }`,
 
@@ -1012,8 +939,7 @@ export default class HealthController extends Controller {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment: app.config.env,
-      version: app.config.pkg.version,
-    };
+      version: app.config.pkg.version};
   }
 
   async readiness() {
@@ -1052,12 +978,10 @@ export default class AuthService extends Service {
     const payload = {
       id: user.id,
       email: user.email,
-      role: user.role,
-    };
+      role: user.role};
 
     const accessToken = this.app.jwt.sign(payload, jwt.secret, {
-      expiresIn: jwt.expiresIn,
-    });
+      expiresIn: jwt.expiresIn});
 
     const refreshToken = this.app.jwt.sign(
       { id: user.id },
@@ -1099,8 +1023,7 @@ export default class AuthService extends Service {
 
   async verifyEmail(token: string) {
     const user = await this.ctx.model.User.findOne({
-      where: { verificationToken: token },
-    });
+      where: { verificationToken: token }});
 
     if (!user) {
       this.ctx.throw(400, 'Invalid verification token');
@@ -1108,8 +1031,7 @@ export default class AuthService extends Service {
 
     await user.update({
       isVerified: true,
-      verificationToken: null,
-    });
+      verificationToken: null});
 
     return user;
   }
@@ -1121,16 +1043,14 @@ export default class AuthService extends Service {
 
     await user.update({
       resetToken,
-      resetTokenExpiry,
-    });
+      resetTokenExpiry});
 
     return resetToken;
   }
 
   async resetPassword(token: string, password: string) {
     const user = await this.ctx.model.User.findOne({
-      where: { resetToken: token },
-    });
+      where: { resetToken: token }});
 
     if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
       this.ctx.throw(400, 'Invalid or expired reset token');
@@ -1141,8 +1061,7 @@ export default class AuthService extends Service {
     await user.update({
       password: hashedPassword,
       resetToken: null,
-      resetTokenExpiry: null,
-    });
+      resetTokenExpiry: null});
 
     return user;
   }
@@ -1155,14 +1074,12 @@ import { v4 as uuidv4 } from 'uuid';
 export default class UserService extends Service {
   async findById(id: string) {
     return await this.ctx.model.User.findByPk(id, {
-      attributes: { exclude: ['password'] },
-    });
+      attributes: { exclude: ['password'] }});
   }
 
   async findByEmail(email: string) {
     return await this.ctx.model.User.findOne({
-      where: { email: email.toLowerCase() },
-    });
+      where: { email: email.toLowerCase() }});
   }
 
   async create(data: any) {
@@ -1173,8 +1090,7 @@ export default class UserService extends Service {
       ...data,
       email: data.email.toLowerCase(),
       password: hashedPassword,
-      verificationToken,
-    });
+      verificationToken});
 
     return user;
   }
@@ -1209,8 +1125,7 @@ export default class UserService extends Service {
     if (search) {
       where[this.app.Sequelize.Op.or] = [
         { name: { [this.app.Sequelize.Op.iLike]: \`%\${search}%\` } },
-        { email: { [this.app.Sequelize.Op.iLike]: \`%\${search}%\` } },
-      ];
+        { email: { [this.app.Sequelize.Op.iLike]: \`%\${search}%\` } }];
     }
 
     if (role) {
@@ -1228,16 +1143,14 @@ export default class UserService extends Service {
       limit,
       offset,
       order: [['createdAt', 'DESC']],
-      attributes: { exclude: ['password'] },
-    });
+      attributes: { exclude: ['password'] }});
 
     return {
       data: rows,
       total: count,
       page,
       limit,
-      totalPages: Math.ceil(count / limit),
-    };
+      totalPages: Math.ceil(count / limit)};
   }
 
   async updateLastLogin(id: string) {
@@ -1272,8 +1185,7 @@ export default class TodoService extends Service {
   async findById(id: string, userId: string) {
     return await this.ctx.model.Todo.findOne({
       where: { id, userId },
-      include: [{ model: this.ctx.model.User, as: 'user' }],
-    });
+      include: [{ model: this.ctx.model.User, as: 'user' }]});
   }
 
   async create(data: any) {
@@ -1319,25 +1231,21 @@ export default class TodoService extends Service {
       where,
       limit,
       offset,
-      order: [[sortBy, order]],
-    });
+      order: [[sortBy, order]]});
 
     return {
       data: rows,
       total: count,
       page,
       limit,
-      totalPages: Math.ceil(count / limit),
-    };
+      totalPages: Math.ceil(count / limit)};
   }
 
   async bulkDelete(ids: string[], userId: string) {
     const result = await this.ctx.model.Todo.destroy({
       where: {
         id: { [this.app.Sequelize.Op.in]: ids },
-        userId,
-      },
-    });
+        userId}});
 
     return result;
   }
@@ -1346,9 +1254,7 @@ export default class TodoService extends Service {
     const [affected] = await this.ctx.model.Todo.update(updates, {
       where: {
         id: { [this.app.Sequelize.Op.in]: ids },
-        userId,
-      },
-    });
+        userId}});
 
     return affected;
   }
@@ -1429,16 +1335,13 @@ export default class EmailService extends Service {
       secure: process.env.SMTP_SECURE === 'true',
       auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+        pass: process.env.SMTP_PASS}});
   }
 
   async sendMail(options: nodemailer.SendMailOptions) {
     const mailOptions = {
       from: process.env.EMAIL_FROM || 'noreply@example.com',
-      ...options,
-    };
+      ...options};
 
     try {
       const info = await this.transporter.sendMail(mailOptions);
@@ -1455,14 +1358,12 @@ export default class EmailService extends Service {
     
     const html = await this.ctx.renderView('email/verification.nj', {
       user,
-      verificationUrl,
-    });
+      verificationUrl});
 
     await this.sendMail({
       to: user.email,
       subject: this.ctx.__('email.verification.subject'),
-      html,
-    });
+      html});
   }
 
   async sendPasswordResetEmail(user: any, resetToken: string) {
@@ -1470,26 +1371,22 @@ export default class EmailService extends Service {
     
     const html = await this.ctx.renderView('email/password-reset.nj', {
       user,
-      resetUrl,
-    });
+      resetUrl});
 
     await this.sendMail({
       to: user.email,
       subject: this.ctx.__('email.passwordReset.subject'),
-      html,
-    });
+      html});
   }
 
   async sendWelcomeEmail(user: any) {
     const html = await this.ctx.renderView('email/welcome.nj', {
-      user,
-    });
+      user});
 
     await this.sendMail({
       to: user.email,
       subject: this.ctx.__('email.welcome.subject'),
-      html,
-    });
+      html});
   }
 }`,
 
@@ -1503,69 +1400,52 @@ export default (app: Application) => {
     id: {
       type: UUID,
       defaultValue: UUIDV4,
-      primaryKey: true,
-    },
+      primaryKey: true},
     email: {
       type: STRING(255),
       unique: true,
       allowNull: false,
       validate: {
-        isEmail: true,
-      },
-    },
+        isEmail: true}},
     password: {
       type: STRING(255),
-      allowNull: false,
-    },
+      allowNull: false},
     name: {
       type: STRING(100),
-      allowNull: false,
-    },
+      allowNull: false},
     role: {
       type: ENUM('user', 'admin'),
-      defaultValue: 'user',
-    },
+      defaultValue: 'user'},
     isActive: {
       type: BOOLEAN,
-      defaultValue: true,
-    },
+      defaultValue: true},
     isVerified: {
       type: BOOLEAN,
-      defaultValue: false,
-    },
+      defaultValue: false},
     verificationToken: {
       type: STRING(255),
-      allowNull: true,
-    },
+      allowNull: true},
     resetToken: {
       type: STRING(255),
-      allowNull: true,
-    },
+      allowNull: true},
     resetTokenExpiry: {
       type: DATE,
-      allowNull: true,
-    },
+      allowNull: true},
     avatarUrl: {
       type: STRING(500),
-      allowNull: true,
-    },
+      allowNull: true},
     phone: {
       type: STRING(20),
-      allowNull: true,
-    },
+      allowNull: true},
     lastLogin: {
       type: DATE,
-      allowNull: true,
-    },
+      allowNull: true},
     metadata: {
       type: JSON,
-      allowNull: true,
-    },
-  }, {
+      allowNull: true}}, {
     timestamps: true,
     underscored: true,
-    tableName: 'users',
-  });
+    tableName: 'users'});
 
   User.associate = () => {
     app.model.User.hasMany(app.model.Todo, { as: 'todos', foreignKey: 'userId' });
@@ -1594,37 +1474,28 @@ export default (app: Application) => {
     id: {
       type: UUID,
       defaultValue: UUIDV4,
-      primaryKey: true,
-    },
+      primaryKey: true},
     title: {
       type: STRING(200),
-      allowNull: false,
-    },
+      allowNull: false},
     description: {
       type: TEXT,
-      allowNull: true,
-    },
+      allowNull: true},
     status: {
       type: ENUM('pending', 'in_progress', 'completed', 'archived'),
-      defaultValue: 'pending',
-    },
+      defaultValue: 'pending'},
     priority: {
       type: ENUM('low', 'medium', 'high'),
-      defaultValue: 'medium',
-    },
+      defaultValue: 'medium'},
     dueDate: {
       type: DATE,
-      allowNull: true,
-    },
+      allowNull: true},
     tags: {
       type: ARRAY(STRING),
-      defaultValue: [],
-    },
+      defaultValue: []},
     userId: {
       type: UUID,
-      allowNull: false,
-    },
-  }, {
+      allowNull: false}}, {
     timestamps: true,
     underscored: true,
     tableName: 'todos',
@@ -1632,9 +1503,7 @@ export default (app: Application) => {
       { fields: ['user_id'] },
       { fields: ['status'] },
       { fields: ['priority'] },
-      { fields: ['due_date'] },
-    ],
-  });
+      { fields: ['due_date'] }]});
 
   Todo.associate = () => {
     app.model.Todo.belongsTo(app.model.User, { as: 'user', foreignKey: 'userId' });
@@ -1690,8 +1559,7 @@ export default () => {
       ctx.status = 429;
       ctx.body = {
         success: false,
-        message: 'Too many requests',
-      };
+        message: 'Too many requests'};
       return;
     }
 
@@ -1726,9 +1594,7 @@ export default () => {
         code: err.code || 'INTERNAL_ERROR',
         ...(ctx.app.config.env === 'local' && {
           stack: err.stack,
-          details: err,
-        }),
-      };
+          details: err})};
 
       // Log error
       if (status >= 500) {
@@ -1738,8 +1604,7 @@ export default () => {
           url: ctx.url,
           method: ctx.method,
           ip: ctx.ip,
-          status,
-        });
+          status});
       }
     }
   };
@@ -1753,8 +1618,7 @@ export default class CleanupTask extends Subscription {
     return {
       cron: '0 0 3 * * *', // Run at 3 AM daily
       type: 'worker', // Run on one worker only
-      immediate: false,
-    };
+      immediate: false};
   }
 
   async subscribe() {
@@ -1847,15 +1711,11 @@ export default class CleanupTask extends Subscription {
     await ctx.model.User.update(
       {
         resetToken: null,
-        resetTokenExpiry: null,
-      },
+        resetTokenExpiry: null},
       {
         where: {
           resetTokenExpiry: {
-            [ctx.app.Sequelize.Op.lt]: new Date(),
-          },
-        },
-      }
+            [ctx.app.Sequelize.Op.lt]: new Date()}}}
     );
   }
 }`,
@@ -1875,13 +1735,11 @@ export default class ChatController extends Controller {
     socket.to(room).emit('user_joined', {
       userId: ctx.state.user.id,
       username: ctx.state.user.name,
-      timestamp: new Date(),
-    });
+      timestamp: new Date()});
 
     await ctx.socket.emit('joined', {
       room,
-      message: 'Successfully joined room',
-    });
+      message: 'Successfully joined room'});
   }
 
   async leave() {
@@ -1895,13 +1753,11 @@ export default class ChatController extends Controller {
     socket.to(room).emit('user_left', {
       userId: ctx.state.user.id,
       username: ctx.state.user.name,
-      timestamp: new Date(),
-    });
+      timestamp: new Date()});
 
     await ctx.socket.emit('left', {
       room,
-      message: 'Successfully left room',
-    });
+      message: 'Successfully left room'});
   }
 
   async message() {
@@ -1913,8 +1769,7 @@ export default class ChatController extends Controller {
     const savedMessage = await ctx.service.chat.saveMessage({
       userId: ctx.state.user.id,
       room,
-      message,
-    });
+      message});
 
     // Broadcast to room
     socket.to(room).emit('message', {
@@ -1922,13 +1777,11 @@ export default class ChatController extends Controller {
       userId: ctx.state.user.id,
       username: ctx.state.user.name,
       message,
-      timestamp: savedMessage.createdAt,
-    });
+      timestamp: savedMessage.createdAt});
 
     await ctx.socket.emit('message_sent', {
       id: savedMessage.id,
-      timestamp: savedMessage.createdAt,
-    });
+      timestamp: savedMessage.createdAt});
   }
 
   async typing() {
@@ -1939,8 +1792,7 @@ export default class ChatController extends Controller {
     socket.to(room).emit('typing', {
       userId: ctx.state.user.id,
       username: ctx.state.user.name,
-      isTyping,
-    });
+      isTyping});
   }
 }`,
 

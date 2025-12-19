@@ -11,7 +11,7 @@ export const happyxNimTemplate: BackendTemplate = {
   tags: ['nim', 'happyx', 'modern', 'type-safe', 'json', 'routing'],
   port: 5000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websocket'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websockets'],
 
   files: {
     // Configuration

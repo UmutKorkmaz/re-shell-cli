@@ -11,7 +11,7 @@ export const flaskTemplate: BackendTemplate = {
   tags: ['python', 'flask', 'api', 'rest', 'web', 'microframework'],
   port: 5000,
   dependencies: {},
-  features: ['blueprints', 'extensions', 'orm', 'authentication', 'testing', 'websocket', 'async'],
+  features: ['routing', 'database', 'authentication', 'testing', 'websockets'],
   
   files: {
     // Python project configuration
@@ -397,8 +397,7 @@ class User(UserMixin, db.Model):
             'is_active': self.is_active,
             'is_verified': self.is_verified,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'last_login': self.last_login.isoformat() if self.last_login else None,
-        }
+            'last_login': self.last_login.isoformat() if self.last_login else None}
         if include_email:
             data['email'] = self.email
         return data
@@ -445,8 +444,7 @@ class Todo(db.Model):
             'tags': self.tags or [],
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'user_id': self.user_id,
-        }`,
+            'user_id': self.user_id}`,
 
     'app/models/role.py': `from app import db
 
@@ -497,8 +495,7 @@ class Role(db.Model):
         roles = {
             'User': [Permission.READ, Permission.WRITE],
             'Moderator': [Permission.READ, Permission.WRITE, Permission.DELETE],
-            'Administrator': [Permission.READ, Permission.WRITE, Permission.DELETE, Permission.ADMIN],
-        }
+            'Administrator': [Permission.READ, Permission.WRITE, Permission.DELETE, Permission.ADMIN]}
         default_role = 'User'
         for r in roles:
             role = Role.query.filter_by(name=r).first()
@@ -973,6 +970,7 @@ class TodoUpdateSchema(Schema):
     'run.py': `#!/usr/bin/env python
 import os
 import sys
+import signal
 from app import create_app, db, socketio
 from app.models import User, Role, Permission
 
@@ -988,8 +986,7 @@ def make_shell_context():
         'db': db,
         'User': User,
         'Role': Role,
-        'Permission': Permission,
-    }
+        'Permission': Permission}
 
 
 @app.cli.command()
@@ -1003,8 +1000,29 @@ def deploy():
     
     # Create user roles
     Role.insert_roles()
-    
+
     print("Deployment completed successfully!")
+
+
+# Graceful shutdown handler
+def shutdown_handler(signum, frame):
+    """Handle graceful shutdown on SIGTERM/SIGINT"""
+    signal_name = signal.Signals(signum).name
+    print(f'\\n{signal_name} signal received: closing Flask server gracefully')
+
+    # Close database connections
+    from app import db
+    db.session.close()
+    db.engine.dispose()
+    print('Database connections closed')
+
+    print('Graceful shutdown completed')
+    sys.exit(0)
+
+
+# Register signal handlers
+signal.signal(signal.SIGTERM, shutdown_handler)
+signal.signal(signal.SIGINT, shutdown_handler)
 
 
 if __name__ == '__main__':
@@ -1425,6 +1443,5 @@ celery -A app.celery flower
 ## License
 
 MIT
-`,
-  }
+`}
 };

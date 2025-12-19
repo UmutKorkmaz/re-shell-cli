@@ -8,10 +8,10 @@ export const suaveFsTemplate: BackendTemplate = {
   language: 'fsharp',
   framework: 'suave',
   version: '1.0.0',
-  tags: ['fsharp', 'suave', 'lightweight', 'embeddable', 'functional', 'web-server'],
+  tags: ['fsharp', 'suave', 'lightweight', 'embeddable', 'microservices', 'web-server'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'functional'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'microservices'],
 
   files: {
     // Project file
@@ -540,9 +540,9 @@ services:
 open Xunit
 open System
 
-type ``Tests`` () =
+type \`\`Tests\`\` () =
     [<Fact>]
-    let ``My test`` () =
+    let \`\`My test\`\` () =
         Assert.True(true)
 `,
 

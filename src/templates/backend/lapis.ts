@@ -8,7 +8,7 @@ export const lapisTemplate: BackendTemplate = {
   language: 'lua',
   framework: 'lapis',
   version: '1.16.0',
-  tags: ['lua', 'lapis', 'moonscript', 'api', 'web', 'orm', 'openresty'],
+  tags: ['lua', 'lapis', 'moonscript', 'api', 'web', 'database', 'openresty'],
   port: 8080,
   dependencies: {},
   features: ['authentication', 'database', 'caching', 'logging', 'validation', 'testing', 'docker'],
@@ -200,8 +200,7 @@ config({"development", "test"}, {
   
   -- Features
   print_errors = true,
-  measure_performance = true,
-})
+  measure_performance = true})
 
 config("production", {
   port = os.getenv("PORT") or 8080,
@@ -226,8 +225,7 @@ config("production", {
   
   -- Features
   print_errors = false,
-  measure_performance = false,
-})
+  measure_performance = false})
 `,
 
     // Database models
@@ -1427,8 +1425,7 @@ NUM_WORKERS=1
     '.luarocks': `-- Local LuaRocks configuration
 rocks_trees = {
    { name = "user", root = home .. "/.luarocks" },
-   { name = "project", root = "./lua_modules" },
-}
+   { name = "project", root = "./lua_modules" }}
 `,
 
     // Makefile

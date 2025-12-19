@@ -719,25 +719,19 @@ This project demonstrates idiomatic F#:
 ## License
 
 MIT
-`,
-  },
+`},
   prompts: [
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: 'my-giraffe-app',
-    },
+      default: 'my-giraffe-app'},
     {
       type: 'input',
       name: 'description',
       message: 'Project description:',
-      default: 'An F# web application built with Giraffe',
-    },
-  ],
+      default: 'An F# web application built with Giraffe'}],
   postInstall: [
     'dotnet restore',
     'echo "✨ {{projectName}} is ready!"',
-    'echo "Run: dotnet run"',
-  ],
-};
+    'echo "Run: dotnet run"']};

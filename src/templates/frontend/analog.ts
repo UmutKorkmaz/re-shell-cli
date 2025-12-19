@@ -128,6 +128,30 @@ export class AnalogTemplate extends BaseTemplate {
       content: this.generateReadme()
     });
 
+    // Dockerfile for production deployment
+    files.push({
+      path: 'Dockerfile',
+      content: this.generateDockerfile()
+    });
+
+    // Docker Compose for production
+    files.push({
+      path: 'docker-compose.yml',
+      content: this.generateDockerCompose()
+    });
+
+    // Docker Compose for development
+    files.push({
+      path: 'docker-compose.dev.yml',
+      content: this.generateDockerComposeDev()
+    });
+
+    // Nginx configuration
+    files.push({
+      path: 'nginx.conf',
+      content: this.generateNginxConfig()
+    });
+
     // Env example
     files.push({
       path: '.env.example',
@@ -190,7 +214,7 @@ export class AnalogTemplate extends BaseTemplate {
     };
   }
 
-  private generateViteConfig() {
+  protected generateViteConfig() {
     return `import { defineConfig } from 'vite';
 import angular from '@analogjs/vite-plugin-angular';
 
@@ -794,6 +818,140 @@ MIT
 
 # Feature Flags
 # VITE_FEATURE_X=true
+`;
+  }
+
+  private generateDockerfile() {
+    return `# Multi-stage Dockerfile for Analog (Angular + Vite)
+
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+COPY package.json package-lock.json* pnpm-lock.yaml* ./
+RUN npm ci
+
+# Stage 2: Build
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build the Analog application
+RUN npm run build
+
+# Stage 3: Production server with Nitro
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Copy production dependencies and built files
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/analog.config.js ./
+COPY --from=build /app/package.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Set environment to production
+ENV NODE_ENV=production
+ENV ANALOG_PUBLIC=true
+
+# Start the Nitro server
+CMD ["node", "dist/analog/server/index.mjs"]
+`;
+  }
+
+  private generateDockerCompose() {
+    return `version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+`;
+  }
+
+  private generateDockerComposeDev() {
+    return `version: '3.8'
+
+services:
+  app:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      - NODE_ENV=development
+`;
+  }
+
+  private generateNginxConfig() {
+    return `server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript application/json;
+
+    # SPA fallback - all routes go to index.html
+    location / {
+        try_files \\$uri \\$uri/ /index.html;
+    }
+
+    # API routes proxy (optional, for SSR/API routes)
+    location /api/ {
+        proxy_pass http://backend:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \\$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \\$host;
+        proxy_cache_bypass \\$http_upgrade;
+    }
+
+    # Cache static assets
+    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'self';" always;
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+}
 `;
   }
 }

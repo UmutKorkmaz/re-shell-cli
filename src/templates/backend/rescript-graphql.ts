@@ -38,7 +38,7 @@ export const rescriptGraphqlTemplate: BackendTemplate = {
     "@apollo/server": "^4.9.0",
     "graphql": "^16.8.0",
     "graphql-scalars": "^1.22.0",
-    "dataloader": "^2.2.2",
+    : "^2.2.2",
     "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -273,8 +273,7 @@ let makeServer = () => {
         let users = Data.getUsers(limit)
         let connection = GraphQL.paginateUsers(users, limit, args->Js.Dict.get("cursor"))
         Js.Promise.resolve(connection)
-      },
-    },
+      }},
 
     "Mutation": {
       "register": (args, _obj) => {
@@ -287,8 +286,7 @@ let makeServer = () => {
 
         Js.Promise.resolve({
           "token": token,
-          "user": user,
-        })
+          "user": user})
       },
 
       "login": (args, _obj) => {
@@ -304,8 +302,7 @@ let makeServer = () => {
             let token = Auth.generateToken(u)
             Js.Promise.resolve({
               "token": token,
-              "user": u,
-            })
+              "user": u})
           } else {
             Js.Promise.reject(Js.Exn.raiseError("Invalid credentials"))
           }
@@ -325,9 +322,7 @@ let makeServer = () => {
           let product = Data.createProduct(name, description, price, status, u->Js.Dict.get("id")->Belt.Option.getWithDefault(""))
           Js.Promise.resolve(product)
         }
-      },
-    },
-  }
+      }}}
 
   let server = ApolloServer.make(
     ~typeDefs=typeDefs,
@@ -371,8 +366,7 @@ open Node
 // GraphQL context type
 type context = {
   user: option<Js.Dict.t<string, string>>,
-  req: option<Node.Http.Server.req>,
-}
+  req: option<Node.Http.Server.req>}
 
 // Get context from request
 let getContext = (~req=None, ()) => {
@@ -406,8 +400,7 @@ type user = {
   password: string,
   role: string,
   createdAt: string,
-  updatedAt: string,
-}
+  updatedAt: string}
 
 type product = {
   id: string,
@@ -417,8 +410,7 @@ type product = {
   status: string,
   userId: string,
   createdAt: string,
-  updatedAt: string,
-}
+  updatedAt: string}
 
 // Mock data storage
 let users = ref(array<user>[])
@@ -435,8 +427,7 @@ let _ = {
       "password": "$2a$10$hash", // In production, use bcrypt
       "role": "ADMIN",
       "createdAt": now,
-      "updatedAt": now,
-    },
+      "updatedAt": now},
     {
       "id": "2",
       "name": "Test User",
@@ -444,9 +435,7 @@ let _ = {
       "password": "$2a$10$hash",
       "role": "USER",
       "createdAt": now,
-      "updatedAt": now,
-    },
-  ]
+      "updatedAt": now}]
 
   products := [
     {
@@ -457,8 +446,7 @@ let _ = {
       "status": "AVAILABLE",
       "userId": "1",
       "createdAt": now,
-      "updatedAt": now,
-    },
+      "updatedAt": now},
     {
       "id": "2",
       "name": "Product 2",
@@ -467,9 +455,7 @@ let _ = {
       "status": "AVAILABLE",
       "userId": "1",
       "createdAt": now,
-      "updatedAt": now,
-    },
-  ]
+      "updatedAt": now}]
 }
 
 // User operations
@@ -496,8 +482,7 @@ let createUser = (name: string, email: string, password: string): Js.Dict.t<stri
     "password": password, // In production, hash with bcrypt
     "role": "USER",
     "createdAt": now,
-    "updatedAt": now,
-  }
+    "updatedAt": now}
 
   users->Belt.Array.push(newUser)->ignore
 
@@ -525,8 +510,7 @@ let createProduct = (name: string, description: string, price: float, status: st
     "status": status,
     "userId": userId,
     "createdAt": now,
-    "updatedAt": now,
-  }
+    "updatedAt": now}
 
   products->Belt.Array.push(newProduct)->ignore
 
@@ -548,8 +532,7 @@ let generateToken = (user: Js.Dict.t<string, string>): string => {
     "id": id,
     "email": email,
     "role": role,
-    "exp": Js.Int.toString(Js.Float.toInt(Js.Date.time(Js.Date.now()) /. 1000.0 +. 3600.0)),
-  })
+    "exp": Js.Int.toString(Js.Float.toInt(Js.Date.time(Js.Date.now()) /. 1000.0 +. 3600.0))})
 }
 
 // Verify JWT token (simplified)
@@ -560,8 +543,7 @@ let verifyToken = (token: string): option<Js.Dict.t<string, string>> => {
       "id": "1",
       "name": "Admin User",
       "email": "admin@example.com",
-      "role": "ADMIN",
-    })
+      "role": "ADMIN"})
   } else {
     None
   }
@@ -589,8 +571,7 @@ let paginateUsers = (users: array<Data.user>, limit: int, cursor: option<string>
   let edges = users->Belt.Array.mapWithIndex((u, i) => {
     {
       "node": u,
-      "cursor": Js.Int.toString(i),
-    }
+      "cursor": Js.Int.toString(i)}
   })
 
   let startCursor = Some(Js.Int.toString(0))
@@ -601,16 +582,13 @@ let paginateUsers = (users: array<Data.user>, limit: int, cursor: option<string>
   {
     "edges": edges->Belt.Array.map(e => {
       "node": e->Js.Dict.get("node")->Belt.Option.getWithDefault(Js.Dict.empty()),
-      "cursor": e->Js.Dict.get("cursor")->Belt.Option.getWithDefault(""),
-    }),
+      "cursor": e->Js.Dict.get("cursor")->Belt.Option.getWithDefault("")}),
     "pageInfo": {
       "hasNextPage": Js.Bool.toString(hasNextPage),
       "hasPreviousPage": Js.Bool.toString(hasPreviousPage),
       "startCursor": startCursor->Belt.Option.getOr(""),
-      "endCursor": endCursor->Belt.Option.getOr(""),
-    },
-    "totalCount": Js.Int.toString(totalCount),
-  }
+      "endCursor": endCursor->Belt.Option.getOr("")},
+    "totalCount": Js.Int.toString(totalCount)}
 }
 
 let paginateProducts = (products: array<Data.product>, limit: int, cursor: option<string>): Js.Dict.t<string, Js.Dict.t<string, string>> => {
@@ -619,23 +597,19 @@ let paginateProducts = (products: array<Data.product>, limit: int, cursor: optio
   let edges = products->Belt.Array.mapWithIndex((p, i) => {
     {
       "node": p,
-      "cursor": Js.Int.toString(i),
-    }
+      "cursor": Js.Int.toString(i)}
   })
 
   {
     "edges": edges->Belt.Array.map(e => {
       "node": e->Js.Dict.get("node")->Belt.Option.getWithDefault(Js.Dict.empty()),
-      "cursor": e->Js.Dict.get("cursor")->Belt.Option.getWithDefault(""),
-    }),
+      "cursor": e->Js.Dict.get("cursor")->Belt.Option.getWithDefault("")}),
     "pageInfo": {
       "hasNextPage": "false",
       "hasPreviousPage": "false",
       "startCursor": "0",
-      "endCursor": Js.Int.toString(totalCount - 1),
-    },
-    "totalCount": Js.Int.toString(totalCount),
-  }
+      "endCursor": Js.Int.toString(totalCount - 1)},
+    "totalCount": Js.Int.toString(totalCount)}
 }`,
 
     // Resolvers module
@@ -651,10 +625,8 @@ let query = {
   "health": (_args, _obj) => {
     Js.Promise.resolve({
       "status": "healthy",
-      "timestamp": Js.Date.toString(Js.Date.now()),
-    })
-  },
-}
+      "timestamp": Js.Date.toString(Js.Date.now())})
+  }}
 
 // Mutation resolvers
 let mutation = {
@@ -668,10 +640,8 @@ let mutation = {
 
     Js.Promise.resolve({
       "token": token,
-      "user": user,
-    })
-  },
-}`,
+      "user": user})
+  }}`,
 
     // Environment configuration
     '.env.example': `PORT=4000
@@ -821,6 +791,4 @@ ReScript generates types from your GraphQL schema:
 ## License
 
 MIT
-`,
-  },
-};
+`}};

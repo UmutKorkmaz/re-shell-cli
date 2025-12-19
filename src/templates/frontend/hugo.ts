@@ -394,7 +394,7 @@ body { font-family: -apple-system, sans-serif; line-height: 1.6; }
 `;
   }
 
-  private generateReadme() {
+  protected generateReadme() {
     return `# ${this.context.name}
 
 A Hugo static site.

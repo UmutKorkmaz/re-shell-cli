@@ -8,10 +8,10 @@ export const saturnFsTemplate: BackendTemplate = {
   language: 'fsharp',
   framework: 'saturn',
   version: '1.0.0',
-  tags: ['fsharp', 'saturn', 'mvc', 'functional', 'type-safe', '.net', 'giraffe'],
+  tags: ['fsharp', 'saturn', 'mvc', 'functional', 'validation', '.net', 'giraffe'],
   port: 5000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'type-safe'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'validation'],
 
   files: {
     // Project file
@@ -694,13 +694,13 @@ services:
 open Xunit
 open System
 
-type ``Tests`` () =
+type \`\`Tests\`\` () =
     [<Fact>]
-    let ``My test`` () =
+    let \`\`My test\`\` () =
         Assert.True(true)
 
     [<Fact>]
-    let ``Health check returns healthy status`` () =
+    let \`\`Health check returns healthy status\`\` () =
         // Add test for health endpoint
         Assert.True(true)
 `,

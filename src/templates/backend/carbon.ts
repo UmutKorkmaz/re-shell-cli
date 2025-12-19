@@ -58,13 +58,11 @@ class Product {
 # In-memory database
 var users: Array(User) = [
   User.Create(1, "admin@example.com", hash_password("admin123"), "Admin User", "admin"),
-  User.Create(2, "user@example.com", hash_password("user123"), "Test User", "user"),
-];
+  User.Create(2, "user@example.com", hash_password("user123"), "Test User", "user")];
 
 var products: Array(Product) = [
   Product.Create(1, "Sample Product 1", "This is a sample product", 29.99, 100),
-  Product.Create(2, "Sample Product 2", "Another sample product", 49.99, 50),
-];
+  Product.Create(2, "Sample Product 2", "Another sample product", 49.99, 50)];
 
 var user_id_counter: i32 = 3;
 var product_id_counter: i32 = 3;
@@ -895,6 +893,5 @@ var result = Cpp.existing_function();
 ## License
 
 MIT
-`,
-  }
+`}
 };

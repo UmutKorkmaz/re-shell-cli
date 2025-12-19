@@ -107,31 +107,23 @@ const app = new Elysia()
       info: {
         title: '{{projectName}} API',
         version: '1.0.0',
-        description: 'REST API built with Elysia on Bun',
-      },
+        description: 'REST API built with Elysia on Bun'},
       tags: [
         { name: 'auth', description: 'Authentication endpoints' },
         { name: 'users', description: 'User management' },
-        { name: 'products', description: 'Product management' },
-      ],
+        { name: 'products', description: 'Product management' }],
       components: {
         securitySchemes: {
           bearerAuth: {
             type: 'http',
             scheme: 'bearer',
-            bearerFormat: 'JWT',
-          },
-        },
-      },
-    },
-  }))
+            bearerFormat: 'JWT'}}}}}))
   // CORS
   .use(cors({
     origin: config.allowedOrigins.includes('*') ? true : config.allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
-  }))
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']}))
   // Plugins
   .use(loggerPlugin)
   .use(rateLimitPlugin)
@@ -139,13 +131,10 @@ const app = new Elysia()
   // Health check
   .get('/health', () => ({
     status: 'healthy',
-    timestamp: new Date().toISOString(),
-  }), {
+    timestamp: new Date().toISOString()}), {
     detail: {
       tags: ['health'],
-      summary: 'Health check',
-    },
-  })
+      summary: 'Health check'}})
   // API routes
   .group('/api/v1', (app) =>
     app
@@ -183,8 +172,7 @@ export type App = typeof app;
 
   // Rate limiting
   rateLimitRequests: Number(process.env.RATE_LIMIT_REQUESTS) || 100,
-  rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 60000,
-} as const;
+  rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 60000} as const;
 `,
 
     // Database
@@ -268,8 +256,7 @@ export const db = {
     findAll: <T extends DbRecord>() => memoryDb.findAll<T>('users'),
     update: <T extends DbRecord>(id: string, updates: Partial<T>) =>
       memoryDb.update<T>('users', id, updates),
-    delete: (id: string) => memoryDb.delete('users', id),
-  },
+    delete: (id: string) => memoryDb.delete('users', id)},
 
   products: {
     insert: <T extends DbRecord>(record: T) => memoryDb.insert('products', record),
@@ -281,9 +268,7 @@ export const db = {
       memoryDb.count<T>('products', predicate),
     update: <T extends DbRecord>(id: string, updates: Partial<T>) =>
       memoryDb.update<T>('products', id, updates),
-    delete: (id: string) => memoryDb.delete('products', id),
-  },
-};
+    delete: (id: string) => memoryDb.delete('products', id)}};
 `,
 
     // Types
@@ -297,8 +282,7 @@ export const UserSchema = t.Object({
   role: t.String(),
   active: t.Boolean(),
   createdAt: t.String(),
-  updatedAt: t.String(),
-});
+  updatedAt: t.String()});
 
 export const UserResponseSchema = t.Object({
   id: t.String(),
@@ -306,8 +290,7 @@ export const UserResponseSchema = t.Object({
   name: t.String(),
   role: t.String(),
   active: t.Boolean(),
-  createdAt: t.String(),
-});
+  createdAt: t.String()});
 
 export const ProductSchema = t.Object({
   id: t.String(),
@@ -317,42 +300,36 @@ export const ProductSchema = t.Object({
   stock: t.Number(),
   active: t.Boolean(),
   createdAt: t.String(),
-  updatedAt: t.String(),
-});
+  updatedAt: t.String()});
 
 export const RegisterSchema = t.Object({
   email: t.String({ format: 'email' }),
   password: t.String({ minLength: 6 }),
-  name: t.String({ minLength: 2 }),
-});
+  name: t.String({ minLength: 2 })});
 
 export const LoginSchema = t.Object({
   email: t.String({ format: 'email' }),
-  password: t.String({ minLength: 1 }),
-});
+  password: t.String({ minLength: 1 })});
 
 export const CreateProductSchema = t.Object({
   name: t.String({ minLength: 1 }),
   description: t.Optional(t.String()),
   price: t.Number({ minimum: 0 }),
-  stock: t.Number({ minimum: 0, default: 0 }),
-});
+  stock: t.Number({ minimum: 0, default: 0 })});
 
 export const UpdateProductSchema = t.Object({
   name: t.Optional(t.String({ minLength: 1 })),
   description: t.Optional(t.String()),
   price: t.Optional(t.Number({ minimum: 0 })),
   stock: t.Optional(t.Number({ minimum: 0 })),
-  active: t.Optional(t.Boolean()),
-});
+  active: t.Optional(t.Boolean())});
 
 export const PaginatedResponseSchema = <T extends object>(itemSchema: T) =>
   t.Object({
     data: t.Array(itemSchema),
     total: t.Number(),
     page: t.Number(),
-    limit: t.Number(),
-  });
+    limit: t.Number()});
 
 export type User = Static<typeof UserSchema>;
 export type UserResponse = Static<typeof UserResponseSchema>;
@@ -375,8 +352,7 @@ export const authPlugin = new Elysia({ name: 'auth' })
   .use(jwt({
     name: 'jwt',
     secret: config.jwtSecret,
-    exp: \`\${config.jwtExpirationHours}h\`,
-  }))
+    exp: \`\${config.jwtExpirationHours}h\`}))
   .use(bearer())
   .derive(async ({ jwt, bearer }) => {
     if (!bearer) {
@@ -397,9 +373,7 @@ export const authPlugin = new Elysia({ name: 'auth' })
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
-      },
-    };
+        role: user.role}};
   })
   .macro(({ onBeforeHandle }) => ({
     isAuth(enabled: boolean) {
@@ -420,8 +394,7 @@ export const authPlugin = new Elysia({ name: 'auth' })
           return error(403, { error: 'Forbidden' });
         }
       });
-    },
-  }));
+    }}));
 `,
 
     // Logger Plugin
@@ -430,8 +403,7 @@ export const authPlugin = new Elysia({ name: 'auth' })
 export const loggerPlugin = new Elysia({ name: 'logger' })
   .derive(() => {
     return {
-      requestId: crypto.randomUUID().slice(0, 8),
-    };
+      requestId: crypto.randomUUID().slice(0, 8)};
   })
   .onRequest(({ request, requestId }) => {
     console.log(\`[\${requestId}] -> \${request.method} \${new URL(request.url).pathname}\`);
@@ -461,8 +433,7 @@ export const rateLimitPlugin = new Elysia({ name: 'rate-limit' })
     if (!record || now > record.resetTime) {
       record = {
         count: 0,
-        resetTime: now + config.rateLimitWindowMs,
-      };
+        resetTime: now + config.rateLimitWindowMs};
     }
 
     record.count++;
@@ -494,8 +465,7 @@ function toUserResponse(user: User): UserResponse {
     name: user.name,
     role: user.role,
     active: user.active,
-    createdAt: user.createdAt,
-  };
+    createdAt: user.createdAt};
 }
 
 export const authRoutes = new Elysia({ prefix: '/auth' })
@@ -519,8 +489,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         role: 'user',
         active: true,
         createdAt: now,
-        updatedAt: now,
-      };
+        updatedAt: now};
 
       db.users.insert(user);
 
@@ -531,9 +500,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
       response: UserResponseSchema,
       detail: {
         tags: ['auth'],
-        summary: 'Register new user',
-      },
-    }
+        summary: 'Register new user'}}
   )
   .post(
     '/login',
@@ -555,21 +522,17 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
       const token = await jwt.sign({
         userId: user.id,
         email: user.email,
-        role: user.role,
-      });
+        role: user.role});
 
       return {
         token,
-        user: toUserResponse(user),
-      };
+        user: toUserResponse(user)};
     },
     {
       body: LoginSchema,
       detail: {
         tags: ['auth'],
-        summary: 'Login user',
-      },
-    }
+        summary: 'Login user'}}
   );
 `,
 
@@ -587,8 +550,7 @@ function toUserResponse(user: User): UserResponse {
     name: user.name,
     role: user.role,
     active: user.active,
-    createdAt: user.createdAt,
-  };
+    createdAt: user.createdAt};
 }
 
 export const userRoutes = new Elysia({ prefix: '/users' })
@@ -608,17 +570,14 @@ export const userRoutes = new Elysia({ prefix: '/users' })
       detail: {
         tags: ['users'],
         summary: 'Get current user',
-        security: [{ bearerAuth: [] }],
-      },
-    }
+        security: [{ bearerAuth: [] }]}}
   )
   .put(
     '/me',
     ({ user, body, error }) => {
       const updated = db.users.update<User>(user!.id, {
         name: body.name,
-        updatedAt: new Date().toISOString(),
-      });
+        updatedAt: new Date().toISOString()});
 
       if (!updated) {
         return error(404, { error: 'User not found' });
@@ -629,15 +588,12 @@ export const userRoutes = new Elysia({ prefix: '/users' })
     {
       isAuth: true,
       body: t.Object({
-        name: t.Optional(t.String()),
-      }),
+        name: t.Optional(t.String())}),
       response: UserResponseSchema,
       detail: {
         tags: ['users'],
         summary: 'Update current user',
-        security: [{ bearerAuth: [] }],
-      },
-    }
+        security: [{ bearerAuth: [] }]}}
   )
   .get(
     '/',
@@ -651,9 +607,7 @@ export const userRoutes = new Elysia({ prefix: '/users' })
       detail: {
         tags: ['users'],
         summary: 'List all users (admin only)',
-        security: [{ bearerAuth: [] }],
-      },
-    }
+        security: [{ bearerAuth: [] }]}}
   )
   .get(
     '/:id',
@@ -667,15 +621,12 @@ export const userRoutes = new Elysia({ prefix: '/users' })
     {
       isAuth: true,
       params: t.Object({
-        id: t.String(),
-      }),
+        id: t.String()}),
       response: UserResponseSchema,
       detail: {
         tags: ['users'],
         summary: 'Get user by ID',
-        security: [{ bearerAuth: [] }],
-      },
-    }
+        security: [{ bearerAuth: [] }]}}
   )
   .delete(
     '/:id',
@@ -689,14 +640,11 @@ export const userRoutes = new Elysia({ prefix: '/users' })
     {
       hasRole: ['admin'],
       params: t.Object({
-        id: t.String(),
-      }),
+        id: t.String()}),
       detail: {
         tags: ['users'],
         summary: 'Delete user (admin only)',
-        security: [{ bearerAuth: [] }],
-      },
-    }
+        security: [{ bearerAuth: [] }]}}
   );
 `,
 
@@ -706,8 +654,7 @@ import {
   ProductSchema,
   CreateProductSchema,
   UpdateProductSchema,
-  PaginatedResponseSchema,
-} from '../types';
+  PaginatedResponseSchema} from '../types';
 import type { Product, CreateProductInput, UpdateProductInput } from '../types';
 import { db } from '../config/database';
 import { authPlugin } from '../plugins/auth';
@@ -730,14 +677,11 @@ export const productRoutes = new Elysia({ prefix: '/products' })
     {
       query: t.Object({
         page: t.Optional(t.String()),
-        limit: t.Optional(t.String()),
-      }),
+        limit: t.Optional(t.String())}),
       response: PaginatedResponseSchema(ProductSchema),
       detail: {
         tags: ['products'],
-        summary: 'List products',
-      },
-    }
+        summary: 'List products'}}
   )
   .get(
     '/:id',
@@ -750,14 +694,11 @@ export const productRoutes = new Elysia({ prefix: '/products' })
     },
     {
       params: t.Object({
-        id: t.String(),
-      }),
+        id: t.String()}),
       response: ProductSchema,
       detail: {
         tags: ['products'],
-        summary: 'Get product by ID',
-      },
-    }
+        summary: 'Get product by ID'}}
   )
   .post(
     '/',
@@ -772,8 +713,7 @@ export const productRoutes = new Elysia({ prefix: '/products' })
         stock: body.stock || 0,
         active: true,
         createdAt: now,
-        updatedAt: now,
-      };
+        updatedAt: now};
 
       db.products.insert(product);
 
@@ -786,17 +726,14 @@ export const productRoutes = new Elysia({ prefix: '/products' })
       detail: {
         tags: ['products'],
         summary: 'Create product (admin only)',
-        security: [{ bearerAuth: [] }],
-      },
-    }
+        security: [{ bearerAuth: [] }]}}
   )
   .put(
     '/:id',
     ({ params, body, error }) => {
       const product = db.products.update<Product>(params.id, {
         ...body,
-        updatedAt: new Date().toISOString(),
-      });
+        updatedAt: new Date().toISOString()});
 
       if (!product) {
         return error(404, { error: 'Product not found' });
@@ -807,16 +744,13 @@ export const productRoutes = new Elysia({ prefix: '/products' })
     {
       hasRole: ['admin'],
       params: t.Object({
-        id: t.String(),
-      }),
+        id: t.String()}),
       body: UpdateProductSchema,
       response: ProductSchema,
       detail: {
         tags: ['products'],
         summary: 'Update product (admin only)',
-        security: [{ bearerAuth: [] }],
-      },
-    }
+        security: [{ bearerAuth: [] }]}}
   )
   .delete(
     '/:id',
@@ -830,14 +764,11 @@ export const productRoutes = new Elysia({ prefix: '/products' })
     {
       hasRole: ['admin'],
       params: t.Object({
-        id: t.String(),
-      }),
+        id: t.String()}),
       detail: {
         tags: ['products'],
         summary: 'Delete product (admin only)',
-        security: [{ bearerAuth: [] }],
-      },
-    }
+        security: [{ bearerAuth: [] }]}}
   );
 `,
 
@@ -862,9 +793,7 @@ describe('Auth', () => {
       body: JSON.stringify({
         email: \`test-\${Date.now()}@example.com\`,
         password: 'password123',
-        name: 'Test User',
-      }),
-    });
+        name: 'Test User'})});
 
     expect(response.status).toBe(200);
     const body = await response.json();

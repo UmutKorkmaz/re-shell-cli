@@ -8,10 +8,10 @@ export const pedestalCljTemplate: BackendTemplate = {
   language: 'clojure',
   framework: 'pedestal',
   version: '1.0.0',
-  tags: ['clojure', 'pedestal', 'service-oriented', 'interceptors', 'async', 'microservices'],
+  tags: ['clojure', 'pedestal', 'service-oriented', 'interceptors', 'microservices'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'async'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation'],
 
   files: {
     // Project configuration

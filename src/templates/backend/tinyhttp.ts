@@ -8,10 +8,10 @@ export const tinyhttpTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'tinyhttp',
   version: '2.2.2',
-  tags: ['nodejs', 'tinyhttp', 'api', 'rest', 'modern', 'esm', 'typescript', 'fast'],
+  tags: ['nodejs', 'tinyhttp', 'api', 'rest', 'modern', 'fast'],
   port: 3000,
   dependencies: {},
-  features: ['esm', 'typescript', 'middleware', 'routing', 'cors', 'authentication', 'validation', 'websocket', 'mongodb', 'rate-limiting', 'testing'],
+  features: ['rest-api', 'middleware', 'routing', 'cors', 'authentication', 'validation', 'websockets', 'database', 'rate-limiting', 'testing'],
   
   files: {
     // TypeScript project configuration with ES modules
@@ -52,7 +52,7 @@ export const tinyhttpTemplate: BackendTemplate = {
     "milliparsec": "^2.3.0",
     "sirv": "^2.0.4",
     "eta": "^3.4.0",
-    "mongodb": "^6.5.0",
+    "database": "^6.5.0",
     "mongoose": "^8.3.1",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
@@ -77,7 +77,7 @@ export const tinyhttpTemplate: BackendTemplate = {
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.5",
-    "typescript": "^5.4.5",
+    "rest-api": "^5.4.5",
     "tsx": "^4.7.2",
     "vitest": "^1.5.0",
     "@vitest/coverage-v8": "^1.5.0",

@@ -428,7 +428,7 @@ def load_config_from_pyproject(framework: str) -> Optional[ReloadConfig]:
         with open('pyproject.toml', 'rb') as f:
             data = tomli.load(f)
             
-        tool_config = data.get('tool', {}).get('hot-reload', {})
+        tool_config = data.get('tool', {}).get(, {})
         
         return ReloadConfig(
             watch_paths=tool_config.get('watch_paths', ['app/', 'src/']),

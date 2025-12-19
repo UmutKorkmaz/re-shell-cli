@@ -134,8 +134,7 @@ fn handle_root(req: Request) -> Response {
           #("version", json.string("1.0.0")),
           #("framework", json.string("Wisp")),
           #("language", json.string("Gleam")),
-          #("description", json.string("{{description}}")),
-        ])
+          #("description", json.string("{{description}}"))])
         |> json.to_string_builder
 
       wisp.json_response(body, 200)
@@ -209,8 +208,7 @@ pub fn handle(req: Request) -> Response {
       let body =
         json.object([
           #("status", json.string("healthy")),
-          #("timestamp", json.string("now")),
-        ])
+          #("timestamp", json.string("now"))])
         |> json.to_string_builder
 
       wisp.json_response(body, 200)
@@ -270,8 +268,7 @@ fn handle_register(req: Request) -> Response {
             json.object([
               #("id", json.int(user.id)),
               #("email", json.string(user.email)),
-              #("name", json.string(user.name)),
-            ])
+              #("name", json.string(user.name))])
             |> json.to_string_builder
 
           wisp.json_response(response_body, 201)
@@ -304,8 +301,7 @@ fn handle_login(req: Request) -> Response {
               let response_body =
                 json.object([
                   #("token", json.string(token_response.token)),
-                  #("expires_at", json.int(token_response.expires_at)),
-                ])
+                  #("expires_at", json.int(token_response.expires_at))])
                 |> json.to_string_builder
 
               wisp.json_response(response_body, 200)
@@ -330,8 +326,7 @@ pub fn error_response(error: String, message: String, status: Int) -> Response {
   let body =
     json.object([
       #("error", json.string(error)),
-      #("message", json.string(message)),
-    ])
+      #("message", json.string(message))])
     |> json.to_string_builder
 
   wisp.json_response(body, status)
@@ -358,8 +353,7 @@ pub fn get_me(req: Request) -> Response {
             json.object([
               #("id", json.int(user.id)),
               #("email", json.string(user.email)),
-              #("name", json.string(user.name)),
-            ])
+              #("name", json.string(user.name))])
             |> json.to_string_builder
 
           wisp.json_response(body, 200)
@@ -383,8 +377,7 @@ pub fn list_users(req: Request) -> Response {
               json.object([
                 #("id", json.int(user.id)),
                 #("email", json.string(user.email)),
-                #("name", json.string(user.name)),
-              ])
+                #("name", json.string(user.name))])
             })
 
           let body = json.array(users_json, fn(x) { x }) |> json.to_string_builder
@@ -411,8 +404,7 @@ pub fn get_user(req: Request, id: String) -> Response {
                     json.object([
                       #("id", json.int(user.id)),
                       #("email", json.string(user.email)),
-                      #("name", json.string(user.name)),
-                    ])
+                      #("name", json.string(user.name))])
                     |> json.to_string_builder
 
                   wisp.json_response(body, 200)
@@ -489,8 +481,7 @@ fn list_items(req: Request) -> Response {
             #("id", json.int(item.id)),
             #("name", json.string(item.name)),
             #("description", json.string(item.description)),
-            #("user_id", json.int(item.user_id)),
-          ])
+            #("user_id", json.int(item.user_id))])
         })
 
       let body = json.array(items_json, fn(x) { x }) |> json.to_string_builder
@@ -524,8 +515,7 @@ fn create_item(req: Request) -> Response {
               #("id", json.int(item.id)),
               #("name", json.string(item.name)),
               #("description", json.string(item.description)),
-              #("user_id", json.int(item.user_id)),
-            ])
+              #("user_id", json.int(item.user_id))])
             |> json.to_string_builder
 
           wisp.json_response(response_body, 201)
@@ -551,8 +541,7 @@ fn get_item(req: Request, id: String) -> Response {
                   #("id", json.int(item.id)),
                   #("name", json.string(item.name)),
                   #("description", json.string(item.description)),
-                  #("user_id", json.int(item.user_id)),
-                ])
+                  #("user_id", json.int(item.user_id))])
                 |> json.to_string_builder
 
               wisp.json_response(body, 200)
@@ -913,25 +902,19 @@ docker-compose up -d
 ## License
 
 MIT
-`,
-  },
+`},
   prompts: [
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: 'my-wisp-app',
-    },
+      default: 'my-wisp-app'},
     {
       type: 'input',
       name: 'description',
       message: 'Project description:',
-      default: 'A Gleam web application built with Wisp',
-    },
-  ],
+      default: 'A Gleam web application built with Wisp'}],
   postInstall: [
     'gleam deps download',
     'echo "✨ {{projectName}} is ready!"',
-    'echo "Run: gleam run"',
-  ],
-};
+    'echo "Run: gleam run"']};

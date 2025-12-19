@@ -8,7 +8,7 @@ export const sanicTemplate: BackendTemplate = {
   framework: 'sanic',
   language: 'python',
   version: '1.0.0',
-  tags: ['sanic', 'python', 'async', 'ultra-fast', 'blueprints', 'middleware', 'high-performance'],
+  tags: ['sanic', 'python', 'ultra-fast', 'blueprints', 'middleware', 'high-performance'],
   dependencies: {
     sanic: '^23.12.1',
     'sanic-ext': '^23.12.0',
@@ -229,8 +229,7 @@ def create_app(test_config=None) -> Sanic:
             'GRACEFUL_SHUTDOWN_TIMEOUT': 15.0,
             'ACCESS_LOG': settings.DEBUG,
             'AUTO_RELOAD': settings.DEBUG,
-            'DEBUG': settings.DEBUG,
-        })
+            'DEBUG': settings.DEBUG})
     
     # Enable Sanic Extensions for enhanced functionality
     Extend(app)
@@ -307,8 +306,7 @@ async def init_database():
         max_size=settings.DB_POOL_MAX_SIZE,
         command_timeout=60,
         server_settings={
-            'application_name': 'sanic_microservice',
-        }
+            'application_name': 'sanic_microservice'}
     )
     
     # Create SQLAlchemy engine for migrations and synchronous operations
@@ -1020,7 +1018,7 @@ async def get_status(request):
                 "max_request_size": settings.REQUEST_MAX_SIZE
             },
             "websockets": websocket_stats,
-            "redis": redis_stats,
+            "caching": redis_stats,
             "system": system_metrics,
             "timestamp": datetime.utcnow().isoformat()
         }
@@ -1113,7 +1111,7 @@ def add_authentication_middleware(app):
             return
         
         # Skip authentication for WebSocket upgrade requests
-        if request.headers.get('upgrade', '').lower() == 'websocket':
+        if request.headers.get('upgrade', '').lower() == 'websockets':
             return
         
         # Get authorization header

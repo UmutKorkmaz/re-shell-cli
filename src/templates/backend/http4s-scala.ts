@@ -8,10 +8,10 @@ export const http4sScalaTemplate: BackendTemplate = {
   language: 'scala',
   framework: 'http4s',
   version: '1.0.0',
-  tags: ['scala', 'http4s', 'functional', 'cats-effect', 'fs2', 'circe'],
+  tags: ['scala', 'http4s', 'microservices', 'cats-effect', 'fs2', 'circe'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'functional'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'microservices'],
 
   files: {
     // Build configuration

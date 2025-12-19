@@ -183,10 +183,9 @@ try
                         Type = ReferenceType.SecurityScheme,
                         Id = "Bearer"
                     },
-                    Scheme = "oauth2",
+                    Scheme = "authorization",
                     Name = "Bearer",
-                    In = ParameterLocation.Header,
-                },
+                    In = ParameterLocation.Header},
                 new List<string>()
             }
         });

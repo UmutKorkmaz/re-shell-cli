@@ -8,10 +8,10 @@ export const playScalaTemplate: BackendTemplate = {
   language: 'scala',
   framework: 'play',
   version: '1.0.0',
-  tags: ['scala', 'play', 'reactive', 'akka', 'websocket', 'type-safe', 'async'],
+  tags: ['scala', 'play', 'reactive', 'akka', 'websockets', 'type-safe'],
   port: 9000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websocket'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'websockets'],
 
   files: {
     // Build configuration

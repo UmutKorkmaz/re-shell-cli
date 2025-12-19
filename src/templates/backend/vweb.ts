@@ -757,24 +757,18 @@ docker-compose up -d
 ## License
 
 MIT
-`,
-  },
+`},
   prompts: [
     {
       type: 'input',
       name: 'projectName',
       message: 'Project name:',
-      default: 'my-vweb-app',
-    },
+      default: 'my-vweb-app'},
     {
       type: 'input',
       name: 'description',
       message: 'Project description:',
-      default: 'A V language web application built with Vweb',
-    },
-  ],
+      default: 'A V language web application built with Vweb'}],
   postInstall: [
     'echo "✨ {{projectName}} is ready!"',
-    'echo "Run: v run src/main.v"',
-  ],
-};
+    'echo "Run: v run src/main.v"']};

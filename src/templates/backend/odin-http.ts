@@ -26,8 +26,7 @@ import "core:encoding/json"
 // Simple HTTP server implementation
 Server :: struct {
   listener: net.Listener,
-  routes: map[string]Route_Handler,
-}
+  routes: map[string]Route_Handler}
 
 Route_Handler :: #type proc(req: ^Request) -> Response
 
@@ -35,14 +34,12 @@ Request :: struct {
   method: string,
   path: string,
   headers: map[string]string,
-  body: string,
-}
+  body: string}
 
 Response :: struct {
   status: int,
   headers: map[string]string,
-  body: string,
-}
+  body: string}
 
 User :: struct {
   id: int,
@@ -51,8 +48,7 @@ User :: struct {
   name: string,
   role: string,
   created_at: string,
-  updated_at: string,
-}
+  updated_at: string}
 
 Product :: struct {
   id: int,
@@ -61,8 +57,7 @@ Product :: struct {
   price: f64,
   stock: int,
   created_at: string,
-  updated_at: string,
-}
+  updated_at: string}
 
 // In-memory database
 users := [?]User {
@@ -73,9 +68,7 @@ users := [?]User {
     "Admin User",
     "admin",
     "2024-01-01T00:00:00Z",
-    "2024-01-01T00:00:00Z",
-  },
-}
+    "2024-01-01T00:00:00Z"}}
 
 products := [?]Product {
   {
@@ -85,8 +78,7 @@ products := [?]Product {
     29.99,
     100,
     "2024-01-01T00:00:00Z",
-    "2024-01-01T00:00:00Z",
-  },
+    "2024-01-01T00:00:00Z"},
   {
     2,
     "Sample Product 2",
@@ -94,9 +86,7 @@ products := [?]Product {
     49.99,
     50,
     "2024-01-01T00:00:00Z",
-    "2024-01-01T00:00:00Z",
-  },
-}
+    "2024-01-01T00:00:00Z"}}
 
 user_id_counter := 2
 product_id_counter := 3
@@ -155,8 +145,7 @@ create_product :: proc(name: string, description: string, price: f64, stock: int
     price,
     stock,
     "2024-01-01T00:00:00Z",
-    "2024-01-01T00:00:00Z",
-  }
+    "2024-01-01T00:00:00Z"}
   product_id_counter += 1
   append(&products, new_product)
   return &products[len(products) - 1]
@@ -193,8 +182,7 @@ health_handler :: proc(req: ^Request) -> Response {
   return Response{
     200,
     {"Content-Type": "application/json"},
-    fmt.aprint("{\\"status\\": \\"healthy\\", \\"timestamp\\": \\"2024-01-01T00:00:00Z\\", \\"version\\": \\"1.0.0\\"}"),
-  }
+    fmt.aprint("{\\"status\\": \\"healthy\\", \\"timestamp\\": \\"2024-01-01T00:00:00Z\\", \\"version\\": \\"1.0.0\\"}")}
 }
 
 // Register handler
@@ -208,8 +196,7 @@ register_handler :: proc(req: ^Request) -> Response {
     return Response{
       409,
       {"Content-Type": "application/json"},
-      "{\\"error\\": \\"Email already registered\\"}",
-    }
+      "{\\"error\\": \\"Email already registered\\"}"}
   }
 
   new_user := User{
@@ -219,8 +206,7 @@ register_handler :: proc(req: ^Request) -> Response {
     name,
     "user",
     "2024-01-01T00:00:00Z",
-    "2024-01-01T00:00:00Z",
-  }
+    "2024-01-01T00:00:00Z"}
   user_id_counter += 1
   append(&users, new_user)
 
@@ -230,8 +216,7 @@ register_handler :: proc(req: ^Request) -> Response {
     201,
     {"Content-Type": "application/json"},
     fmt.aprint("{\\"token\\": \\"%s\\", \\"user\\": {\\"id\\": %d, \\"email\\": \\"%s\\", \\"name\\": \\"%s\\", \\"role\\": \\"%s\\"}}",
-      token, new_user.id, new_user.email, new_user.name, new_user.role),
-  }
+      token, new_user.id, new_user.email, new_user.name, new_user.role)}
 }
 
 // Login handler
@@ -245,8 +230,7 @@ login_handler :: proc(req: ^Request) -> Response {
     return Response{
       401,
       {"Content-Type": "application/json"},
-      "{\\"error\\": \\"Invalid credentials\\"}",
-    }
+      "{\\"error\\": \\"Invalid credentials\\"}"}
   }
 
   token := generate_token(user)
@@ -255,8 +239,7 @@ login_handler :: proc(req: ^Request) -> Response {
     200,
     {"Content-Type": "application/json"},
     fmt.aprint("{\\"token\\": \\"%s\\", \\"user\\": {\\"id\\": %d, \\"email\\": \\"%s\\", \\"name\\": \\"%s\\", \\"role\\": \\"%s\\"}}",
-      token, user.id, user.email, user.name, user.role),
-  }
+      token, user.id, user.email, user.name, user.role)}
 }
 
 // List products handler
@@ -265,8 +248,7 @@ list_products_handler :: proc(req: ^Request) -> Response {
   return Response{
     200,
     {"Content-Type": "application/json"},
-    fmt.aprint("{\\"products\\": [...], \\"count\\": %d}", len(products)),
-  }
+    fmt.aprint("{\\"products\\": [...], \\"count\\": %d}", len(products))}
 }
 
 // Get product handler
@@ -279,16 +261,14 @@ get_product_handler :: proc(req: ^Request) -> Response {
     return Response{
       404,
       {"Content-Type": "application/json"},
-      "{\\"error\\": \\"Product not found\\"}",
-    }
+      "{\\"error\\": \\"Product not found\\"}"}
   }
 
   return Response{
     200,
     {"Content-Type": "application/json"},
     fmt.aprint("{\\"product\\": {\\"id\\": %d, \\"name\\": \\"%s\\", \\"description\\": \\"%s\\", \\"price\\": %.2f, \\"stock\\": %d}}",
-      product.id, product.name, product.description, product.price, product.stock),
-  }
+      product.id, product.name, product.description, product.price, product.stock)}
 }
 
 // Create product handler
@@ -305,8 +285,7 @@ create_product_handler :: proc(req: ^Request) -> Response {
     201,
     {"Content-Type": "application/json"},
     fmt.aprint("{\\"product\\": {\\"id\\": %d, \\"name\\": \\"%s\\", \\"price\\": %.2f}}",
-      product.id, product.name, product.price),
-  }
+      product.id, product.name, product.price)}
 }
 
 // Update product handler
@@ -325,15 +304,13 @@ update_product_handler :: proc(req: ^Request) -> Response {
     return Response{
       404,
       {"Content-Type": "application/json"},
-      "{\\"error\\": \\"Product not found\\"}",
-    }
+      "{\\"error\\": \\"Product not found\\"}"}
   }
 
   return Response{
     200,
     {"Content-Type": "application/json"},
-    fmt.aprint("{\\"product\\": {\\"id\\": %d, \\"name\\": \\"%s\\"}}", product.id, product.name),
-  }
+    fmt.aprint("{\\"product\\": {\\"id\\": %d, \\"name\\": \\"%s\\"}}", product.id, product.name)}
 }
 
 // Delete product handler
@@ -346,15 +323,13 @@ delete_product_handler :: proc(req: ^Request) -> Response {
     return Response{
       404,
       {"Content-Type": "application/json"},
-      "{\\"error\\": \\"Product not found\\"}",
-    }
+      "{\\"error\\": \\"Product not found\\"}"}
   }
 
   return Response{
     204,
     {},
-    "",
-  }
+    ""}
 }
 
 // Home page handler

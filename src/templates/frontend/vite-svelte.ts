@@ -188,7 +188,7 @@ export class ViteSvelteTemplate extends BaseTemplate {
     };
   }
 
-  private generateViteConfig() {
+  protected generateViteConfig() {
     const { port } = this.context;
     return `import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';

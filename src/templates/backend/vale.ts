@@ -864,6 +864,5 @@ This template is provided for experimental and learning purposes.
 ## License
 
 MIT
-`,
-  }
+`}
 };

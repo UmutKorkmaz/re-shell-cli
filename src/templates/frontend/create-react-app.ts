@@ -113,6 +113,21 @@ export class CreateReactAppTemplate extends BaseTemplate {
     });
 
     files.push({
+      path: 'Dockerfile.dev',
+      content: this.generateDockerfileDev()
+    });
+
+    files.push({
+      path: 'docker-compose.yml',
+      content: this.generateDockerCompose()
+    });
+
+    files.push({
+      path: 'docker-compose.dev.yml',
+      content: this.generateDockerComposeDev()
+    });
+
+    files.push({
       path: '.dockerignore',
       content: this.generateDockerIgnore()
     });
@@ -618,7 +633,7 @@ export function unregister() {
     }, null, 2);
   }
 
-  private generateEslintConfig() {
+  protected generateEslintConfig() {
     return `module.exports = {
   extends: ['react-app'],
   rules: {
@@ -851,6 +866,63 @@ yarn-error.log*
 # IDE
 .vscode
 .idea
+`;
+  }
+
+  private generateDockerfileDev() {
+    return `# Development Dockerfile for Create React App with Hot Reload
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose port for development server
+EXPOSE 3000
+
+# Start development server with hot reload
+CMD ["npm", "start"]
+`;
+  }
+
+  private generateDockerCompose() {
+    return `version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: unless-stopped
+`;
+  }
+
+  private generateDockerComposeDev() {
+    return `version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    restart: "no"
 `;
   }
 }

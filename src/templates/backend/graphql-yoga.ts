@@ -8,13 +8,13 @@ export const graphqlYogaTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'graphql-yoga',
   version: '5.3.1',
-  tags: ['nodejs', 'graphql', 'yoga', 'api', 'subscriptions', 'typescript', 'schema-first'],
+  tags: ['nodejs', 'graphql', 'yoga', 'api', 'websockets', 'typescript', 'schema-first'],
   port: 4000,
   dependencies: {},
   features: [
-    'graphql', 'subscriptions', 'file-uploads', 'error-handling', 
-    'authentication', 'authorization', 'dataloader', 'caching', 
-    'rate-limiting', 'persisted-queries', 'health-checks'
+    'graphql', 'websockets', 'file-upload', 'middleware', 
+    'authentication', 'authorization', 'caching', 'caching', 
+    'rate-limiting', 'caching', 'monitoring'
   ],
   
   files: {
@@ -60,7 +60,7 @@ export const graphqlYogaTemplate: BackendTemplate = {
     "@graphql-yoga/plugin-jwt": "^2.3.1",
     "@graphql-yoga/plugin-sofa": "^3.2.0",
     "graphql-shield": "^7.6.5",
-    "dataloader": "^2.2.2",
+    : "^2.2.2",
     "pothos": "^1.12.1",
     "@pothos/core": "^3.41.0",
     "@pothos/plugin-prisma": "^3.65.0",
@@ -75,9 +75,9 @@ export const graphqlYogaTemplate: BackendTemplate = {
     "graphql-upload": "^16.0.2",
     "@graphql-tools/graphql-file-loader": "^8.0.1",
     "@graphql-tools/load": "^8.0.2",
-    "prisma": "^5.13.0",
+    "database": "^5.13.0",
     "@prisma/client": "^5.13.0",
-    "redis": "^4.6.13",
+    "caching": "^4.6.13",
     "ioredis": "^5.3.2",
     "dotenv": "^16.4.5",
     "bcryptjs": "^2.4.3",
@@ -198,8 +198,7 @@ const yoga = createYoga({
     debug: (...args) => logger.debug(...args),
     info: (...args) => logger.info(...args),
     warn: (...args) => logger.warn(...args),
-    error: (...args) => logger.error(...args),
-  },
+    error: (...args) => logger.error(...args)},
   maskedErrors: process.env.NODE_ENV === 'production',
   graphiql: {
     title: '{{projectName}} GraphQL API',
@@ -231,16 +230,13 @@ subscription OnUserCreated {
     name
     email
   }
-}\`,
-  },
+}\`},
   cors: {
     origin: process.env.CORS_ORIGIN?.split(',') || '*',
-    credentials: true,
-  },
+    credentials: true},
   batching: true,
   healthCheckEndpoint: '/health',
-  landingPage: process.env.NODE_ENV === 'production' ? false : true,
-});
+  landingPage: process.env.NODE_ENV === 'production' ? false : true});
 
 // Create HTTP server
 const httpServer = createServer(yoga);
@@ -248,8 +244,7 @@ const httpServer = createServer(yoga);
 // Create WebSocket server for subscriptions
 const wsServer = new WebSocketServer({
   server: httpServer,
-  path: yoga.graphqlEndpoint,
-});
+  path: yoga.graphqlEndpoint});
 
 // Setup WebSocket server with GraphQL subscriptions
 useServer(
@@ -262,8 +257,7 @@ useServer(
     },
     onDisconnect: async (ctx) => {
       logger.info('Client disconnected from WebSocket');
-    },
-  },
+    }},
   wsServer
 );
 
@@ -338,8 +332,7 @@ export async function createContext(initialContext: YogaInitialContext): Promise
     dataloaders: createDataLoaders(prisma),
     pubsub,
     logger,
-    request: initialContext.request,
-  };
+    request: initialContext.request};
 }`,
 
     // Schema index
@@ -358,8 +351,7 @@ const resolvers = mergeResolvers(resolversArray);
 
 export const schema = makeExecutableSchema({
   typeDefs,
-  resolvers,
-});`,
+  resolvers});`,
 
     // Base schema
     'src/schema/schema.graphql': `scalar DateTime
@@ -593,11 +585,7 @@ export const userResolvers: Resolvers = {
           args.filter.search ? {
             OR: [
               { name: { contains: args.filter.search, mode: 'insensitive' } },
-              { email: { contains: args.filter.search, mode: 'insensitive' } },
-            ],
-          } : {},
-        ],
-      } : {};
+              { email: { contains: args.filter.search, mode: 'insensitive' } }]} : {}]} : {};
 
       const totalCount = await prisma.user.count({ where });
       
@@ -606,13 +594,11 @@ export const userResolvers: Resolvers = {
         take: args.first || 10,
         skip: args.after ? 1 : 0,
         cursor: args.after ? { id: args.after } : undefined,
-        orderBy: { createdAt: 'desc' },
-      });
+        orderBy: { createdAt: 'desc' }});
 
       const edges = users.map(user => ({
         cursor: user.id,
-        node: user,
-      }));
+        node: user}));
 
       return {
         edges,
@@ -620,10 +606,8 @@ export const userResolvers: Resolvers = {
           hasNextPage: users.length === (args.first || 10),
           hasPreviousPage: !!args.after,
           startCursor: edges[0]?.cursor,
-          endCursor: edges[edges.length - 1]?.cursor,
-        },
-        totalCount,
-      };
+          endCursor: edges[edges.length - 1]?.cursor},
+        totalCount};
     },
 
     user: async (_, { id }, { prisma, user }) => {
@@ -642,14 +626,12 @@ export const userResolvers: Resolvers = {
       if (!me) throw new GraphQLError('User not found');
       
       return me;
-    },
-  },
+    }},
 
   Mutation: {
     createUser: async (_, { input }, { prisma, pubsub }) => {
       const existingUser = await prisma.user.findUnique({
-        where: { email: input.email },
-      });
+        where: { email: input.email }});
 
       if (existingUser) {
         throw new GraphQLError('User with this email already exists');
@@ -660,9 +642,7 @@ export const userResolvers: Resolvers = {
       const user = await prisma.user.create({
         data: {
           ...input,
-          password: hashedPassword,
-        },
-      });
+          password: hashedPassword}});
 
       await pubsub.publish('USER_CREATED', { userCreated: user });
 
@@ -678,8 +658,7 @@ export const userResolvers: Resolvers = {
 
       const updatedUser = await prisma.user.update({
         where: { id },
-        data: input,
-      });
+        data: input});
 
       await pubsub.publish(\`USER_UPDATED_\${id}\`, { userUpdated: updatedUser });
 
@@ -707,13 +686,11 @@ export const userResolvers: Resolvers = {
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { refreshTokens: { push: tokens.refreshToken } },
-      });
+        data: { refreshTokens: { push: tokens.refreshToken } }});
 
       return {
         user,
-        ...tokens,
-      };
+        ...tokens};
     },
 
     logout: async (_, __, { user, prisma }) => {
@@ -721,8 +698,7 @@ export const userResolvers: Resolvers = {
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { refreshTokens: [] },
-      });
+        data: { refreshTokens: [] }});
 
       return true;
     },
@@ -732,8 +708,7 @@ export const userResolvers: Resolvers = {
       if (!payload) throw new GraphQLError('Invalid refresh token');
 
       const user = await prisma.user.findUnique({
-        where: { id: payload.userId },
-      });
+        where: { id: payload.userId }});
 
       if (!user || !user.refreshTokens.includes(token)) {
         throw new GraphQLError('Invalid refresh token');
@@ -745,15 +720,11 @@ export const userResolvers: Resolvers = {
         where: { id: user.id },
         data: {
           refreshTokens: {
-            set: user.refreshTokens.filter(t => t !== token).concat(tokens.refreshToken),
-          },
-        },
-      });
+            set: user.refreshTokens.filter(t => t !== token).concat(tokens.refreshToken)}}});
 
       return {
         user,
-        ...tokens,
-      };
+        ...tokens};
     },
 
     forgotPassword: async (_, { email }, { prisma }) => {
@@ -767,8 +738,7 @@ export const userResolvers: Resolvers = {
         data: {
           resetToken,
           resetTokenExpiry: new Date(Date.now() + 3600000), // 1 hour
-        },
-      });
+        }});
 
       return true;
     },
@@ -777,9 +747,7 @@ export const userResolvers: Resolvers = {
       const user = await prisma.user.findFirst({
         where: {
           resetToken: token,
-          resetTokenExpiry: { gt: new Date() },
-        },
-      });
+          resetTokenExpiry: { gt: new Date() }}});
 
       if (!user) throw new GraphQLError('Invalid or expired reset token');
 
@@ -790,9 +758,7 @@ export const userResolvers: Resolvers = {
         data: {
           password: hashedPassword,
           resetToken: null,
-          resetTokenExpiry: null,
-        },
-      });
+          resetTokenExpiry: null}});
 
       return true;
     },
@@ -801,8 +767,7 @@ export const userResolvers: Resolvers = {
       if (!user) throw new GraphQLError('Not authenticated');
 
       const currentUser = await prisma.user.findUnique({
-        where: { id: user.id },
-      });
+        where: { id: user.id }});
 
       if (!currentUser || !(await bcrypt.compare(currentPassword, currentUser.password))) {
         throw new GraphQLError('Current password is incorrect');
@@ -812,8 +777,7 @@ export const userResolvers: Resolvers = {
 
       await prisma.user.update({
         where: { id: user.id },
-        data: { password: hashedPassword },
-      });
+        data: { password: hashedPassword }});
 
       return true;
     },
@@ -828,10 +792,8 @@ export const userResolvers: Resolvers = {
 
       return prisma.user.update({
         where: { id: user.id },
-        data: { avatar: avatarUrl },
-      });
-    },
-  },
+        data: { avatar: avatarUrl }});
+    }},
 
   Subscription: {
     userCreated: {
@@ -840,8 +802,7 @@ export const userResolvers: Resolvers = {
           throw new GraphQLError('Not authorized');
         }
         return pubsub.subscribe('USER_CREATED');
-      },
-    },
+      }},
 
     userUpdated: {
       subscribe: (_, { id }, { pubsub, user }) => {
@@ -852,16 +813,12 @@ export const userResolvers: Resolvers = {
         }
         
         return pubsub.subscribe(\`USER_UPDATED_\${id}\`);
-      },
-    },
-  },
+      }}},
 
   User: {
     posts: async (parent, _, { dataloaders }) => {
       return dataloaders.postsByUserIdLoader.load(parent.id);
-    },
-  },
-};`,
+    }}};`,
 
     // Post resolver
     'src/resolvers/post.resolver.ts': `import { Resolvers } from '../generated/graphql';
@@ -878,11 +835,7 @@ export const postResolvers: Resolvers = {
           args.filter.search ? {
             OR: [
               { title: { contains: args.filter.search, mode: 'insensitive' } },
-              { content: { contains: args.filter.search, mode: 'insensitive' } },
-            ],
-          } : {},
-        ],
-      } : {};
+              { content: { contains: args.filter.search, mode: 'insensitive' } }]} : {}]} : {};
 
       const totalCount = await prisma.post.count({ where });
       
@@ -892,13 +845,11 @@ export const postResolvers: Resolvers = {
         skip: args.after ? 1 : 0,
         cursor: args.after ? { id: args.after } : undefined,
         orderBy: { createdAt: 'desc' },
-        include: { author: true },
-      });
+        include: { author: true }});
 
       const edges = posts.map(post => ({
         cursor: post.id,
-        node: post,
-      }));
+        node: post}));
 
       return {
         edges,
@@ -906,17 +857,14 @@ export const postResolvers: Resolvers = {
           hasNextPage: posts.length === (args.first || 10),
           hasPreviousPage: !!args.after,
           startCursor: edges[0]?.cursor,
-          endCursor: edges[edges.length - 1]?.cursor,
-        },
-        totalCount,
-      };
+          endCursor: edges[edges.length - 1]?.cursor},
+        totalCount};
     },
 
     post: async (_, { id }, { prisma }) => {
       return prisma.post.findUnique({
         where: { id },
-        include: { author: true },
-      });
+        include: { author: true }});
     },
 
     searchPosts: async (_, { query }, { prisma }) => {
@@ -926,14 +874,10 @@ export const postResolvers: Resolvers = {
           OR: [
             { title: { contains: query, mode: 'insensitive' } },
             { content: { contains: query, mode: 'insensitive' } },
-            { tags: { has: query.toLowerCase() } },
-          ],
-        },
+            { tags: { has: query.toLowerCase() } }]},
         include: { author: true },
-        orderBy: { createdAt: 'desc' },
-      });
-    },
-  },
+        orderBy: { createdAt: 'desc' }});
+    }},
 
   Mutation: {
     createPost: async (_, { input }, { prisma, user, pubsub }) => {
@@ -943,10 +887,8 @@ export const postResolvers: Resolvers = {
         data: {
           ...input,
           authorId: user.id,
-          publishedAt: input.published ? new Date() : null,
-        },
-        include: { author: true },
-      });
+          publishedAt: input.published ? new Date() : null},
+        include: { author: true }});
 
       await pubsub.publish('POST_CREATED', { postCreated: post });
 
@@ -957,8 +899,7 @@ export const postResolvers: Resolvers = {
       if (!user) throw new GraphQLError('Not authenticated');
 
       const existingPost = await prisma.post.findUnique({
-        where: { id },
-      });
+        where: { id }});
 
       if (!existingPost) throw new GraphQLError('Post not found');
       
@@ -969,8 +910,7 @@ export const postResolvers: Resolvers = {
       const post = await prisma.post.update({
         where: { id },
         data: input,
-        include: { author: true },
-      });
+        include: { author: true }});
 
       await pubsub.publish(\`POST_UPDATED_\${id}\`, { postUpdated: post });
 
@@ -1007,10 +947,8 @@ export const postResolvers: Resolvers = {
         where: { id },
         data: { 
           published: true,
-          publishedAt: new Date(),
-        },
-        include: { author: true },
-      });
+          publishedAt: new Date()},
+        include: { author: true }});
     },
 
     unpublishPost: async (_, { id }, { prisma, user }) => {
@@ -1028,10 +966,8 @@ export const postResolvers: Resolvers = {
         where: { id },
         data: { 
           published: false,
-          publishedAt: null,
-        },
-        include: { author: true },
-      });
+          publishedAt: null},
+        include: { author: true }});
     },
 
     likePost: async (_, { id }, { prisma, user, pubsub }) => {
@@ -1040,10 +976,8 @@ export const postResolvers: Resolvers = {
       const post = await prisma.post.update({
         where: { id },
         data: {
-          likes: { connect: { id: user.id } },
-        },
-        include: { author: true, likes: true },
-      });
+          likes: { connect: { id: user.id } }},
+        include: { author: true, likes: true }});
 
       await pubsub.publish(\`POST_LIKED_\${id}\`, { postLiked: post });
 
@@ -1056,32 +990,25 @@ export const postResolvers: Resolvers = {
       return prisma.post.update({
         where: { id },
         data: {
-          likes: { disconnect: { id: user.id } },
-        },
-        include: { author: true, likes: true },
-      });
-    },
-  },
+          likes: { disconnect: { id: user.id } }},
+        include: { author: true, likes: true }});
+    }},
 
   Subscription: {
     postCreated: {
       subscribe: (_, __, { pubsub }) => {
         return pubsub.subscribe('POST_CREATED');
-      },
-    },
+      }},
 
     postUpdated: {
       subscribe: (_, { id }, { pubsub }) => {
         return pubsub.subscribe(\`POST_UPDATED_\${id}\`);
-      },
-    },
+      }},
 
     postLiked: {
       subscribe: (_, { id }, { pubsub }) => {
         return pubsub.subscribe(\`POST_LIKED_\${id}\`);
-      },
-    },
-  },
+      }}},
 
   Post: {
     author: async (parent, _, { dataloaders }) => {
@@ -1095,18 +1022,14 @@ export const postResolvers: Resolvers = {
     likes: async (parent, _, { prisma }) => {
       const post = await prisma.post.findUnique({
         where: { id: parent.id },
-        include: { likes: true },
-      });
+        include: { likes: true }});
       return post?.likes || [];
     },
 
     likesCount: async (parent, _, { prisma }) => {
       return prisma.user.count({
-        where: { likedPosts: { some: { id: parent.id } } },
-      });
-    },
-  },
-};`,
+        where: { likedPosts: { some: { id: parent.id } } }});
+    }}};`,
 
     // Comment resolver
     'src/resolvers/comment.resolver.ts': `import { Resolvers } from '../generated/graphql';
@@ -1116,8 +1039,7 @@ export const commentResolvers: Resolvers = {
   Query: {
     comments: async (_, { postId, first, after }, { prisma }) => {
       const totalCount = await prisma.comment.count({
-        where: { postId },
-      });
+        where: { postId }});
       
       const comments = await prisma.comment.findMany({
         where: { postId },
@@ -1125,13 +1047,11 @@ export const commentResolvers: Resolvers = {
         skip: after ? 1 : 0,
         cursor: after ? { id: after } : undefined,
         orderBy: { createdAt: 'desc' },
-        include: { author: true },
-      });
+        include: { author: true }});
 
       const edges = comments.map(comment => ({
         cursor: comment.id,
-        node: comment,
-      }));
+        node: comment}));
 
       return {
         edges,
@@ -1139,19 +1059,15 @@ export const commentResolvers: Resolvers = {
           hasNextPage: comments.length === (first || 10),
           hasPreviousPage: !!after,
           startCursor: edges[0]?.cursor,
-          endCursor: edges[edges.length - 1]?.cursor,
-        },
-        totalCount,
-      };
+          endCursor: edges[edges.length - 1]?.cursor},
+        totalCount};
     },
 
     comment: async (_, { id }, { prisma }) => {
       return prisma.comment.findUnique({
         where: { id },
-        include: { author: true, post: true },
-      });
-    },
-  },
+        include: { author: true, post: true }});
+    }},
 
   Mutation: {
     createComment: async (_, { postId, content }, { prisma, user, pubsub }) => {
@@ -1164,10 +1080,8 @@ export const commentResolvers: Resolvers = {
         data: {
           content,
           authorId: user.id,
-          postId,
-        },
-        include: { author: true, post: true },
-      });
+          postId},
+        include: { author: true, post: true }});
 
       await pubsub.publish(\`COMMENT_CREATED_\${postId}\`, { commentCreated: comment });
 
@@ -1178,8 +1092,7 @@ export const commentResolvers: Resolvers = {
       if (!user) throw new GraphQLError('Not authenticated');
 
       const existingComment = await prisma.comment.findUnique({
-        where: { id },
-      });
+        where: { id }});
 
       if (!existingComment) throw new GraphQLError('Comment not found');
       
@@ -1190,8 +1103,7 @@ export const commentResolvers: Resolvers = {
       return prisma.comment.update({
         where: { id },
         data: { content },
-        include: { author: true, post: true },
-      });
+        include: { author: true, post: true }});
     },
 
     deleteComment: async (_, { id }, { prisma, user }) => {
@@ -1207,16 +1119,13 @@ export const commentResolvers: Resolvers = {
 
       await prisma.comment.delete({ where: { id } });
       return true;
-    },
-  },
+    }},
 
   Subscription: {
     commentCreated: {
       subscribe: (_, { postId }, { pubsub }) => {
         return pubsub.subscribe(\`COMMENT_CREATED_\${postId}\`);
-      },
-    },
-  },
+      }}},
 
   Comment: {
     author: async (parent, _, { dataloaders }) => {
@@ -1225,20 +1134,17 @@ export const commentResolvers: Resolvers = {
 
     post: async (parent, _, { dataloaders }) => {
       return dataloaders.postLoader.load(parent.postId);
-    },
-  },
-};`,
+    }}};`,
 
     // DataLoader setup
-    'src/dataloaders/index.ts': `import DataLoader from 'dataloader';
+    'src/dataloaders/index.ts': `import DataLoader from 'caching';
 import { PrismaClient } from '@prisma/client';
 
 export function createDataLoaders(prisma: PrismaClient) {
   return {
     userLoader: new DataLoader(async (userIds: readonly string[]) => {
       const users = await prisma.user.findMany({
-        where: { id: { in: [...userIds] } },
-      });
+        where: { id: { in: [...userIds] } }});
       
       const userMap = new Map(users.map(user => [user.id, user]));
       return userIds.map(id => userMap.get(id) || null);
@@ -1247,8 +1153,7 @@ export function createDataLoaders(prisma: PrismaClient) {
     postLoader: new DataLoader(async (postIds: readonly string[]) => {
       const posts = await prisma.post.findMany({
         where: { id: { in: [...postIds] } },
-        include: { author: true },
-      });
+        include: { author: true }});
       
       const postMap = new Map(posts.map(post => [post.id, post]));
       return postIds.map(id => postMap.get(id) || null);
@@ -1257,8 +1162,7 @@ export function createDataLoaders(prisma: PrismaClient) {
     postsByUserIdLoader: new DataLoader(async (userIds: readonly string[]) => {
       const posts = await prisma.post.findMany({
         where: { authorId: { in: [...userIds] } },
-        include: { author: true },
-      });
+        include: { author: true }});
       
       const postsByUserId = new Map<string, any[]>();
       posts.forEach(post => {
@@ -1273,8 +1177,7 @@ export function createDataLoaders(prisma: PrismaClient) {
     commentsByPostIdLoader: new DataLoader(async (postIds: readonly string[]) => {
       const comments = await prisma.comment.findMany({
         where: { postId: { in: [...postIds] } },
-        include: { author: true },
-      });
+        include: { author: true }});
       
       const commentsByPostId = new Map<string, any[]>();
       comments.forEach(comment => {
@@ -1284,8 +1187,7 @@ export function createDataLoaders(prisma: PrismaClient) {
       });
       
       return postIds.map(id => commentsByPostId.get(id) || []);
-    }),
-  };
+    })};
 }`,
 
     // Plugins index
@@ -1316,35 +1218,29 @@ export const plugins = [
   
   // Security plugins
   useDepthLimit({
-    maxDepth: 10,
-  }),
+    maxDepth: 10}),
   
   ...(isProduction ? [
     useDisableIntrospection(),
     useCsrfPrevention({
-      requestHeaders: ['x-graphql-yoga-csrf'],
-    }),
-  ] : []),
+      requestHeaders: ['x-graphql-yoga-csrf']})] : []),
   
   // Performance plugins
   useResponseCache({
     session: (request) => request.headers.get('authorization') || 'public',
     ttl: 1000 * 60 * 5, // 5 minutes
     cache: redisCache,
-    includeExtensionMetadata: !isProduction,
-  }),
+    includeExtensionMetadata: !isProduction}),
   
   usePersistedOperations({
     getPersistedOperation: async (key: string) => {
       // Implement persisted query storage
       return null;
-    },
-  }),
+    }}),
   
   // Rate limiting
   useRateLimiter({
-    identifyFn: (context) => context.request.headers.get('x-forwarded-for') || 'anonymous',
-  }),
+    identifyFn: (context) => context.request.headers.get('x-forwarded-for') || 'anonymous'}),
   
   // Monitoring
   usePrometheus({
@@ -1357,19 +1253,15 @@ export const plugins = [
     execute: true,
     errors: true,
     deprecatedFields: true,
-    registry: undefined,
-  }),
+    registry: undefined}),
   
   // Development tools
   ...(!isProduction ? [
-    useApolloTracing(),
-  ] : []),
+    useApolloTracing()] : []),
   
   // Operation filtering
   useFilterAllowedOperations({
-    allowIntrospection: !isProduction,
-  }),
-];`,
+    allowIntrospection: !isProduction})];`,
 
     // Auth plugin
     'src/plugins/auth.plugin.ts': `import { Plugin } from 'graphql-yoga';
@@ -1392,26 +1284,22 @@ export const authPlugin: Plugin = {
         fieldConfig.resolve = async function (source, args, context, info) {
           if (!context.user) {
             throw new GraphQLError('Not authenticated', {
-              extensions: { code: 'UNAUTHENTICATED' },
-            });
+              extensions: { code: 'UNAUTHENTICATED' }});
           }
 
           if (requires && context.user.role !== requires && context.user.role !== 'ADMIN') {
             throw new GraphQLError('Not authorized', {
-              extensions: { code: 'FORBIDDEN' },
-            });
+              extensions: { code: 'FORBIDDEN' }});
           }
 
           return originalResolve ? originalResolve(source, args, context, info) : source[info.fieldName];
         };
 
         return fieldConfig;
-      },
-    });
+      }});
 
     replaceSchema(newSchema);
-  },
-};`,
+  }};`,
 
     // Error plugin
     'src/plugins/error.plugin.ts': `import { Plugin } from 'graphql-yoga';
@@ -1430,26 +1318,21 @@ export const errorPlugin: Plugin = {
               path: error.path,
               extensions: error.extensions,
               stack: error.stack,
-              operation: args.operationName,
-            });
+              operation: args.operationName});
 
             // Mask errors in production
             if (process.env.NODE_ENV === 'production' && !isUserFacingError(error)) {
               return new GraphQLError('Internal server error', {
                 extensions: {
                   code: 'INTERNAL_SERVER_ERROR',
-                  timestamp: new Date().toISOString(),
-                },
-              });
+                  timestamp: new Date().toISOString()}});
             }
 
             return error;
           });
         }
-      },
-    };
-  },
-};
+      }};
+  }};
 
 function isUserFacingError(error: GraphQLError): boolean {
   const userFacingCodes = [
@@ -1458,8 +1341,7 @@ function isUserFacingError(error: GraphQLError): boolean {
     'FORBIDDEN',
     'NOT_FOUND',
     'CONFLICT',
-    'VALIDATION_ERROR',
-  ];
+    'VALIDATION_ERROR'];
   
   return userFacingCodes.includes(error.extensions?.code as string);
 }`,
@@ -1474,26 +1356,22 @@ export const loggerPlugin: Plugin = {
       type: 'request',
       method: request.method,
       url: request.url,
-      headers: Object.fromEntries(request.headers.entries()),
-    });
+      headers: Object.fromEntries(request.headers.entries())});
   },
 
   onExecute({ args }) {
     logger.debug({
       type: 'execute',
       operation: args.operationName,
-      variables: args.variableValues,
-    });
+      variables: args.variableValues});
   },
 
   onSubscribe({ args }) {
     logger.debug({
       type: 'subscribe',
       operation: args.operationName,
-      variables: args.variableValues,
-    });
-  },
-};`,
+      variables: args.variableValues});
+  }};`,
 
     // Shield plugin
     'src/plugins/shield.plugin.ts': `import { Plugin } from 'graphql-yoga';
@@ -1525,8 +1403,7 @@ const permissions = shield({
     '*': allow,
     users: isAuthenticated,
     user: isAuthenticated,
-    me: isAuthenticated,
-  },
+    me: isAuthenticated},
   Mutation: {
     '*': deny,
     createUser: allow,
@@ -1548,28 +1425,22 @@ const permissions = shield({
     unlikePost: isAuthenticated,
     createComment: isAuthenticated,
     updateComment: isAuthenticated,
-    deleteComment: isAuthenticated,
-  },
+    deleteComment: isAuthenticated},
   Subscription: {
     userCreated: isAdmin,
     userUpdated: isAuthenticated,
     postCreated: allow,
     postUpdated: allow,
     postLiked: allow,
-    commentCreated: allow,
-  },
-}, {
+    commentCreated: allow}}, {
   fallbackError: new GraphQLError('Not authorized', {
-    extensions: { code: 'FORBIDDEN' },
-  }),
-  allowExternalErrors: true,
-});
+    extensions: { code: 'FORBIDDEN' }}),
+  allowExternalErrors: true});
 
 export const shieldPlugin: Plugin = {
   onSchemaChange({ schema, replaceSchema }) {
     replaceSchema(permissions.generate(schema));
-  },
-};`,
+  }};`,
 
     // Authentication utilities
     'src/utils/auth.ts': `import jwt from 'jsonwebtoken';
@@ -1589,16 +1460,13 @@ export function generateTokens(user: any) {
   const payload: TokenPayload = {
     userId: user.id,
     email: user.email,
-    role: user.role,
-  };
+    role: user.role};
 
   const accessToken = jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+    expiresIn: JWT_EXPIRES_IN});
 
   const refreshToken = jwt.sign(payload, JWT_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-  });
+    expiresIn: REFRESH_TOKEN_EXPIRES_IN});
 
   return { accessToken, refreshToken };
 }
@@ -1624,16 +1492,14 @@ export async function authenticateUser(token: string) {
   if (!payload) return null;
 
   const user = await prisma.user.findUnique({
-    where: { id: payload.userId },
-  });
+    where: { id: payload.userId }});
 
   if (!user) return null;
 
   return {
     id: user.id,
     email: user.email,
-    role: user.role,
-  };
+    role: user.role};
 }`,
 
     // PubSub utility
@@ -1658,9 +1524,7 @@ export const pubsub = process.env.NODE_ENV === 'production'
         },
         publish: async (topic: string, payload: any) => {
           await redisClient.publish(topic, JSON.stringify(payload));
-        },
-      },
-    })
+        }}})
   : createPubSub();`,
 
     // Logger utility
@@ -1676,26 +1540,19 @@ export const logger = pino({
         options: {
           colorize: true,
           ignore: 'pid,hostname',
-          translateTime: 'SYS:standard',
-        },
-      }
+          translateTime: 'SYS:standard'}}
     : undefined,
   serializers: {
     req: (req) => ({
       method: req.method,
       url: req.url,
-      headers: req.headers,
-    }),
+      headers: req.headers}),
     res: (res) => ({
-      statusCode: res.statusCode,
-    }),
-    err: pino.stdSerializers.err,
-  },
+      statusCode: res.statusCode}),
+    err: pino.stdSerializers.err},
   redact: {
     paths: ['req.headers.authorization', 'req.headers.cookie'],
-    censor: '[REDACTED]',
-  },
-});`,
+    censor: '[REDACTED]'}});`,
 
     // File upload utility
     'src/utils/upload.ts': `import { GraphQLError } from 'graphql';
@@ -1760,9 +1617,7 @@ export const prisma = new PrismaClient({
     { emit: 'event', level: 'query' },
     { emit: 'event', level: 'error' },
     { emit: 'event', level: 'info' },
-    { emit: 'event', level: 'warn' },
-  ],
-});
+    { emit: 'event', level: 'warn' }]});
 
 // Log database queries in development
 if (process.env.NODE_ENV === 'development') {
@@ -1770,8 +1625,7 @@ if (process.env.NODE_ENV === 'development') {
     logger.debug({
       query: e.query,
       params: e.params,
-      duration: e.duration,
-    });
+      duration: e.duration});
   });
 }
 
@@ -1806,9 +1660,7 @@ export const redisClient = createClient({
       const delay = Math.min(retries * 100, 3000);
       logger.info(\`Redis: Reconnecting in \${delay}ms...\`);
       return delay;
-    },
-  },
-});
+    }}});
 
 redisClient.on('error', (err) => {
   logger.error('Redis Client Error:', err);
@@ -1838,8 +1690,7 @@ export const redisCache = {
   },
   delete: async (key: string) => {
     await redisClient.del(key);
-  },
-};`,
+  }};`,
 
     // Email service
     'src/services/email.ts': `import crypto from 'crypto';
@@ -2128,8 +1979,7 @@ networks:
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
+    '^.+\\.ts$': 'ts-jest'},
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
@@ -2137,8 +1987,7 @@ networks:
     '!src/**/*.test.ts',
     '!src/__tests__/**',
     '!src/index.ts',
-    '!src/generated/**',
-  ],
+    '!src/generated/**'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
@@ -2149,11 +1998,9 @@ networks:
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '^@plugins/(.*)$': '<rootDir>/src/plugins/$1',
-    '^@models/(.*)$': '<rootDir>/src/models/$1',
-  },
+    '^@models/(.*)$': '<rootDir>/src/models/$1'},
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
-  testTimeout: 10000,
-};`,
+  testTimeout: 10000};`,
 
     // Test setup
     'src/__tests__/setup.ts': `import { prisma } from '../services/database';
@@ -2184,8 +2031,7 @@ describe('User API', () => {
   beforeAll(async () => {
     const yoga = createYoga({
       schema,
-      context: createContext,
-    });
+      context: createContext});
 
     server = yoga.createServer();
     await server.listen(0);
@@ -2213,9 +2059,7 @@ describe('User API', () => {
       input: {
         email: 'test@example.com',
         password: 'password123',
-        name: 'Test User',
-      },
-    };
+        name: 'Test User'}};
 
     const response = await client.request(mutation, variables);
     
@@ -2240,8 +2084,7 @@ describe('User API', () => {
 
     const variables = {
       email: 'test@example.com',
-      password: 'password123',
-    };
+      password: 'password123'};
 
     const response = await client.request(mutation, variables);
     
@@ -2408,8 +2251,4 @@ The application is containerized and ready for deployment:
 
 MIT
 `
-  },
-  scripts: {
-    postInstall: `echo "GraphQL Yoga server setup complete! Run 'npm run dev' to start the server."`
-  }
-};
+  }};

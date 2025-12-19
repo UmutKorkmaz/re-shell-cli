@@ -8,10 +8,10 @@ export const nervesExTemplate: BackendTemplate = {
   language: 'elixir',
   framework: 'nerves',
   version: '1.0.0',
-  tags: ['elixir', 'nerves', 'iot', 'embedded', 'firmware', 'hardware'],
+  tags: ['elixir', 'nerves', 'iot', 'microservices', 'firmware', 'hardware'],
   port: 4000,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'embedded'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'microservices'],
 
   files: {
     // Mix configuration

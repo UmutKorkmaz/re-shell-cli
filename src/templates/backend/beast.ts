@@ -8,7 +8,7 @@ export const beastTemplate: BackendTemplate = {
   framework: 'beast',
   language: 'cpp',
   version: '1.83.0',
-  tags: ['cpp', 'beast', 'boost', 'websocket', 'http', 'async', 'networking'],
+  tags: ['cpp', 'beast', 'boost', 'websockets', 'http', 'networking'],
   port: 8085,
   features: ['websockets', 'authentication', 'cors', 'logging', 'testing', 'docker'],
   dependencies: {},

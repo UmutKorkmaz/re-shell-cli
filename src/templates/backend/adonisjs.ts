@@ -8,10 +8,10 @@ export const adonisjsTemplate: BackendTemplate = {
   language: 'typescript',
   framework: 'adonisjs',
   version: '6.15.0',
-  tags: ['nodejs', 'adonisjs', 'api', 'mvc', 'typescript', 'lucid-orm', 'edge-template', 'websocket'],
+  tags: ['nodejs', 'adonisjs', 'api', 'mvc', 'typescript', 'lucid-orm', 'edge-template', 'websockets'],
   port: 3333,
   dependencies: {},
-  features: ['mvc-architecture', 'lucid-orm', 'edge-template', 'authentication', 'authorization', 'validation', 'events', 'queue', 'mail', 'websocket', 'rate-limiting', 'testing', 'docker'],
+  features: ['routing', 'database', 'authentication', 'authorization', 'validation', 'websockets', 'queue', 'email', 'rate-limiting', 'testing', 'docker'],
   
   files: {
     // Package configuration
@@ -140,8 +140,7 @@ export default defineConfig({
     () => import('@adonisjs/core/commands'),
     () => import('@adonisjs/lucid/commands'),
     () => import('@adonisjs/mail/commands'),
-    () => import('@adonisjs/bouncer/commands'),
-  ],
+    () => import('@adonisjs/bouncer/commands')],
   
   providers: [
     () => import('@adonisjs/core/providers/app_provider'),
@@ -164,8 +163,7 @@ export default defineConfig({
     () => import('@adonisjs/transmit/transmit_provider'),
     () => import('@adonisjs/vite/vite_provider'),
     () => import('#providers/queue_provider'),
-    () => import('#providers/socket_provider'),
-  ],
+    () => import('#providers/socket_provider')],
   
   preloads: [
     () => import('#start/routes'),
@@ -174,19 +172,15 @@ export default defineConfig({
     () => import('#start/bouncer'),
     () => import('#start/limiter'),
     () => import('#start/validator'),
-    () => import('#start/socket'),
-  ],
+    () => import('#start/socket')],
   
   metaFiles: [
     {
       pattern: 'resources/views/**/*.edge',
-      reloadServer: false,
-    },
+      reloadServer: false},
     {
       pattern: 'public/**',
-      reloadServer: false,
-    },
-  ],
+      reloadServer: false}],
   
   assetsBundler: false,
   
@@ -194,9 +188,7 @@ export default defineConfig({
     onBuildCompleted: [],
     onBuildStarting: [],
     onDevServerStarted: [],
-    onSourceFileChanged: [],
-  },
-})`,
+    onSourceFileChanged: []}})`,
 
     // Environment variables
     '.env.example': `TZ=UTC
@@ -399,8 +391,7 @@ server.use([
   () => import('@adonisjs/shield/shield_middleware'),
   () => import('@adonisjs/static/static_middleware'),
   () => import('#middleware/container_bindings_middleware'),
-  () => import('#middleware/force_json_response_middleware'),
-])
+  () => import('#middleware/force_json_response_middleware')])
 
 /**
  * The router middleware stack runs on specific routes or
@@ -409,8 +400,7 @@ server.use([
 router.use([
   () => import('@adonisjs/core/bodyparser_middleware'),
   () => import('@adonisjs/session/session_middleware'),
-  () => import('@adonisjs/auth/initialize_auth_middleware'),
-])
+  () => import('@adonisjs/auth/initialize_auth_middleware')])
 
 /**
  * Named middleware collection must be explicitly assigned to
@@ -420,8 +410,7 @@ export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
   guest: () => import('#middleware/guest_middleware'),
   throttle: () => import('#middleware/throttle_middleware'),
-  can: () => import('#middleware/can_middleware'),
-})`,
+  can: () => import('#middleware/can_middleware')})`,
 
     // Auth controller
     'app/controllers/auth_controller.ts': `import type { HttpContext } from '@adonisjs/core/http'
@@ -443,8 +432,7 @@ export default class AuthController {
     const user = await User.create({
       ...data,
       verificationToken,
-      isEmailVerified: false,
-    })
+      isEmailVerified: false})
 
     // Send verification email
     await mail.send((message) => {
@@ -460,8 +448,7 @@ export default class AuthController {
 
     return response.created({
       user: user.serialize(),
-      token: token.toJSON(),
-    })
+      token: token.toJSON()})
   }
 
   async login({ request, response, auth }: HttpContext) {
@@ -478,8 +465,7 @@ export default class AuthController {
 
       return response.ok({
         user: user.serialize(),
-        token: token.toJSON(),
-      })
+        token: token.toJSON()})
     } catch {
       return response.unauthorized({ message: 'Invalid credentials' })
     }
@@ -497,8 +483,7 @@ export default class AuthController {
 
     return response.ok({
       user: user.serialize(),
-      token: token.toJSON(),
-    })
+      token: token.toJSON()})
   }
 
   async forgotPassword({ request, response }: HttpContext) {
@@ -572,8 +557,7 @@ import Todo from '#models/todo'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
-  passwordColumnName: 'password',
-})
+  passwordColumnName: 'password'})
 
 export default class User extends compose(BaseModel, AuthFinder) {
   @column({ isPrimary: true })
@@ -643,8 +627,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
       isEmailVerified: this.isEmailVerified,
       metadata: this.metadata,
       createdAt: this.createdAt.toISO(),
-      updatedAt: this.updatedAt.toISO(),
-    }
+      updatedAt: this.updatedAt.toISO()}
   }
 }`,
 
@@ -760,34 +743,29 @@ export const registerValidator = vine.compile(
   vine.object({
     name: vine.string().trim().minLength(2).maxLength(100),
     email: vine.string().trim().email().normalizeEmail(),
-    password: vine.string().minLength(8).maxLength(100),
-  })
+    password: vine.string().minLength(8).maxLength(100)})
 )
 
 export const loginValidator = vine.compile(
   vine.object({
     email: vine.string().trim().email().normalizeEmail(),
-    password: vine.string(),
-  })
+    password: vine.string()})
 )
 
 export const forgotPasswordValidator = vine.compile(
   vine.object({
-    email: vine.string().trim().email().normalizeEmail(),
-  })
+    email: vine.string().trim().email().normalizeEmail()})
 )
 
 export const resetPasswordValidator = vine.compile(
   vine.object({
-    password: vine.string().minLength(8).maxLength(100),
-  })
+    password: vine.string().minLength(8).maxLength(100)})
 )
 
 export const changePasswordValidator = vine.compile(
   vine.object({
     currentPassword: vine.string(),
-    newPassword: vine.string().minLength(8).maxLength(100),
-  })
+    newPassword: vine.string().minLength(8).maxLength(100)})
 )`,
 
     // Todo controller
@@ -824,8 +802,7 @@ export default class TodosController {
 
     const todo = await Todo.create({
       ...data,
-      userId: user.id,
-    })
+      userId: user.id})
 
     return response.created(todo)
   }
@@ -1010,9 +987,7 @@ export default class SocketProvider {
     const io = new Server(server.getNodeServer(), {
       cors: {
         origin: '*',
-        credentials: true,
-      },
-    })
+        credentials: true}})
 
     // Authentication middleware
     io.use(async (socket, next) => {
@@ -1098,8 +1073,7 @@ scheduler.run(async () => {
     .where('reset_token_expiry', '<', new Date())
     .update({
       reset_token: null,
-      reset_token_expiry: null,
-    })
+      reset_token_expiry: null})
   
   logger.info('Cleaned up expired reset tokens')
 }).everyHour()
@@ -1109,8 +1083,7 @@ scheduler.run(async () => {
   const queue = await app.container.make('queue')
   await queue.report.add('daily-report', {
     type: 'daily',
-    date: new Date(),
-  })
+    date: new Date()})
   
   logger.info('Scheduled daily report generation')
 }).dailyAt('00:00')
@@ -1136,9 +1109,7 @@ export default defineConfig({
   appKey: process.env.APP_KEY || '',
   http: {
     generateRequestId: true,
-    trustProxy: proxyAddr.compile('loopback'),
-  },
-})`,
+    trustProxy: proxyAddr.compile('loopback')}})`,
 
     'config/auth.ts': `import { defineConfig } from '@adonisjs/auth'
 import { tokensGuard, tokensUserProvider } from '@adonisjs/auth/access_tokens'
@@ -1150,11 +1121,7 @@ const authConfig = defineConfig({
     api: tokensGuard({
       provider: tokensUserProvider({
         tokens: 'accessTokens',
-        model: () => import('#models/user'),
-      }),
-    }),
-  },
-})
+        model: () => import('#models/user')})})}})
 
 export default authConfig
 
@@ -1177,17 +1144,12 @@ const dbConfig = defineConfig({
         port: Number(process.env.PG_PORT),
         user: process.env.PG_USER,
         password: process.env.PG_PASSWORD,
-        database: process.env.PG_DB_NAME,
-      },
+        database: process.env.PG_DB_NAME},
       migrations: {
         naturalSort: true,
-        paths: ['database/migrations'],
-      },
+        paths: ['database/migrations']},
       healthCheck: true,
-      debug: false,
-    },
-  },
-})
+      debug: false}}})
 
 export default dbConfig`,
 
@@ -1197,8 +1159,7 @@ const mailConfig = defineConfig({
   default: 'smtp',
   from: {
     address: process.env.SMTP_FROM_EMAIL || 'noreply@example.com',
-    name: process.env.SMTP_FROM_NAME || '{{projectName}}',
-  },
+    name: process.env.SMTP_FROM_NAME || '{{projectName}}'},
   
   mailers: {
     smtp: transports.smtp({
@@ -1207,11 +1168,7 @@ const mailConfig = defineConfig({
       secure: false,
       auth: {
         user: process.env.SMTP_USERNAME,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    }),
-  },
-})
+        pass: process.env.SMTP_PASSWORD}})}})
 
 export default mailConfig
 
@@ -1227,20 +1184,15 @@ const driveConfig = defineConfig({
     local: services.fs({
       location: new URL('../uploads', import.meta.url),
       serveFiles: true,
-      routeBasePath: '/uploads',
-    }),
+      routeBasePath: '/uploads'}),
     
     s3: services.s3({
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-      },
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!},
       region: process.env.AWS_DEFAULT_REGION!,
       bucket: process.env.AWS_BUCKET!,
-      endpoint: process.env.AWS_ENDPOINT,
-    }),
-  },
-})
+      endpoint: process.env.AWS_ENDPOINT})}})
 
 export default driveConfig
 
@@ -1255,9 +1207,7 @@ const limiterConfig = defineConfig({
   
   stores: {
     redis: stores.redis({}),
-    memory: stores.memory({}),
-  },
-})
+    memory: stores.memory({})}})
 
 export default limiterConfig
 
@@ -1281,9 +1231,7 @@ export default class HealthController {
       return {
         displayName: 'Database',
         health: {
-          healthy: true,
-        },
-      }
+          healthy: true}}
     })
 
     // Redis check
@@ -1292,9 +1240,7 @@ export default class HealthController {
       return {
         displayName: 'Redis',
         health: {
-          healthy: true,
-        },
-      }
+          healthy: true}}
     })
 
     // Memory check
@@ -1307,13 +1253,10 @@ export default class HealthController {
         displayName: 'Memory',
         health: {
           healthy,
-          message: healthy ? 'Memory usage is normal' : 'High memory usage',
-        },
+          message: healthy ? 'Memory usage is normal' : 'High memory usage'},
         meta: {
           heap_used: \`\${Math.round(used.heapUsed / 1024 / 1024)}MB\`,
-          heap_total: \`\${Math.round(used.heapTotal / 1024 / 1024)}MB\`,
-        },
-      }
+          heap_total: \`\${Math.round(used.heapTotal / 1024 / 1024)}MB\`}}
     })
 
     const report = await healthCheck.getReport()
@@ -1335,8 +1278,7 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     // Handle validation errors
     if (error instanceof vineErrors.E_VALIDATION_ERROR) {
       return ctx.response.status(422).json({
-        errors: error.messages,
-      })
+        errors: error.messages})
     }
 
     return super.handle(error, ctx)
@@ -1359,19 +1301,16 @@ import { pluginAdonisJS } from '@japa/plugin-adonisjs'
 import type { Config } from '@japa/runner/types'
 import testUtils from '@adonisjs/core/services/test_utils'
 
-export const plugins: Config['plugins'] = [
+export const plugins: Config['microservices'] = [
   assert(),
   apiClient(),
-  pluginAdonisJS(testUtils),
-]
+  pluginAdonisJS(testUtils)]
 
 export const runnerHooks: Config['runnerHooks'] = {
   setup: [
     () => testUtils.db().migrate(),
-    () => testUtils.db().seed(),
-  ],
-  teardown: [],
-}
+    () => testUtils.db().seed()],
+  teardown: []}
 
 export const configureSuite: Config['configureSuite'] = (suite) => {
   if (['browser', 'functional', 'e2e'].includes(suite.name)) {

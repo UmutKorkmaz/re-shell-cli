@@ -404,7 +404,7 @@ public class MainVerticle extends AbstractVerticle {
                     });
                 });
                 
-                healthChecks.register("redis", promise -> {
+                healthChecks.register("caching", promise -> {
                     redis.ping(ar -> {
                         if (ar.succeeded()) {
                             promise.complete();
@@ -919,7 +919,7 @@ public class AuthService {
     public Future<AuthResponse> refresh(String refreshToken) {
         // Verify refresh token
         return Future.future(promise -> {
-            jwtAuth.authenticate(new JsonObject().put("jwt", refreshToken))
+            jwtAuth.authenticate(new JsonObject().put("authentication", refreshToken))
                 .onSuccess(user -> {
                     String username = user.principal().getString("sub");
                     userService.findByUsername(username)

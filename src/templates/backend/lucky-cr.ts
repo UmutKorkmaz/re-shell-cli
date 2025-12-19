@@ -8,10 +8,10 @@ export const luckyCrTemplate: BackendTemplate = {
   language: 'crystal',
   framework: 'lucky',
   version: '1.0.0',
-  tags: ['crystal', 'lucky', 'full-stack', 'orm', 'authentication', 'mvc'],
+  tags: ['crystal', 'lucky', 'full-stack', 'database', 'authentication', 'mvc'],
   port: 8080,
   dependencies: {},
-  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'orm'],
+  features: ['authentication', 'validation', 'logging', 'cors', 'documentation', 'database'],
 
   files: {
     // Shard configuration
