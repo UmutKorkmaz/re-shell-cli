@@ -31,6 +31,7 @@ import { influxdbConfigTemplate } from './influxdb-config';
 import { neo4jConfigTemplate } from './neo4j-config';
 import { messageQueueTemplate } from './message-queue';
 import { elasticsearchConfigTemplate } from './elasticsearch-config';
+import { websocketRealtimeTemplate } from './websocket-realtime';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -247,6 +248,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'neo4j-config': neo4jConfigTemplate,
   'message-queue': messageQueueTemplate,
   'elasticsearch-config': elasticsearchConfigTemplate,
+  'websocket-realtime': websocketRealtimeTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
