@@ -32,6 +32,7 @@ import { neo4jConfigTemplate } from './neo4j-config';
 import { messageQueueTemplate } from './message-queue';
 import { elasticsearchConfigTemplate } from './elasticsearch-config';
 import { websocketRealtimeTemplate } from './websocket-realtime';
+import { rateLimitConfigTemplate } from './rate-limit-config';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -249,6 +250,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'message-queue': messageQueueTemplate,
   'elasticsearch-config': elasticsearchConfigTemplate,
   'websocket-realtime': websocketRealtimeTemplate,
+  'rate-limit-config': rateLimitConfigTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
