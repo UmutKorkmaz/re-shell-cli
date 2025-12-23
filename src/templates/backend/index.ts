@@ -33,6 +33,7 @@ import { messageQueueTemplate } from './message-queue';
 import { elasticsearchConfigTemplate } from './elasticsearch-config';
 import { websocketRealtimeTemplate } from './websocket-realtime';
 import { rateLimitConfigTemplate } from './rate-limit-config';
+import { apiCachingTemplate } from './api-caching';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -251,6 +252,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'elasticsearch-config': elasticsearchConfigTemplate,
   'websocket-realtime': websocketRealtimeTemplate,
   'rate-limit-config': rateLimitConfigTemplate,
+  'api-caching': apiCachingTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
