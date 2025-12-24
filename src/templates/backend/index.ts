@@ -34,6 +34,7 @@ import { elasticsearchConfigTemplate } from './elasticsearch-config';
 import { websocketRealtimeTemplate } from './websocket-realtime';
 import { rateLimitConfigTemplate } from './rate-limit-config';
 import { apiCachingTemplate } from './api-caching';
+import { apiDeprecationTemplate } from './api-deprecation';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -253,6 +254,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'websocket-realtime': websocketRealtimeTemplate,
   'rate-limit-config': rateLimitConfigTemplate,
   'api-caching': apiCachingTemplate,
+  'api-deprecation': apiDeprecationTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
@@ -617,3 +619,7 @@ export { influxdbConfigTemplate } from './influxdb-config';
 export { neo4jConfigTemplate } from './neo4j-config';
 export { messageQueueTemplate } from './message-queue';
 export { elasticsearchConfigTemplate } from './elasticsearch-config';
+export { websocketRealtimeTemplate } from './websocket-realtime';
+export { rateLimitConfigTemplate } from './rate-limit-config';
+export { apiCachingTemplate } from './api-caching';
+export { apiDeprecationTemplate } from './api-deprecation';

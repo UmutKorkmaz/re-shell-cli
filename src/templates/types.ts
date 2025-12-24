@@ -94,6 +94,7 @@ export type BackendFeature =
   | 'python-interop'
   | 'grpc'
   | 'caching'
+  | 'deprecation'
   | 'sessions'
   | 'pubsub'
   | 'connection-pooling'
