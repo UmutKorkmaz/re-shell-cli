@@ -95,6 +95,8 @@ export type BackendFeature =
   | 'grpc'
   | 'caching'
   | 'deprecation'
+  | 'migration'
+  | 'cli'
   | 'sessions'
   | 'pubsub'
   | 'connection-pooling'
