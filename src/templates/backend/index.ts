@@ -36,6 +36,7 @@ import { rateLimitConfigTemplate } from './rate-limit-config';
 import { apiCachingTemplate } from './api-caching';
 import { apiDeprecationTemplate } from './api-deprecation';
 import { databaseMigrationTemplate } from './database-migration';
+import { graphqlFederationTemplate } from './graphql-federation';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -257,6 +258,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'api-caching': apiCachingTemplate,
   'api-deprecation': apiDeprecationTemplate,
   'database-migration': databaseMigrationTemplate,
+  'graphql-federation': graphqlFederationTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
@@ -626,3 +628,4 @@ export { rateLimitConfigTemplate } from './rate-limit-config';
 export { apiCachingTemplate } from './api-caching';
 export { apiDeprecationTemplate } from './api-deprecation';
 export { databaseMigrationTemplate } from './database-migration';
+export { graphqlFederationTemplate } from './graphql-federation';
