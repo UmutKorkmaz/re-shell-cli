@@ -38,6 +38,7 @@ import { apiDeprecationTemplate } from './api-deprecation';
 import { databaseMigrationTemplate } from './database-migration';
 import { graphqlFederationTemplate } from './graphql-federation';
 import { apiSecurityScanTemplate } from './api-security-scan';
+import { websocketApiDocsTemplate } from './websocket-api-docs';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -261,6 +262,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'database-migration': databaseMigrationTemplate,
   'graphql-federation': graphqlFederationTemplate,
   'api-security-scan': apiSecurityScanTemplate,
+  'websocket-api-docs': websocketApiDocsTemplate,
   'hapi-ts': hapiTypeScriptTemplate,
   
   // Python
@@ -632,3 +634,4 @@ export { apiDeprecationTemplate } from './api-deprecation';
 export { databaseMigrationTemplate } from './database-migration';
 export { graphqlFederationTemplate } from './graphql-federation';
 export { apiSecurityScanTemplate } from './api-security-scan';
+export { websocketApiDocsTemplate } from './websocket-api-docs';
