@@ -87,6 +87,7 @@ import { manageTemplates } from './commands/template';
 import { manageConfigDiff } from './commands/config-diff';
 import { manageBackups } from './commands/backup';
 import { generateCode, generateTests, generateDocumentation } from './commands/generate';
+import { createFeature, getFeatureTypeChoices, getBackendFrameworkChoices, getFrontendFrameworkChoices, getDatabaseChoices } from './commands/create-feature';
 import { testPlatformCapabilities, runPlatformDiagnostics, quickPlatformCheck } from './commands/platform-test';
 import { manageDevMode } from './commands/dev-mode';
 import { manageWorkspaceDefinition } from './commands/workspace-definition';
@@ -2979,6 +2980,43 @@ generateCommand
       }, 120000); // 2 minute timeout
 
       spinner.succeed(chalk.green(`Backend ${name} generated!`));
+    })
+  );
+
+// Create feature command
+program
+  .command('create-feature <name>')
+  .alias('feature')
+  .description('Create a new full-stack feature (CRUD, auth, file-upload, websocket, graphql)')
+  .option('--type <type>', 'Feature type (crud, auth, file-upload, websocket, graphql, fullstack)', 'crud')
+  .option('--backend <framework>', 'Backend framework (express, fastify, nestjs, etc.)')
+  .option('--frontend <framework>', 'Frontend framework (react, vue, svelte, angular, vanilla)', 'react')
+  .option('--language <language>', 'Language (typescript, javascript, python, go, rust)', 'typescript')
+  .option('--database <database>', 'Database (prisma, typeorm, mongoose, sequelize, none)', 'none')
+  .option('--workspace <workspace>', 'Target workspace')
+  .option('--port <port>', 'Backend port', '3000')
+  .option('--skip-install', 'Skip package installation')
+  .option('--openapi', 'Include OpenAPI specification')
+  .option('--graphql', 'Use GraphQL instead of REST')
+  .option('--websockets', 'Include WebSocket support')
+  .option('--features <features>', 'Comma-separated additional features')
+  .option('--verbose', 'Show detailed information')
+  .action(
+    createAsyncCommand(async (name, options) => {
+      const spinner = createSpinner(`Creating feature "${name}"...`).start();
+      processManager.addCleanup(() => spinner.stop());
+      flushOutput();
+
+      await withTimeout(async () => {
+        const featureOptions = {
+          ...options,
+          features: options.features ? options.features.split(',') : [],
+          spinner,
+        };
+        await createFeature(name, featureOptions);
+      }, 120000); // 2 minute timeout
+
+      spinner.stop();
     })
   );
 
