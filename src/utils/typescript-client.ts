@@ -693,3 +693,450 @@ export function validateSpec(spec: unknown): { valid: boolean; errors: string[] 
     errors,
   };
 }
+
+// ==================== FRAMEWORK-SPECIFIC GENERATORS ====================
+
+/**
+ * Generate Vue composables with @tanstack/vue-query support
+ */
+export function generateVueComposables(spec: OpenAPISpec, clientName: string): string {
+  const lines: string[] = [];
+
+  lines.push(`import { useQuery, useMutation, type UseQueryOptions, type UseMutationOptions } from '@tanstack/vue-query';`);
+  lines.push(`import { ${clientName} } from './client';`);
+  lines.push(`import { computed, type Ref } from 'vue';`);
+  lines.push('');
+  lines.push(`// Auto-generated Vue composables from OpenAPI specification`);
+  lines.push(`// ${spec.info.title} v${spec.info.version}`);
+  lines.push('');
+
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+
+      const opId = operation.operationId || toMethodName(`${method}_${path}`);
+      const summary = operation.summary || operation.description || opId;
+
+      if (method.toLowerCase() === 'get' || method.toLowerCase() === 'head') {
+        const hookName = `use${toMethodName(opId)}`;
+        lines.push(`/**`);
+        lines.push(` * ${summary}`);
+        lines.push(` * @method ${method.toUpperCase()} ${path}`);
+        lines.push(` */`);
+        lines.push(`export function ${hookName}(`);
+        lines.push(`  client: Ref<${clientName}>,`);
+        lines.push(`  params: any,`);
+        lines.push(`  options?: Omit<UseQueryOptions<unknown>, 'queryKey' | 'queryFn'>`);
+        lines.push(`) {`);
+        lines.push(`  return useQuery({`);
+        lines.push(`    queryKey: ['${opId}', params] as const,`);
+        lines.push(`    queryFn: () => client.value.${toMethodName(opId)}(params),`);
+        lines.push(`    ...options,`);
+        lines.push(`  });`);
+        lines.push(`}`);
+        lines.push(``);
+      } else {
+        const hookName = `use${toMethodName(opId)}Mutation`;
+        lines.push(`/**`);
+        lines.push(` * ${summary}`);
+        lines.push(` * @method ${method.toUpperCase()} ${path}`);
+        lines.push(` */`);
+        lines.push(`export function ${hookName}(`);
+        lines.push(`  client: Ref<${clientName}>,`);
+        lines.push(`  options?: Omit<UseMutationOptions<unknown, unknown, any>, 'mutationFn'>`);
+        lines.push(`) {`);
+        lines.push(`  return useMutation({`);
+        lines.push(`    mutationFn: (params: any) => client.value.${toMethodName(opId)}(params),`);
+        lines.push(`    ...options,`);
+        lines.push(`  });`);
+        lines.push(`}`);
+        lines.push(``);
+      }
+    });
+  });
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate Pinia stores for API state management
+ */
+export function generatePiniaStores(spec: OpenAPISpec, clientName: string): string {
+  const lines: string[] = [];
+
+  lines.push(`import { defineStore } from 'pinia';`);
+  lines.push(`import { ref, computed } from 'vue';`);
+  lines.push(`import { ${clientName} } from './client';`);
+  lines.push('');
+  lines.push(`// Auto-generated Pinia stores from OpenAPI specification`);
+  lines.push(`// ${spec.info.title} v${spec.info.version}`);
+  lines.push('');
+
+  const storeName = spec.info.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  const storeClassName = `use${spec.info.title.replace(/[^a-zA-Z0-9]/g, '')}Store`;
+
+  lines.push(`export const ${storeClassName} = defineStore('${storeName}', () => {`);
+  lines.push(`  const client = new ${clientName}();`);
+  lines.push(`  const loading = ref(false);`);
+  lines.push(`  const error = ref<string | null>(null);`);
+
+  // Add state properties for each GET operation
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+      if (method.toLowerCase() === 'get') {
+        const opId = operation.operationId || toMethodName(`${method}_${path}`);
+        lines.push(`  const ${opId}Data = ref<unknown>(null);`);
+      }
+    });
+  });
+
+  lines.push('');
+  lines.push(`  // Actions`);
+
+  // Add actions for each operation
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+
+      const opId = operation.operationId || toMethodName(`${method}_${path}`);
+      const methodName = toMethodName(opId);
+
+      if (method.toLowerCase() === 'get') {
+        lines.push(`  async function ${methodName}(params?: any) {`);
+        lines.push(`    loading.value = true;`);
+        lines.push(`    error.value = null;`);
+        lines.push(`    try {`);
+        lines.push(`      ${opId}Data.value = await client.${methodName}(params);`);
+        lines.push(`      return ${opId}Data.value;`);
+        lines.push(`    } catch (e) {`);
+        lines.push(`      error.value = e instanceof Error ? e.message : 'Unknown error';`);
+        lines.push(`      throw e;`);
+        lines.push(`    } finally {`);
+        lines.push(`      loading.value = false;`);
+        lines.push(`    }`);
+        lines.push(`  }`);
+      } else {
+        lines.push(`  async function ${methodName}(params: any) {`);
+        lines.push(`    loading.value = true;`);
+        lines.push(`    error.value = null;`);
+        lines.push(`    try {`);
+        lines.push(`      const result = await client.${methodName}(params);`);
+        lines.push(`      return result;`);
+        lines.push(`    } catch (e) {`);
+        lines.push(`      error.value = e instanceof Error ? e.message : 'Unknown error';`);
+        lines.push(`      throw e;`);
+        lines.push(`    } finally {`);
+        lines.push(`      loading.value = false;`);
+        lines.push(`    }`);
+        lines.push(`  }`);
+      }
+      lines.push(``);
+    });
+  });
+
+  lines.push(`  return {`);
+  lines.push(`    loading,`);
+  lines.push(`    error,`);
+
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+      if (method.toLowerCase() === 'get') {
+        const opId = operation.operationId || toMethodName(`${method}_${path}`);
+        lines.push(`    ${opId}Data,`);
+        lines.push(`    ${toMethodName(opId)},`);
+      } else {
+        lines.push(`    ${toMethodName(operation.operationId || toMethodName(`${method}_${path}`))},`);
+      }
+    });
+  });
+
+  lines.push(`  };`);
+  lines.push(`});`);
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate Angular service with HttpClient
+ */
+export function generateAngularService(spec: OpenAPISpec, serviceName: string): string {
+  const lines: string[] = [];
+
+  lines.push(`import { Injectable } from '@angular/core';`);
+  lines.push(`import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';`);
+  lines.push(`import { Observable, throwError } from 'rxjs';`);
+  lines.push(`import { catchError, map } from 'rxjs/operators';`);
+  lines.push('');
+  lines.push(`// Auto-generated Angular service from OpenAPI specification`);
+  lines.push(`// ${spec.info.title} v${spec.info.version}`);
+  lines.push('');
+
+  const baseUrl = `'${spec.servers?.[0]?.url || 'https://api.example.com'}'`;
+
+  lines.push(`@Injectable({`);
+  lines.push(`  providedIn: 'root'`);
+  lines.push(`})`);
+  lines.push(`export class ${serviceName} {`);
+  lines.push(`  private baseUrl = ${baseUrl};`);
+  lines.push(`  private defaultHeaders = new HttpHeaders();`);
+  lines.push('');
+  lines.push(`  constructor(private http: HttpClient) {}`);
+  lines.push('');
+
+  // Add methods for each operation
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+
+      const opId = operation.operationId || toMethodName(`${method}_${path}`);
+      const methodName = toMethodName(opId);
+      const summary = operation.summary || operation.description || '';
+
+      lines.push(`  /**`);
+      lines.push(`   * ${summary}`);
+      lines.push(`   * ${method.toUpperCase()} ${path}`);
+      lines.push(`   */`);
+      lines.push(`  ${methodName}(`);
+
+      // Add parameters
+      const params = operation.parameters || [];
+      if (operation.requestBody) {
+        lines.push(`    body: any,`);
+      }
+      if (params.length > 0) {
+        params.forEach((param, i) => {
+          const typeName = getParamType(param);
+          const optional = !param.required ? '?' : '';
+          lines.push(`    ${param.name}${optional}: ${typeName},`);
+        });
+      }
+      lines.push(`    options?: {`);
+      lines.push(`      headers?: HttpHeaders;`);
+      lines.push(`      observe?: 'body' | 'events' | 'response';`);
+      lines.push(`      params?: HttpParams;`);
+      lines.push(`      reportProgress?: boolean;`);
+      lines.push(`      responseType?: 'json' | 'blob' | 'text';`);
+      lines.push(`      withCredentials?: boolean;`);
+      lines.push(`    }`);
+      lines.push(`  ): Observable<any> {`);
+
+      // Build request
+      lines.push(`    let httpHeaders = this.defaultHeaders;`);
+      lines.push(`    if (options?.headers) {`);
+      lines.push(`      httpHeaders = options.headers;`);
+      lines.push(`    }`);
+
+      lines.push(`    let httpParams = new HttpParams();`);
+      lines.push(`    if (options?.params) {`);
+      lines.push(`      httpParams = options.params;`);
+      lines.push(`    }`);
+
+      // Add query parameters
+      params.filter(p => p.in === 'query').forEach(param => {
+        if (!param.required) {
+          lines.push(`    if (${param.name} !== undefined) {`);
+          lines.push(`      httpParams = httpParams.set('${param.name}', ${param.name});`);
+          lines.push(`    }`);
+        } else {
+          lines.push(`    httpParams = httpParams.set('${param.name}', ${param.name});`);
+        }
+      });
+
+      lines.push(`    const requestOptions = {`);
+      lines.push(`      headers: httpHeaders,`);
+      lines.push(`      params: httpParams,`);
+      lines.push(`      observe: options?.observe || 'body',`);
+      lines.push(`      reportProgress: options?.reportProgress || false,`);
+      lines.push(`      responseType: options?.responseType || 'json',`);
+      lines.push(`      withCredentials: options?.withCredentials || false,`);
+      lines.push(`    };`);
+
+      // Make HTTP request
+      const httpMethod = method.toLowerCase();
+      const requestPath = path.replace(/\{([^}]+)\}/g, '${$1}');
+
+      if (['post', 'put', 'patch'].includes(httpMethod)) {
+        lines.push(`    return this.http.${httpMethod}<any>(\`\${this.baseUrl}${requestPath}\`, body, requestOptions).pipe(`);
+      } else if (httpMethod === 'delete') {
+        lines.push(`    return this.http.delete<any>(\`\${this.baseUrl}${requestPath}\`, requestOptions).pipe(`);
+      } else {
+        lines.push(`    return this.http.get<any>(\`\${this.baseUrl}${requestPath}\`, requestOptions).pipe(`);
+      }
+
+      lines.push(`      catchError((error) => {`);
+      lines.push(`        console.error(\`Error in ${methodName}:\`, error);`);
+      lines.push(`        return throwError(() => error);`);
+      lines.push(`      })`);
+      lines.push(`    );`);
+      lines.push(`  }`);
+      lines.push(``);
+    });
+  });
+
+  lines.push(`}`);
+
+  return lines.join('\n');
+}
+
+/**
+ * Get TypeScript type for parameter
+ */
+function getParamType(param: Parameter): string {
+  if (param.schema) {
+    return generateType(param.schema, param.name);
+  }
+  if (param.type) {
+    const typeMap: Record<string, string> = {
+      string: 'string',
+      number: 'number',
+      integer: 'number',
+      boolean: 'boolean',
+      array: 'any[]',
+    };
+    return typeMap[param.type] || 'any';
+  }
+  return 'any';
+}
+
+/**
+ * Generate Svelte stores for API state management
+ */
+export function generateSvelteStores(spec: OpenAPISpec, clientName: string): string {
+  const lines: string[] = [];
+
+  lines.push(`import { writable, derived } from 'svelte/store';`);
+  lines.push(`import { ${clientName} } from './client';`);
+  lines.push('');
+  lines.push(`// Auto-generated Svelte stores from OpenAPI specification`);
+  lines.push(`// ${spec.info.title} v${spec.info.version}`);
+  lines.push('');
+
+  const clientVar = clientName.charAt(0).toLowerCase() + clientName.slice(1);
+  lines.push(`const ${clientVar} = new ${clientName}();`);
+  lines.push('');
+
+  // Create loading and error stores
+  lines.push(`export const loading = writable(false);`);
+  lines.push(`export const error = writable<string | null>(null);`);
+  lines.push('');
+
+  // Create stores for each GET operation
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+
+      const opId = operation.operationId || toMethodName(`${method}_${path}`);
+      const methodName = toMethodName(opId);
+
+      if (method.toLowerCase() === 'get') {
+        lines.push(`// ${operation.summary || operation.description || `${method.toUpperCase()} ${path}`}`);
+        lines.push(`export const ${opId} = writable<unknown>(null);`);
+        lines.push(`export const ${opId}Loading = derived(loading, ($loading) => $loading);`);
+        lines.push('');
+        lines.push(`export async function fetch${methodName}(params?: any) {`);
+        lines.push(`  loading.set(true);`);
+        lines.push(`  error.set(null);`);
+        lines.push(`  try {`);
+        lines.push(`    const result = await ${clientVar}.${methodName}(params);`);
+        lines.push(`    ${opId}.set(result);`);
+        lines.push(`    return result;`);
+        lines.push(`  } catch (e) {`);
+        lines.push(`    error.set(e instanceof Error ? e.message : 'Unknown error');`);
+        lines.push(`    throw e;`);
+        lines.push(`  } finally {`);
+        lines.push(`    loading.set(false);`);
+        lines.push(`  }`);
+        lines.push(`}`);
+        lines.push('');
+      } else {
+        lines.push(`// ${operation.summary || operation.description || `${method.toUpperCase()} ${path}`}`);
+        lines.push(`export async function ${methodName}(data: any) {`);
+        lines.push(`  loading.set(true);`);
+        lines.push(`  error.set(null);`);
+        lines.push(`  try {`);
+        lines.push(`    const result = await ${clientVar}.${methodName}(data);`);
+        lines.push(`    return result;`);
+        lines.push(`  } catch (e) {`);
+        lines.push(`    error.set(e instanceof Error ? e.message : 'Unknown error');`);
+        lines.push(`    throw e;`);
+        lines.push(`  } finally {`);
+        lines.push(`    loading.set(false);`);
+        lines.push(`  }`);
+        lines.push(`}`);
+        lines.push('');
+      }
+    });
+  });
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate SvelteKit SDK with load functions and actions
+ */
+export function generateSvelteKitSdk(spec: OpenAPISpec, clientName: string): string {
+  const lines: string[] = [];
+
+  lines.push(`import { ${clientName} } from './client';`);
+  lines.push('');
+  lines.push(`// Auto-generated SvelteKit SDK from OpenAPI specification`);
+  lines.push(`// ${spec.info.title} v${spec.info.version}`);
+  lines.push('');
+
+  const clientVar = clientName.charAt(0).toLowerCase() + clientName.slice(1);
+  const baseUrlValue = spec.servers?.[0]?.url || 'http://localhost:3000';
+
+  lines.push(`const ${clientVar} = new ${clientName}({ baseUrl: '${baseUrlValue}' });`);
+  lines.push('');
+
+  // Generate load functions for GET operations
+  lines.push(`// Load functions for SvelteKit pages`);
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+      if (method.toLowerCase() !== 'get') return;
+
+      const opId = operation.operationId || toMethodName(`${method}_${path}`);
+      const loadFnName = `load${toMethodName(opId)}`;
+
+      lines.push(`/**`);
+      lines.push(` * Load function for ${operation.summary || operation.description || path}`);
+      lines.push(` * Usage: +page.ts or +layout.ts`);
+      lines.push(` */`);
+      lines.push(`export async function ${loadFnName}(`);
+      lines.push(`  { fetch, params }: { fetch: typeof globalThis.fetch; params: Record<string, string> }`);
+      lines.push(`) {`);
+      lines.push(`  const data = await ${clientVar}.${toMethodName(opId)}(params);`);
+      lines.push(`  return {`);
+      lines.push(`    ${opId}: data,`);
+      lines.push(`  };`);
+      lines.push(`}`);
+      lines.push('');
+    });
+  });
+
+  // Generate actions for mutations
+  lines.push(`// Actions for form submissions`);
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+      if (['get', 'head', 'options'].includes(method.toLowerCase())) return;
+
+      const opId = operation.operationId || toMethodName(`${method}_${path}`);
+      const actionFnName = `${toMethodName(opId)}Action`;
+
+      lines.push(`/**`);
+      lines.push(` * Action for ${operation.summary || operation.description || path}`);
+      lines.push(` * Usage: +page.server.ts or form actions`);
+      lines.push(` */`);
+      lines.push(`export async function ${actionFnName}(data: any) {`);
+      lines.push(`  return await ${clientVar}.${toMethodName(opId)}(data);`);
+      lines.push(`}`);
+      lines.push('');
+    });
+  });
+
+  return lines.join('\n');
+}

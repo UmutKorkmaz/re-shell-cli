@@ -8292,17 +8292,26 @@ const clientCommand = program.command('client').description('Generate type-safe 
 
 clientCommand
   .command('generate <spec> [output]')
-  .description('Generate TypeScript API client from OpenAPI spec')
-  .option('--name <name>', 'Client class name')
+  .description('Generate type-safe API clients from OpenAPI spec for multiple frameworks')
+  .option('--name <name>', 'Client class/service name')
   .option('--base-url <url>', 'Base URL for API requests')
   .option('--fetch', 'Use fetch instead of axios')
   .option('--include-credentials', 'Include credentials in requests')
-  .option('--react-query', 'Also generate React Query hooks')
+  .option('--framework <framework>', 'Target framework: typescript, react, vue, angular, svelte', 'typescript')
+  .option('--react-query', 'Generate React Query hooks (for react framework)')
+  .option('--vue-query', 'Generate Vue Query composables (for vue framework)')
+  .option('--pinia', 'Generate Pinia stores (for vue framework)')
+  .option('--sveltekit', 'Generate SvelteKit SDK (for svelte framework)')
   .action(
     createAsyncCommand(async (specPath, outputPath, options) => {
       const {
         generateClient,
         generateReactQueryHooks,
+        generateVueComposables,
+        generatePiniaStores,
+        generateAngularService,
+        generateSvelteStores,
+        generateSvelteKitSdk,
         validateSpec,
         listOperations,
       } = await import('./utils/typescript-client');
@@ -8338,13 +8347,16 @@ clientCommand
         return;
       }
 
-      // Determine output path
+      // Determine output path and framework
       const outputFile = outputPath || './api-client.ts';
+      const framework = options.framework || 'typescript';
+      const clientName = options.name || `${toCamelCase(spec.info.title)}Client`;
+      const serviceName = options.name || `${spec.info.title.replace(/[^a-zA-Z0-9]/g, '')}Service`;
 
-      // Generate client
+      // Generate base client
       const fullOptions = {
         spec,
-        clientName: options.name,
+        clientName: serviceName,
         baseUrl: options.baseUrl,
         useAxios: !options.fetch,
         includeCredentials: options.includeCredentials,
@@ -8356,17 +8368,68 @@ clientCommand
       };
 
       const clientCode = generateClient(spec, fullOptions);
-
       await fs.ensureDir(path.dirname(outputFile));
       await fs.writeFile(outputFile, clientCode, 'utf-8');
 
-      console.log(chalk.cyan('\n🔧 TypeScript API Client\n'));
+      console.log(chalk.cyan(`\n🔧 ${framework.charAt(0).toUpperCase() + framework.slice(1)} API Client\n`));
       console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Framework:')} ${framework}`);
       console.log(`${chalk.blue('Spec:')} ${specPath}`);
       console.log(`${chalk.blue('Output:')} ${outputFile}`);
-      console.log(`${chalk.blue('Client:')} ${options.name || 'Auto'}`);
+      console.log(`${chalk.blue('Client:')} ${serviceName}`);
       console.log(`${chalk.blue('HTTP:')} ${options.fetch ? 'fetch' : 'axios'}`);
       console.log(chalk.gray('─'.repeat(60)));
+
+      // Generate framework-specific code
+      const generatedFiles: string[] = [outputFile];
+
+      if (framework === 'react' || options.reactQuery) {
+        const hooksCode = generateReactQueryHooks(spec, serviceName);
+        const hooksFile = outputFile.replace('.ts', '-hooks.ts');
+        await fs.writeFile(hooksFile, hooksCode, 'utf-8');
+        generatedFiles.push(hooksFile);
+        console.log(`\n${chalk.gray('•')} ${hooksFile} (React Query hooks)`);
+      }
+
+      if (framework === 'vue' || options.vueQuery) {
+        const composablesCode = generateVueComposables(spec, serviceName);
+        const composablesFile = outputFile.replace('.ts', '-composables.ts');
+        await fs.writeFile(composablesFile, composablesCode, 'utf-8');
+        generatedFiles.push(composablesFile);
+        console.log(`\n${chalk.gray('•')} ${composablesFile} (Vue composables)`);
+      }
+
+      if (framework === 'vue' && options.pinia) {
+        const storesCode = generatePiniaStores(spec, serviceName);
+        const storesFile = outputFile.replace('.ts', '-stores.ts');
+        await fs.writeFile(storesFile, storesCode, 'utf-8');
+        generatedFiles.push(storesFile);
+        console.log(`\n${chalk.gray('•')} ${storesFile} (Pinia stores)`);
+      }
+
+      if (framework === 'angular') {
+        const serviceCode = generateAngularService(spec, serviceName);
+        const serviceFile = outputFile.replace('.ts', '.service.ts');
+        await fs.writeFile(serviceFile, serviceCode, 'utf-8');
+        generatedFiles.push(serviceFile);
+        console.log(`\n${chalk.gray('•')} ${serviceFile} (Angular service)`);
+      }
+
+      if (framework === 'svelte') {
+        const storesCode = generateSvelteStores(spec, serviceName);
+        const storesFile = outputFile.replace('.ts', '-stores.ts');
+        await fs.writeFile(storesFile, storesCode, 'utf-8');
+        generatedFiles.push(storesFile);
+        console.log(`\n${chalk.gray('•')} ${storesFile} (Svelte stores)`);
+      }
+
+      if (framework === 'svelte' && options.sveltekit) {
+        const sdkCode = generateSvelteKitSdk(spec, serviceName);
+        const sdkFile = outputFile.replace('.ts', '-sdk.ts');
+        await fs.writeFile(sdkFile, sdkCode, 'utf-8');
+        generatedFiles.push(sdkFile);
+        console.log(`\n${chalk.gray('•')} ${sdkFile} (SvelteKit SDK)`);
+      }
 
       // List operations
       const operations = listOperations(spec);
@@ -8380,16 +8443,7 @@ clientCommand
         console.log(`  ${chalk.gray(`... and ${operations.length - 10} more`)}`);
       }
 
-      // Generate React Query hooks if requested
-      if (options.reactQuery) {
-        const clientName = options.name || `${toCamelCase(spec.info.title)}Client`;
-        const hooksCode = generateReactQueryHooks(spec, clientName);
-        const hooksFile = outputFile.replace('.ts', '-hooks.ts');
-        await fs.writeFile(hooksFile, hooksCode, 'utf-8');
-        console.log(`\n${chalk.gray('•')} ${hooksFile} (React Query hooks)`);
-      }
-
-      console.log(chalk.green(`\n✓ API client generated!\n`));
+      console.log(chalk.green(`\n✓ API client generated! (${generatedFiles.length} files)\n`));
     })
   );
 
