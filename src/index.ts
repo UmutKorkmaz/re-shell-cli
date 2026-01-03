@@ -8302,10 +8302,12 @@ clientCommand
   .option('--vue-query', 'Generate Vue Query composables (for vue framework)')
   .option('--pinia', 'Generate Pinia stores (for vue framework)')
   .option('--sveltekit', 'Generate SvelteKit SDK (for svelte framework)')
+  .option('--enhanced', 'Generate client with retry, caching, and intelligent error handling')
   .action(
     createAsyncCommand(async (specPath, outputPath, options) => {
       const {
         generateClient,
+        generateEnhancedClient,
         generateReactQueryHooks,
         generateVueComposables,
         generatePiniaStores,
@@ -8360,24 +8362,32 @@ clientCommand
         baseUrl: options.baseUrl,
         useAxios: !options.fetch,
         includeCredentials: options.includeCredentials,
-        includeRetry: false,
-        includeCache: false,
+        includeRetry: options.enhanced ? true : false,
+        includeCache: options.enhanced ? true : false,
         exportType: 'default' as const,
         emitDeprecatedMethods: false,
         useEnumTypes: false,
       };
 
-      const clientCode = generateClient(spec, fullOptions);
+      // Use enhanced client if --enhanced flag is set
+      const clientCode = options.enhanced
+        ? generateEnhancedClient(spec, fullOptions)
+        : generateClient(spec, fullOptions);
+
       await fs.ensureDir(path.dirname(outputFile));
       await fs.writeFile(outputFile, clientCode, 'utf-8');
 
-      console.log(chalk.cyan(`\n🔧 ${framework.charAt(0).toUpperCase() + framework.slice(1)} API Client\n`));
+      const clientType = options.enhanced ? 'Enhanced ' : '';
+      console.log(chalk.cyan(`\n🔧 ${clientType}${framework.charAt(0).toUpperCase() + framework.slice(1)} API Client\n`));
       console.log(chalk.gray('─'.repeat(60)));
       console.log(`${chalk.blue('Framework:')} ${framework}`);
       console.log(`${chalk.blue('Spec:')} ${specPath}`);
       console.log(`${chalk.blue('Output:')} ${outputFile}`);
       console.log(`${chalk.blue('Client:')} ${serviceName}`);
       console.log(`${chalk.blue('HTTP:')} ${options.fetch ? 'fetch' : 'axios'}`);
+      if (options.enhanced) {
+        console.log(`${chalk.blue('Features:')} Retry, Caching, Error Handling`);
+      }
       console.log(chalk.gray('─'.repeat(60)));
 
       // Generate framework-specific code

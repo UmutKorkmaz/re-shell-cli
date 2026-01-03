@@ -308,6 +308,10 @@ export function generateClientMethods(spec: OpenAPISpec, options: ClientOptions)
       const queryParams = (operation.parameters || []).filter((p: Parameter) => p.in === 'query');
       const headerParams = (operation.parameters || []).filter((p: Parameter) => p.in === 'header');
 
+      const hasPathParams = pathParams.length > 0;
+      const hasQueryParams = queryParams.length > 0;
+      const hasHeaderParams = headerParams.length > 0;
+
       // Build method signature
       lines.push(`/**`);
       if (description) lines.push(` * ${description}`);
@@ -316,9 +320,6 @@ export function generateClientMethods(spec: OpenAPISpec, options: ClientOptions)
 
       const hasBody = operation.requestBody;
       const hasConfig = true; // Always have config option
-      const hasPathParams = pathParams.length > 0;
-      const hasQueryParams = queryParams.length > 0;
-      const hasHeaderParams = headerParams.length > 0;
 
       // Build parameter interface
       const params: string[] = [];
@@ -527,6 +528,566 @@ export function generateClient(spec: OpenAPISpec, options: ClientOptions): strin
   lines.push(`}`);
 
   return lines.join('\n');
+}
+
+// ==================== ENHANCED CLIENT WITH RETRY, CACHING, ERROR HANDLING ====================
+
+/**
+ * Generate enhanced API client with retry, caching, and intelligent error handling
+ */
+export function generateEnhancedClient(spec: OpenAPISpec, options: ClientOptions): string {
+  const clientName = options.clientName || `${toCamelCase(spec.info.title)}Client`;
+  const baseUrl = options.baseUrl || spec.servers?.[0]?.url || '';
+  const includeRetry = options.includeRetry ?? true;
+  const includeCache = options.includeCache ?? true;
+
+  const lines: string[] = [];
+
+  // Add imports
+  if (options.useAxios) {
+    lines.push(`import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';`);
+  } else {
+    lines.push(`// Using native fetch API`);
+  }
+  lines.push('');
+
+  // Add interfaces
+  lines.push(generateInterfaces(spec));
+  lines.push('');
+
+  // Add enhanced interfaces for retry and cache config
+  if (includeRetry || includeCache) {
+    lines.push(`// Enhanced configuration interfaces`);
+    lines.push(`export interface RetryConfig {`);
+    lines.push(`  maxRetries?: number;`);
+    lines.push(`  retryDelay?: number;`);
+    lines.push(`  backoffMultiplier?: number;`);
+    lines.push(`  retryableStatusCodes?: number[];`);
+    lines.push(`  onRetry?: (attempt: number, error: Error) => void;`);
+    lines.push(`}`);
+    lines.push(``);
+  }
+
+  if (includeCache) {
+    lines.push(`export interface CacheConfig {`);
+    lines.push(`  enabled?: boolean;`);
+    lines.push(`  ttl?: number; // Time to live in milliseconds`);
+    lines.push(`  maxSize?: number;`);
+    lines.push(`  cacheKeyGenerator?: (url: string, params: any) => string;`);
+    lines.push(`}`);
+    lines.push(``);
+    lines.push(`interface CacheEntry {`);
+    lines.push(`  data: unknown;`);
+    lines.push(`  timestamp: number;`);
+    lines.push(`  ttl: number;`);
+    lines.push(`}`);
+    lines.push(``);
+  }
+
+  // Add enhanced client class
+  lines.push(`export class ${clientName} {`);
+  lines.push(`  private baseUrl: string;`);
+  lines.push(`  private defaultHeaders: Record<string, string>;`);
+
+  if (options.useAxios) {
+    lines.push(`  private axios: AxiosInstance;`);
+  }
+
+  if (includeCache) {
+    lines.push(`  private cache: Map<string, CacheEntry>;`);
+    lines.push(`  private cacheConfig: CacheConfig;`);
+  }
+
+  if (includeRetry) {
+    lines.push(`  private retryConfig: RetryConfig;`);
+  }
+
+  lines.push('');
+  lines.push(`  constructor(config?: {`);
+  lines.push(`    baseUrl?: string;`);
+  lines.push(`    headers?: Record<string, string>;`);
+  if (options.includeCredentials) {
+    lines.push(`    credentials?: RequestCredentials;`);
+  }
+  if (includeRetry) {
+    lines.push(`    retry?: Partial<RetryConfig>;`);
+  }
+  if (includeCache) {
+    lines.push(`    cache?: Partial<CacheConfig>;`);
+  }
+  lines.push(`  }) {`);
+  lines.push(`    this.baseUrl = config?.baseUrl || '${baseUrl}';`);
+  lines.push(`    this.defaultHeaders = config?.headers || {};`);
+
+  if (includeCache) {
+    lines.push(`    this.cache = new Map();`);
+    lines.push(`    this.cacheConfig = {`);
+    lines.push(`      enabled: config?.cache?.enabled ?? true,`);
+    lines.push(`      ttl: config?.cache?.ttl ?? 60000, // 1 minute default`);
+    lines.push(`      maxSize: config?.cache?.maxSize ?? 100,`);
+    lines.push(`      cacheKeyGenerator: config?.cache?.cacheKeyGenerator,`);
+    lines.push(`    };`);
+  }
+
+  if (includeRetry) {
+    lines.push(`    this.retryConfig = {`);
+    lines.push(`      maxRetries: config?.retry?.maxRetries ?? 3,`);
+    lines.push(`      retryDelay: config?.retry?.retryDelay ?? 1000,`);
+    lines.push(`      backoffMultiplier: config?.retry?.backoffMultiplier ?? 2,`);
+    lines.push(`      retryableStatusCodes: config?.retry?.retryableStatusCodes ?? [408, 429, 500, 502, 503, 504],`);
+    lines.push(`      onRetry: config?.retry?.onRetry,`);
+    lines.push(`    };`);
+  }
+
+  if (options.useAxios) {
+    lines.push(`    this.axios = axios.create({`);
+    lines.push(`      baseURL: this.baseUrl,`);
+    if (options.includeCredentials) {
+      lines.push(`      withCredentials: true,`);
+    }
+    lines.push(`    });`);
+  }
+
+  lines.push(`  }`);
+  lines.push(``);
+
+  // Helper methods
+  lines.push(`  private buildUrl(path: string): string {`);
+  lines.push(`    return \`\${this.baseUrl.replace(/\\/$/, '')}\${path}\`;`);
+  lines.push(`  }`);
+  lines.push(``);
+
+  if (includeCache) {
+    lines.push(generateCacheHelpers());
+  }
+
+  if (includeRetry) {
+    lines.push(generateRetryHelpers(options.useAxios));
+  }
+
+  // API methods with retry and cache
+  lines.push(generateEnhancedClientMethods(spec, options, includeRetry, includeCache));
+
+  lines.push(`}`);
+
+  return lines.join('\n');
+}
+
+// Generate cache helper methods
+function generateCacheHelpers(): string {
+  return `  // Cache helper methods
+  private getCacheKey(url: string, params?: any): string {
+    if (this.cacheConfig.cacheKeyGenerator) {
+      return this.cacheConfig.cacheKeyGenerator(url, params);
+    }
+    const queryString = params ? JSON.stringify(params) : '';
+    return \`\${url}?\${queryString}\`;
+  }
+
+  private getFromCache(key: string): unknown | null {
+    if (!this.cacheConfig.enabled) return null;
+
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+
+    const now = Date.now();
+    if (now - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return entry.data;
+  }
+
+  private setCache(key: string, data: unknown, ttl?: number): void {
+    if (!this.cacheConfig.enabled) return;
+
+    // Evict oldest entries if cache is too large
+    if (this.cache.size >= (this.cacheConfig.maxSize ?? 100)) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
+    }
+
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl: ttl ?? this.cacheConfig.ttl ?? 60000,
+    });
+  }
+
+  private clearCache(pattern?: string): void {
+    if (!pattern) {
+      this.cache.clear();
+      return;
+    }
+
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  public invalidateCache(url?: string): void {
+    if (url) {
+      this.clearCache(url);
+    } else {
+      this.cache.clear();
+    }
+  }
+
+`;
+}
+
+// Generate retry helper methods
+function generateRetryHelpers(useAxios: boolean): string {
+  if (useAxios) {
+    return `  // Retry helper methods
+  private async retryWithBackoff<T>(
+    fn: () => Promise<T>,
+    attempt: number = 1
+  ): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status;
+
+      if (
+        attempt >= (this.retryConfig.maxRetries ?? 3) ||
+        status !== undefined &&
+        !(this.retryConfig.retryableStatusCodes ?? []).includes(status)
+      ) {
+        throw error;
+      }
+
+      // Call retry callback if provided
+      if (this.retryConfig.onRetry) {
+        this.retryConfig.onRetry(attempt, error as Error);
+      }
+
+      // Calculate delay with exponential backoff
+      const delay = (this.retryConfig.retryDelay ?? 1000) *
+                   Math.pow(this.retryConfig.backoffMultiplier ?? 2, attempt - 1);
+
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      return this.retryWithBackoff(fn, attempt + 1);
+    }
+  }
+
+  private isRetryableError(error: unknown): boolean {
+    if (error instanceof Error) {
+      const message = error.message.toLowerCase();
+      return (
+        message.includes('network') ||
+        message.includes('timeout') ||
+        message.includes('econnreset')
+      );
+    }
+    return false;
+  }
+
+`;
+  } else {
+    return `  // Retry helper methods for fetch
+  private async retryWithBackoff<T>(
+    fn: () => Promise<T>,
+    attempt: number = 1
+  ): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt >= (this.retryConfig.maxRetries ?? 3)) {
+        throw error;
+      }
+
+      // Call retry callback if provided
+      if (this.retryConfig.onRetry) {
+        this.retryConfig.onRetry(attempt, error as Error);
+      }
+
+      // Calculate delay with exponential backoff
+      const delay = (this.retryConfig.retryDelay ?? 1000) *
+                   Math.pow(this.retryConfig.backoffMultiplier ?? 2, attempt - 1);
+
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      return this.retryWithBackoff(fn, attempt + 1);
+    }
+  }
+
+  private isRetryableError(error: unknown): boolean {
+    if (error instanceof Error) {
+      const message = error.message.toLowerCase();
+      return (
+        message.includes('network') ||
+        message.includes('timeout') ||
+        message.includes('econnreset') ||
+        message.includes('fetch failed')
+      );
+    }
+    return false;
+  }
+
+`;
+  }
+}
+
+// Generate enhanced client methods with retry and cache
+function generateEnhancedClientMethods(
+  spec: OpenAPISpec,
+  options: ClientOptions,
+  includeRetry: boolean,
+  includeCache: boolean
+): string {
+  const lines: string[] = [];
+
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+
+      const opId = operation.operationId || toMethodName(`${method}_${path}`);
+      const methodName = toMethodName(opId);
+      const description = operation.description || operation.summary || '';
+      const httpMethod = method.toUpperCase();
+      const isGetOrHead = httpMethod === 'GET' || httpMethod === 'HEAD';
+
+      // Parse parameters
+      const pathParams = (operation.parameters || []).filter((p: Parameter) => p.in === 'path');
+      const queryParams = (operation.parameters || []).filter((p: Parameter) => p.in === 'query');
+      const headerParams = (operation.parameters || []).filter((p: Parameter) => p.in === 'header');
+
+      const hasPathParams = pathParams.length > 0;
+      const hasQueryParams = queryParams.length > 0;
+      const hasHeaderParams = headerParams.length > 0;
+
+      // Build method signature
+      lines.push(`/**`);
+      if (description) lines.push(` * ${description}`);
+      lines.push(` * @ HTTP ${httpMethod} ${path}`);
+      if (isGetOrHead && includeCache) {
+        lines.push(` * @cached Responses are cached based on URL and query parameters`);
+      }
+      if (includeRetry) {
+        lines.push(` * @retry Failed requests are automatically retried with exponential backoff`);
+      }
+      lines.push(` */`);
+
+      const hasBody = operation.requestBody;
+      const params: string[] = [];
+
+      if (hasPathParams) {
+        pathParams.forEach((p: Parameter) => {
+          const paramType = p.schema ? generateType(p.schema, `${capitalize(p.name)}Param`, new Set()) : 'string';
+          params.push(`  ${p.name}: ${paramType};${p.required ? '' : '?'}`);
+        });
+      }
+
+      if (hasQueryParams) {
+        params.push(`  query?: {`);
+        queryParams.forEach((p: Parameter) => {
+          const paramType = p.schema ? generateType(p.schema, `${capitalize(p.name)}Query`, new Set()) : 'string';
+          params.push(`    ${p.name}?: ${paramType};`);
+        });
+        params.push(`  };`);
+      }
+
+      if (hasHeaderParams) {
+        params.push(`  headers?: {`);
+        headerParams.forEach((p: Parameter) => {
+          const paramType = p.schema ? generateType(p.schema, `${capitalize(p.name)}Header`, new Set()) : 'string';
+          params.push(`    ${p.name}?: ${paramType};`);
+        });
+        params.push(`  };`);
+      }
+
+      if (hasBody) {
+        const content = operation.requestBody.content || {};
+        const jsonSchema = content['application/json']?.schema || content['*/*']?.schema || operation.requestBody.schema;
+        if (jsonSchema) {
+          const bodyType = generateType(jsonSchema, 'RequestBody', new Set());
+          params.push(`  body: ${bodyType};`);
+        } else {
+          params.push(`  body: unknown;`);
+        }
+      }
+
+      // Add cache/retry options
+      params.push(`  options?: {`);
+      params.push(`    signal?: AbortSignal;`);
+      params.push(`    headers?: Record<string, string>;`);
+      if (includeCache && isGetOrHead) {
+        params.push(`    cache?: boolean | number; // false to disable, number for custom TTL`);
+      }
+      if (includeRetry) {
+        params.push(`    retry?: boolean | Partial<RetryConfig>;`);
+      }
+      params.push(`  };`);
+
+      // Build method
+      let methodSig = `async ${methodName}(`;
+
+      if (params.length > 0) {
+        methodSig += `params: {\n${params.join('\n')}\n  }, `;
+      }
+
+      methodSig += `options?: { signal?: AbortSignal; headers?: Record<string, string>; ${includeCache && isGetOrHead ? 'cache?: boolean | number;' : ''} ${includeRetry ? 'retry?: boolean | Partial<RetryConfig>;' : ''} }`;
+
+      // Determine response type
+      const successResponse = operation.responses['200'] || operation.responses['201'] || operation.responses['204'];
+      let responseType = 'void';
+
+      if (successResponse) {
+        const content = (successResponse as Response).content;
+        if (content?.['application/json']?.schema) {
+          responseType = generateType(content['application/json'].schema, 'Response', new Set());
+        } else if ((successResponse as Response).schema) {
+          responseType = generateType((successResponse as Response).schema, 'Response', new Set());
+        } else {
+          responseType = 'unknown';
+        }
+      }
+
+      methodSig += `): Promise<${responseType}>`;
+
+      lines.push(methodSig + ' {');
+      lines.push(`  const url = this.buildUrl('${path}'`);
+
+      if (hasPathParams) {
+        pathParams.forEach((p: Parameter) => {
+          lines.push(`    .replace('{${p.name}}', encodeURIComponent(String(params.${p.name})))`);
+        });
+      }
+
+      lines.push(`  );`);
+
+      // Build query string
+      if (hasQueryParams) {
+        lines.push(`  const queryString = new URLSearchParams();`);
+        lines.push(`  if (params.query) {`);
+        queryParams.forEach((p: Parameter) => {
+          lines.push(`    if (params.query.${p.name} !== undefined) {`);
+          lines.push(`      queryString.append('${p.name}', String(params.query.${p.name}));`);
+          lines.push(`    }`);
+        });
+        lines.push(`  }`);
+        lines.push(`  const fullUrl = queryString.toString() ? \`\${url}?\${queryString}\` : url;`);
+      } else {
+        lines.push(`  const fullUrl = url;`);
+      }
+
+      // Build headers
+      lines.push(`  const headers = {`);
+      lines.push(`    'Content-Type': 'application/json',`);
+      lines.push(`    ...this.defaultHeaders,`);
+      lines.push(`    ...options?.headers,`);
+
+      if (hasHeaderParams) {
+        lines.push(`    ...(params.headers || {}),`);
+      }
+
+      lines.push(`  };`);
+
+      // Check cache for GET requests
+      if (includeCache && isGetOrHead) {
+        lines.push(`  // Check cache`);
+        lines.push(`  const cacheKey = this.getCacheKey(fullUrl, params.query);`);
+        lines.push(`  const cached = this.getFromCache(cacheKey);`);
+        lines.push(`  if (cached && options?.cache !== false) {`);
+        lines.push(`    return cached as ${responseType};`);
+        lines.push(`  }`);
+        lines.push(``);
+      }
+
+      // Build request with retry logic
+      const requestFn = `  const makeRequest = async (): Promise<${responseType}> => {
+        ${options.useAxios ? generateAxiosRequest(httpMethod, hasBody, responseType) : generateFetchRequest(httpMethod, hasBody, responseType)}
+      }`;
+
+      lines.push(requestFn);
+
+      // Build return statement with proper chaining for cache and retry
+      if (includeCache && isGetOrHead) {
+        // Cache is enabled - need to chain .then() to store result
+        if (includeRetry) {
+          lines.push(`  // Retry logic with exponential backoff`);
+          lines.push(`  const shouldRetry = options?.retry !== false && (options?.retry === true || Object.keys(options?.retry ?? {}).length > 0);`);
+          lines.push(`  const requestPromise = shouldRetry ? this.retryWithBackoff(makeRequest) : makeRequest();`);
+          lines.push(`  return requestPromise`);
+        } else {
+          lines.push(`  return makeRequest()`);
+        }
+        // Chain .then() for cache storage
+        lines.push(`    .then(data => {`);
+        lines.push(`      if (options?.cache !== false) {`);
+        lines.push(`        const ttl = typeof options?.cache === 'number' ? options.cache : undefined;`);
+        lines.push(`        this.setCache(cacheKey, data, ttl);`);
+        lines.push(`      }`);
+        lines.push(`      return data;`);
+        lines.push(`    });`);
+      } else {
+        // No caching - simpler return
+        if (includeRetry) {
+          lines.push(`  // Retry logic with exponential backoff`);
+          lines.push(`  const shouldRetry = options?.retry !== false && (options?.retry === true || Object.keys(options?.retry ?? {}).length > 0);`);
+          lines.push(`  if (shouldRetry) {`);
+          lines.push(`    if (typeof options?.retry === 'object') {`);
+          lines.push(`      this.retryConfig = { ...this.retryConfig, ...options.retry };`);
+          lines.push(`    }`);
+          lines.push(`    return this.retryWithBackoff(makeRequest);`);
+          lines.push(`  }`);
+        }
+        lines.push(`  return makeRequest();`);
+      }
+
+      lines.push(`}`);
+      lines.push(``);
+    });
+  });
+
+  return lines.join('\n');
+}
+
+// Generate axios request code
+function generateAxiosRequest(method: string, hasBody: boolean, responseType: string): string {
+  const lines: string[] = [];
+  lines.push(`    const response = await this.axios.${method.toLowerCase()}(fullUrl, {`);
+  if (hasBody) {
+    lines.push(`      data: params.body,`);
+  }
+  lines.push(`      headers,`);
+  lines.push(`      signal: options?.signal,`);
+  lines.push(`    });`);
+  lines.push(`    return response.data as ${responseType};`);
+  return lines.join('\n        ');
+}
+
+// Generate fetch request code
+function generateFetchRequest(method: string, hasBody: boolean, responseType: string): string {
+  const lines: string[] = [];
+  lines.push(`    const response = await fetch(fullUrl, {`);
+  lines.push(`      method: '${method}',`);
+  if (hasBody) {
+    lines.push(`      body: JSON.stringify(params.body),`);
+  }
+  lines.push(`      headers,`);
+  lines.push(`      signal: options?.signal,`);
+  lines.push(`    });`);
+
+  lines.push(`    if (!response.ok) {`);
+  lines.push(`      throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);`);
+  lines.push(`    }`);
+
+  if (responseType === 'void') {
+    lines.push(`    return;`);
+  } else if (responseType === 'unknown') {
+    lines.push(`    return await response.json();`);
+  } else {
+    lines.push(`    return await response.json() as ${responseType};`);
+  }
+
+  return lines.join('\n        ');
 }
 
 // Convert to camelCase
