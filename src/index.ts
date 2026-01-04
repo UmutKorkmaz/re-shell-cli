@@ -8303,6 +8303,7 @@ clientCommand
   .option('--pinia', 'Generate Pinia stores (for vue framework)')
   .option('--sveltekit', 'Generate SvelteKit SDK (for svelte framework)')
   .option('--enhanced', 'Generate client with retry, caching, and intelligent error handling')
+  .option('--mock', 'Generate mock server alongside the client')
   .action(
     createAsyncCommand(async (specPath, outputPath, options) => {
       const {
@@ -8314,6 +8315,7 @@ clientCommand
         generateAngularService,
         generateSvelteStores,
         generateSvelteKitSdk,
+        generateMockServer,
         validateSpec,
         listOperations,
       } = await import('./utils/typescript-client');
@@ -8439,6 +8441,37 @@ clientCommand
         await fs.writeFile(sdkFile, sdkCode, 'utf-8');
         generatedFiles.push(sdkFile);
         console.log(`\n${chalk.gray('•')} ${sdkFile} (SvelteKit SDK)`);
+      }
+
+      // Generate mock server if requested
+      if (options.mock) {
+        const mockServerCode = generateMockServer(spec, { port: 3001 });
+        const mockServerFile = 'mock-server.ts';
+        await fs.writeFile(mockServerFile, mockServerCode, 'utf-8');
+        generatedFiles.push(mockServerFile);
+        console.log(`\n${chalk.gray('•')} ${mockServerFile} (Express mock server)`);
+
+        // Generate package.json for mock server
+        const mockPackageJson = {
+          name: 'mock-api-server',
+          version: '1.0.0',
+          scripts: {
+            start: 'tsx mock-server.ts',
+            dev: 'tsx watch mock-server.ts'
+          },
+          dependencies: {
+            express: '^4.18.0',
+            cors: '^2.8.5'
+          },
+          devDependencies: {
+            tsx: '^4.0.0',
+            '@types/express': '^4.17.0',
+            '@types/cors': '^2.8.0'
+          }
+        };
+        await fs.writeFile('mock-server.package.json', JSON.stringify(mockPackageJson, null, 2), 'utf-8');
+        generatedFiles.push('mock-server.package.json');
+        console.log(`${chalk.gray('•')} mock-server.package.json`);
       }
 
       // List operations

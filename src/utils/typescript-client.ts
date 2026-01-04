@@ -94,11 +94,15 @@ export interface Schema {
   title?: string;
   default?: unknown;
   example?: unknown;
+  minLength?: number;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
 }
 
 // Client generation options
 export interface ClientOptions {
-  spec: OpenAPISpec;
+  spec?: OpenAPISpec;
   clientName?: string;
   baseUrl?: string;
   useAxios?: boolean;
@@ -108,6 +112,7 @@ export interface ClientOptions {
   exportType?: 'default' | 'named' | 'module';
   emitDeprecatedMethods?: boolean;
   useEnumTypes?: boolean;
+  port?: number;
 }
 
 // Generate TypeScript type from OpenAPI schema
@@ -1698,6 +1703,276 @@ export function generateSvelteKitSdk(spec: OpenAPISpec, clientName: string): str
       lines.push('');
     });
   });
+
+  return lines.join('\n');
+}
+
+// ==================== MOCK SERVER GENERATION ====================
+
+/**
+ * Generate a mock server with Express.js from OpenAPI specification
+ * Returns realistic mock data based on schema types
+ */
+export function generateMockServer(spec: OpenAPISpec, options: ClientOptions = {}): string {
+  const lines: string[] = [];
+  const port = options.port || 3001;
+
+  // Add imports
+  lines.push(`import express, { Request, Response } from 'express';`);
+  lines.push(`import cors from 'cors';`);
+  lines.push(``);
+  lines.push(`// Auto-generated Mock Server from OpenAPI specification`);
+  lines.push(`// ${spec.info.title} v${spec.info.version}`);
+  lines.push(``);
+  lines.push(`const app = express();`);
+  lines.push(`const PORT = ${port};`);
+  lines.push(``);
+  lines.push(`app.use(cors());`);
+  lines.push(`app.use(express.json());`);
+  lines.push(``);
+
+  // Add in-memory data store
+  lines.push(`// In-memory data store`);
+  lines.push(`const dataStore: Record<string, any[]> = {};`);
+  lines.push(``);
+
+  // Generate routes for each path
+  lines.push(`// API Routes`);
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+
+      const httpMethod = method.toUpperCase();
+      const operationId = operation.operationId || toMethodName(method + '_' + path);
+
+      lines.push(``);
+      lines.push(`/**`);
+      if (operation.summary) lines.push(` * ${operation.summary}`);
+      if (operation.description) lines.push(` * ${operation.description}`);
+      lines.push(` * ${httpMethod} ${path}`);
+      lines.push(` */`);
+      lines.push(`app.` + method.toLowerCase() + `('${path}', async (req: Request, res: Response) => {`);
+      lines.push(`  console.log('[${operationId}] ${httpMethod} ${path}', req.query, req.body);`);
+      lines.push(``);
+
+      // Generate response based on operation
+      const successResponse = operation.responses['200'] || operation.responses['201'] || operation.responses['204'];
+      const responseSchema = successResponse?.['content']?.['application/json']?.schema
+        || (successResponse as Response)?.schema;
+
+      if (httpMethod === 'GET' && path.includes('{')) {
+        // Single resource by ID
+        const resourcePath = path.split('{')[0].replace(/\/$/, '');
+        lines.push(`  const { id } = req.params;`);
+        lines.push(`  const collection = dataStore['${resourcePath}'] || [];`);
+        lines.push(`  const item = collection.find((i: any) => i.id === id);`);
+        lines.push(`  if (!item) {`);
+        lines.push(`    return res.status(404).json({ error: 'Resource not found' });`);
+        lines.push(`  }`);
+        lines.push(`  res.json(item);`);
+      } else if (httpMethod === 'GET') {
+        // List resources
+        lines.push(`  const collection = dataStore['${path}'] || [];`);
+        lines.push(`  const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;`);
+        lines.push(`  const result = limit ? collection.slice(0, limit) : collection;`);
+        lines.push(`  res.json(result);`);
+      } else if (httpMethod === 'POST') {
+        // Create resource
+        lines.push(`  const newItem = {`);
+        lines.push(`    id: Date.now().toString(),`);
+        lines.push(`    ...req.body,`);
+        lines.push(`    createdAt: new Date().toISOString(),`);
+        lines.push(`  };`);
+        lines.push(`  const collection = dataStore['${path}'] || [];`);
+        lines.push(`  collection.push(newItem);`);
+        lines.push(`  dataStore['${path}'] = collection;`);
+        lines.push(`  res.status(201).json(newItem);`);
+      } else if (httpMethod === 'PUT' || httpMethod === 'PATCH') {
+        // Update resource
+        const resourcePath = path.replace(/\/{[^}]+}$/, '');
+        lines.push(`  const { id } = req.params;`);
+        lines.push(`  const collection = dataStore['${resourcePath}'] || [];`);
+        lines.push(`  const index = collection.findIndex((i: any) => i.id === id);`);
+        lines.push(`  if (index === -1) {`);
+        lines.push(`    return res.status(404).json({ error: 'Resource not found' });`);
+        lines.push(`  }`);
+        lines.push(`  collection[index] = { ...collection[index], ...req.body };`);
+        lines.push(`  res.json(collection[index]);`);
+      } else if (httpMethod === 'DELETE') {
+        // Delete resource
+        const resourcePath = path.replace(/\/{[^}]+}$/, '');
+        lines.push(`  const { id } = req.params;`);
+        lines.push(`  const collection = dataStore['${resourcePath}'] || [];`);
+        lines.push(`  const index = collection.findIndex((i: any) => i.id === id);`);
+        lines.push(`  if (index === -1) {`);
+        lines.push(`    return res.status(404).json({ error: 'Resource not found' });`);
+        lines.push(`  }`);
+        lines.push(`  collection.splice(index, 1);`);
+        lines.push(`  res.status(204).send();`);
+      } else {
+        lines.push(`  res.json({ message: '${operationId}' });`);
+      }
+
+      lines.push(`});`);
+    });
+  });
+
+  lines.push(``);
+  lines.push(`// Health check`);
+  lines.push(`app.get('/health', (req: Request, res: Response) => {`);
+  lines.push(`  res.json({ status: 'ok', timestamp: new Date().toISOString() });`);
+  lines.push(`});`);
+  lines.push(``);
+  lines.push(`// Initialize sample data`);
+  lines.push(generateSampleDataInit(spec));
+  lines.push(``);
+  lines.push(`// Start server`);
+  lines.push(`app.listen(PORT, () => {`);
+  lines.push(`  console.log('Mock server running at http://localhost:' + PORT);`);
+  lines.push(`  console.log('Available routes:');`);
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    Object.entries(pathItem).forEach(([method, operation]) => {
+      if (!operation || typeof operation !== 'object') return;
+      lines.push(`  console.log('  ` + method.toUpperCase().padEnd(7) + ` ${path}');`);
+    });
+  });
+  lines.push(`});`);
+  lines.push(``);
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate mock data from schema
+ */
+function generateMockDataFromSchema(schema: Schema, depth: number = 0): string {
+  if (depth > 3) return 'null';
+
+  const type = schema.type || 'string';
+  const enumValues = schema.enum;
+
+  if (enumValues && enumValues.length > 0) {
+    return '\'' + enumValues[0] + '\'';
+  }
+
+  switch (type) {
+    case 'string':
+      if (schema.format === 'date-time') return 'new Date().toISOString()';
+      if (schema.format === 'date') return 'new Date().toISOString().split(\'T\')[0]';
+      if (schema.format === 'email') return '\'user@example.com\'';
+      if (schema.format === 'uri') return '\'https://example.com\'';
+      if (schema.format === 'uuid') return '\'c9a6e8f0-1b3d-4e5f-6a7b-8c9d0e1f2a3b\'';
+      if (schema.minLength !== undefined || schema.maxLength !== undefined) {
+        const len = schema.minLength || schema.maxLength || 10;
+        return '\'' + 'x'.repeat(Math.min(len, 20)) + '\'';
+      }
+      return '\'sample string\'';
+    case 'number':
+    case 'integer':
+      if (schema.minimum !== undefined && schema.maximum !== undefined) {
+        return String((schema.minimum + schema.maximum) / 2);
+      }
+      if (schema.minimum !== undefined) return String(schema.minimum);
+      if (schema.maximum !== undefined) return String(schema.maximum);
+      if (type === 'integer') return '42';
+      return '3.14';
+    case 'boolean':
+      return 'true';
+    case 'array':
+      if (schema.items) {
+        const itemValue = generateMockDataFromSchema(schema.items, depth + 1);
+        return '[' + itemValue + ', ' + itemValue + ']';
+      }
+      return '[]';
+    case 'object':
+      if (schema.properties) {
+        const props: string[] = [];
+        Object.entries(schema.properties).forEach(([key, propSchema]: [string, Schema]) => {
+          const value = generateMockDataFromSchema(propSchema, depth + 1);
+          props.push(key + ': ' + value);
+        });
+        return '{ ' + props.join(', ') + ' }';
+      }
+      return '{}';
+    default:
+      return 'null';
+  }
+}
+
+/**
+ * Generate a function to create mock data for a schema
+ */
+function generateMockDataGenerator(name: string, schema: Schema): string {
+  const lines: string[] = [];
+  const functionName = 'createMock' + toCamelCase(name);
+
+  lines.push('function ' + functionName + '(overrides: Partial<any> = {}): any {');
+  lines.push('  return {');
+
+  if (schema.properties) {
+    Object.entries(schema.properties).forEach(([key, propSchema]: [string, Schema]) => {
+      const value = generateMockDataFromSchema(propSchema);
+      lines.push('    ' + key + ': ' + value + ',');
+    });
+  } else {
+    lines.push('    id: Date.now().toString(),');
+    lines.push('    name: \'Sample ' + name + '\',');
+  }
+
+  lines.push('    ...overrides,');
+  lines.push('  };');
+  lines.push('}');
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate sample data initialization code
+ */
+function generateSampleDataInit(spec: OpenAPISpec): string {
+  const lines: string[] = [];
+
+  lines.push('function initializeSampleData() {');
+  lines.push('  // Initialize sample data for GET endpoints');
+  lines.push('');
+
+  // Find collection paths (e.g., /users, /products)
+  Object.entries(spec.paths).forEach(([path, pathItem]) => {
+    const hasGet = pathItem.get;
+    const hasIdParam = path.includes('{');
+
+    // Only generate sample data for list endpoints without path parameters
+    if (hasGet && !hasIdParam) {
+      const collectionName = path.replace(/^\//, '').replace(/\/$/, '') || 'root';
+      lines.push('  dataStore[\'' + path + '\'] = [');
+
+      // Get schema from response to generate proper mock data
+      const getOp = pathItem.get;
+      const successResponse = getOp?.responses?.['200'] || getOp?.responses?.['201'];
+      const responseSchema = successResponse?.['content']?.['application/json']?.schema
+        || successResponse?.schema;
+
+      if (responseSchema?.type === 'array' && responseSchema.items) {
+        // Generate 3 sample items
+        for (let i = 1; i <= 3; i++) {
+          const itemData = generateMockDataFromSchema(responseSchema.items);
+          lines.push('    { id: \'' + i + '\', ' + itemData.substring(1, itemData.length - 1) + ' },');
+        }
+      } else {
+        // Generic sample items
+        lines.push('    { id: \'1\', name: \'Sample 1\' },');
+        lines.push('    { id: \'2\', name: \'Sample 2\' },');
+        lines.push('    { id: \'3\', name: \'Sample 3\' },');
+      }
+
+      lines.push('  ];');
+      lines.push('');
+    }
+  });
+
+  lines.push('}');
+  lines.push('');
+  lines.push('initializeSampleData();');
 
   return lines.join('\n');
 }
