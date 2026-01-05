@@ -8628,6 +8628,77 @@ clientCommand
     })
   );
 
+clientCommand
+  .command('sdk <spec> [output]')
+  .description('Generate framework-optimized SDK bundles from OpenAPI spec')
+  .option('--framework <framework>', 'Target framework: react, vue, angular, svelte, generic', 'generic')
+  .option('--bundler <bundler>', 'Bundle configuration: vite, webpack, rollup', 'vite')
+  .action(
+    createAsyncCommand(async (specPath, outputPath, options) => {
+      const { generateFrameworkSdkBundle, generateBundleConfig } = await import('./utils/framework-sdk');
+      const { validateSpec, listOperations } = await import('./utils/typescript-client');
+
+      const resolvedSpecPath = path.resolve(specPath);
+
+      if (!fs.existsSync(resolvedSpecPath)) {
+        console.log(chalk.yellow(`\n❌ Spec file not found: ${specPath}\n`));
+        return;
+      }
+
+      const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
+      let spec;
+      try {
+        spec = JSON.parse(specContent);
+      } catch {
+        console.log(chalk.yellow(`\n❌ Failed to parse spec file.\n`));
+        return;
+      }
+
+      const validation = validateSpec(spec);
+      if (!validation.valid) {
+        console.log(chalk.yellow(`\n❌ Invalid OpenAPI spec:\n`));
+        validation.errors.forEach(err => console.log(chalk.gray(`  • ${err}`)));
+        console.log('');
+        return;
+      }
+
+      const outputFile = outputPath || './api-sdk.ts';
+      await fs.ensureDir(path.dirname(outputFile));
+
+      // Generate framework SDK
+      const sdkCode = generateFrameworkSdkBundle(spec, { framework: options.framework as any });
+      await fs.writeFile(outputFile, sdkCode, 'utf-8');
+
+      // Generate bundle config
+      const bundleConfig = generateBundleConfig(options.bundler as any);
+      const configFile = options.bundler === 'webpack' ? 'webpack.config.js' :
+                         options.bundler === 'rollup' ? 'rollup.config.js' : 'vite.config.ts';
+      await fs.writeFile(configFile, bundleConfig, 'utf-8');
+
+      console.log(chalk.cyan(`\n🚀 Framework-Optimized SDK\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Framework:')} ${options.framework}`);
+      console.log(`${chalk.blue('Spec:')} ${specPath}`);
+      console.log(`${chalk.blue('Output:')} ${outputFile}`);
+      console.log(`${chalk.blue('Config:')} ${configFile}`);
+      console.log(chalk.gray('─'.repeat(60)));
+
+      // List operations
+      const operations = listOperations(spec);
+      console.log(`\n${chalk.blue('Operations:')} ${operations.length}`);
+
+      operations.slice(0, 10).forEach(op => {
+        console.log(`  ${chalk.gray('•')} ${chalk.yellow(op.method.padEnd(6))} ${op.path}`);
+      });
+
+      if (operations.length > 10) {
+        console.log(`  ${chalk.gray(`... and ${operations.length - 10} more`)}`);
+      }
+
+      console.log(chalk.green(`\n✓ Framework SDK generated! (2 files)\n`));
+    })
+  );
+
 // Helper function for CLI
 function toCamelCase(str: string): string {
   return str

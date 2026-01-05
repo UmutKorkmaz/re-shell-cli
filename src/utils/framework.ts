@@ -6,7 +6,7 @@ export interface FrameworkConfig {
   displayName: string;
   buildTool: 'vite' | 'webpack' | 'rollup' | 'esbuild' | 'angular-cli' | 'astro' | 'eleventy' |
     'docusaurus' | 'gridsome' | 'jekyll' | 'hugo' | 'hexo' | 'zola' | 'vue-cli' | 'nuxt' | 'next' |
-    'remix' | 'gatsby' | 'sveltekit' | 'solid' | 'qwik' | 'lit' | 'stencil' | 'parcel' | 'rush';
+    'remix' | 'gatsby' | 'sveltekit' | 'solid' | 'qwik' | 'lit' | 'stencil' | 'parcel' | 'rush' | 'vue-storefront';
   packageManager: string[];
   dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
@@ -1505,6 +1505,50 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     configFiles: ['analog.config.ts', 'vite.config.ts', 'nitro.config.ts'],
     entryFile: 'src/main.ts',
     extensions: ['.ts', '.html'],
+    hasTypeScript: true
+  },
+  'vue-storefront': {
+    name: 'vue-storefront',
+    displayName: 'Vue Storefront',
+    buildTool: 'nuxt',
+    packageManager: ['npm', 'yarn', 'pnpm'],
+    dependencies: {
+      '@vuestorefront/sdk': '^3.0.0',
+      '@vuestorefront/middleware': '^3.0.0',
+      'nuxt': '^3.10.0',
+      '@nuxtjs/tailwindcss': '^6.10.0',
+      '@pinia/nuxt': '^0.5.1',
+      '@pinia/plugin-persistedstate': '^3.2.1',
+      '@vueuse/nuxt': '^10.7.2',
+      '@nuxtjs/i18n': '^8.3.0',
+      '@nuxt/image': '^1.3.0',
+      'vue': '^3.4.0',
+      'pinia': '^2.1.7',
+      'swiper': '^11.0.5',
+      'stripe': '^14.14.0'
+    },
+    devDependencies: {
+      '@types/node': '^20.11.0',
+      'typescript': '^5.3.3',
+      'autoprefixer': '^10.4.17',
+      'postcss': '^8.4.33',
+      'tailwindcss': '^3.4.1',
+      'vitest': '^1.2.0',
+      '@playwright/test': '^1.41.0',
+      '@nuxt/test-utils': '^3.11.0'
+    },
+    scripts: {
+      'dev': 'nuxt dev',
+      'build': 'nuxt build',
+      'generate': 'nuxt generate',
+      'preview': 'nuxt preview',
+      'postinstall': 'nuxt prepare',
+      'test': 'vitest',
+      'test:e2e': 'playwright test'
+    },
+    configFiles: ['nuxt.config.ts', 'tsconfig.json', 'app.config.ts', 'tailwind.config.js'],
+    entryFile: 'app/app.vue',
+    extensions: ['.ts', '.vue'],
     hasTypeScript: true
   }
 };

@@ -228,7 +228,7 @@ function capitalize(str: string): string {
 }
 
 // Convert operation ID to method name
-function toMethodName(operationId: string): string {
+export function toMethodName(operationId: string): string {
   return operationId
     .replace(/[^a-zA-Z0-9]/g, '_')
     .split('_')
@@ -1096,7 +1096,7 @@ function generateFetchRequest(method: string, hasBody: boolean, responseType: st
 }
 
 // Convert to camelCase
-function toCamelCase(str: string): string {
+export function toCamelCase(str: string): string {
   return str
     .replace(/[-_]/g, ' ')
     .replace(/\b\w/g, (l, i) => i === 0 ? l.toLowerCase() : l.toUpperCase())
