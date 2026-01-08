@@ -8699,6 +8699,246 @@ clientCommand
     })
   );
 
+interface HealthCheckItem {
+  name: string;
+  status: 'pass' | 'fail' | 'warning';
+  message?: string;
+  fix?: string;
+}
+
+/**
+ * Perform health check on a Re-Shell project
+ */
+async function performProjectHealthCheck(projectPath: string): Promise<Record<string, HealthCheckItem[]>> {
+  const checks: Record<string, HealthCheckItem[]> = {
+    'Project Structure': [],
+    'Dependencies': [],
+    'Configuration': [],
+    'Build': [],
+    'Testing': []
+  };
+
+  // Check if project exists
+  if (!fs.existsSync(projectPath)) {
+    checks['Project Structure'].push({
+      name: 'Project directory exists',
+      status: 'fail',
+      message: 'Directory not found',
+      fix: `Create project directory with: mkdir -p ${projectPath}`
+    });
+    return checks;
+  } else {
+    checks['Project Structure'].push({
+      name: 'Project directory exists',
+      status: 'pass'
+    });
+  }
+
+  // Check package.json
+  const packageJsonPath = path.join(projectPath, 'package.json');
+  if (fs.existsSync(packageJsonPath)) {
+    checks['Project Structure'].push({
+      name: 'package.json exists',
+      status: 'pass'
+    });
+
+    try {
+      const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
+
+      // Check for essential scripts
+      if (packageJson.scripts) {
+        if (packageJson.scripts.build) {
+          checks['Build'].push({ name: 'Build script', status: 'pass' });
+        } else {
+          checks['Build'].push({
+            name: 'Build script',
+            status: 'warning',
+            message: 'No build script found',
+            fix: 'Add a build script to package.json'
+          });
+        }
+
+        if (packageJson.scripts.dev) {
+          checks['Build'].push({ name: 'Dev script', status: 'pass' });
+        }
+
+        if (packageJson.scripts.test) {
+          checks['Testing'].push({ name: 'Test script', status: 'pass' });
+        } else {
+          checks['Testing'].push({
+            name: 'Test script',
+            status: 'warning',
+            message: 'No test script found',
+            fix: 'Add a test script to package.json'
+          });
+        }
+      }
+
+      // Check for essential dependencies
+      if (packageJson.dependencies || packageJson.devDependencies) {
+        const allDeps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+
+        if (Object.keys(allDeps).length === 0) {
+          checks['Dependencies'].push({
+            name: 'Dependencies',
+            status: 'warning',
+            message: 'No dependencies found',
+            fix: 'Run: npm install or pnpm install'
+          });
+        } else {
+          checks['Dependencies'].push({
+            name: 'Dependencies installed',
+            status: 'pass',
+            message: `${Object.keys(allDeps).length} packages`
+          });
+        }
+
+        // Check for TypeScript
+        if (allDeps['typescript'] || fs.existsSync(path.join(projectPath, 'tsconfig.json'))) {
+          checks['Project Structure'].push({ name: 'TypeScript', status: 'pass' });
+        }
+      }
+
+      // Check for Re-Shell specific files
+      const reShellConfig = path.join(projectPath, '.re-shell', 'config.yaml');
+      if (fs.existsSync(reShellConfig)) {
+        checks['Configuration'].push({ name: 'Re-Shell config', status: 'pass' });
+      }
+
+    } catch (e) {
+      checks['Project Structure'].push({
+        name: 'package.json',
+        status: 'fail',
+        message: 'Invalid JSON',
+        fix: 'Fix syntax errors in package.json'
+      });
+    }
+  } else {
+    checks['Project Structure'].push({
+      name: 'package.json',
+      status: 'fail',
+      message: 'Not found - is this a valid project?',
+      fix: 'Initialize with: npm init -y'
+    });
+  }
+
+  // Check for node_modules
+  const nodeModulesPath = path.join(projectPath, 'node_modules');
+  if (fs.existsSync(nodeModulesPath)) {
+    checks['Dependencies'].push({ name: 'node_modules exists', status: 'pass' });
+  } else {
+    checks['Dependencies'].push({
+      name: 'node_modules',
+      status: 'fail',
+      message: 'Dependencies not installed',
+      fix: 'Run: npm install or pnpm install'
+    });
+  }
+
+  // Check for .gitignore
+  if (fs.existsSync(path.join(projectPath, '.gitignore'))) {
+    checks['Project Structure'].push({ name: '.gitignore', status: 'pass' });
+  } else {
+    checks['Project Structure'].push({
+      name: '.gitignore',
+      status: 'warning',
+      message: 'Git ignore file not found',
+      fix: 'Create .gitignore with: node_modules, .env, dist, build'
+    });
+  }
+
+  // Check for README
+  if (fs.existsSync(path.join(projectPath, 'README.md')) || fs.existsSync(path.join(projectPath, 'README.txt'))) {
+    checks['Project Structure'].push({ name: 'README', status: 'pass' });
+  } else {
+    checks['Project Structure'].push({
+      name: 'README',
+      status: 'warning',
+      message: 'No README found',
+      fix: 'Create README.md with project documentation'
+    });
+  }
+
+  // Check for source directory
+  const srcPath = path.join(projectPath, 'src');
+  if (fs.existsSync(srcPath)) {
+    checks['Project Structure'].push({ name: 'src directory', status: 'pass' });
+  }
+
+  // Check for dist/build directory
+  const distPath = path.join(projectPath, 'dist');
+  const buildPath = path.join(projectPath, 'build');
+  if (fs.existsSync(distPath) || fs.existsSync(buildPath)) {
+    checks['Build'].push({ name: 'Build output', status: 'pass' });
+  }
+
+  return checks;
+}
+
+// Project health check command
+program
+  .command('check [path]')
+  .description('Perform health check on a Re-Shell project')
+  .option('--fix', 'Automatically fix common issues')
+  .option('--verbose', 'Show detailed information')
+  .action(
+    createAsyncCommand(async (projectPath = '.', options) => {
+      const checks = await performProjectHealthCheck(path.resolve(projectPath));
+
+      console.log(chalk.cyan(`\n🏥 Re-Shell Project Health Check\n`));
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`${chalk.blue('Project:')} ${path.resolve(projectPath)}`);
+      console.log(chalk.gray('─'.repeat(60)));
+
+      // Display results
+      let passed = 0;
+      let failed = 0;
+      let warnings = 0;
+
+      Object.entries(checks).forEach(([category, items]) => {
+        const categoryPassed = items.filter(i => i.status === 'pass').length;
+        const categoryFailed = items.filter(i => i.status === 'fail').length;
+        const categoryWarning = items.filter(i => i.status === 'warning').length;
+
+        passed += categoryPassed;
+        failed += categoryFailed;
+        warnings += categoryWarning;
+
+        if (categoryFailed > 0) {
+          console.log(`\n${chalk.red('✗')} ${category}`);
+        } else if (categoryWarning > 0) {
+          console.log(`\n${chalk.yellow('⚠')} ${category}`);
+        } else {
+          console.log(`\n${chalk.green('✓')} ${category}`);
+        }
+
+        items.forEach(item => {
+          if (item.status === 'pass') {
+            if (options.verbose) console.log(`  ${chalk.green('✓')} ${item.name}`);
+          } else if (item.status === 'fail') {
+            console.log(`  ${chalk.red('✗')} ${item.name}${item.message ? ': ' + item.message : ''}`);
+            if (item.fix && options.fix) {
+              console.log(`    ${chalk.gray('Fix:')} ${item.fix}`);
+            }
+          } else if (item.status === 'warning') {
+            console.log(`  ${chalk.yellow('⚠')} ${item.name}${item.message ? ': ' + item.message : ''}`);
+          }
+        });
+      });
+
+      console.log(chalk.gray('─'.repeat(60)));
+      console.log(`\n${chalk.blue('Results:')} ${chalk.green(`${passed} passed`)}, ${chalk.yellow(`${warnings} warnings`)}, ${chalk.red(`${failed} failed`)}\n`);
+
+      if (failed === 0 && warnings === 0) {
+        console.log(chalk.green('✓ Project is healthy!\n'));
+      } else if (failed === 0) {
+        console.log(chalk.yellow('⚠ Project has warnings but no critical issues.\n'));
+      } else {
+        console.log(chalk.red('✗ Project has issues that need attention.\n'));
+      }
+    })
+  );
+
 // Helper function for CLI
 function toCamelCase(str: string): string {
   return str
