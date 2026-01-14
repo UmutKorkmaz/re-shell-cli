@@ -2,6 +2,9 @@ import { EventEmitter } from 'events';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
+import * as crypto from 'crypto';
+import * as https from 'https';
+import { execSync } from 'child_process';
 
 export interface CrashReport {
   id: string;
@@ -288,7 +291,7 @@ export class CrashReporter extends EventEmitter {
       ],
       autoRecovery: async () => {
         try {
-          const { execSync } = require('child_process');
+
           execSync('npm install', { stdio: 'inherit' });
           return true;
         } catch {
@@ -797,7 +800,7 @@ export class CrashReporter extends EventEmitter {
 
   private anonymizePath(filePath: string): string {
     const homeDir = os.homedir();
-    return filePath.replace(homeDir, '~').replace(/\/Users\/[^\/]+/, '/Users/<user>');
+    return filePath.replace(homeDir, '~').replace(/\/Users\/[^/]+/, '/Users/<user>');
   }
 
   private anonymizeEnvironment(env: Record<string, string>): Record<string, string> {
@@ -819,7 +822,7 @@ export class CrashReporter extends EventEmitter {
     const homeDir = os.homedir();
     return stack
       .replace(new RegExp(homeDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '~')
-      .replace(/\/Users\/[^\/]+/g, '/Users/<user>');
+      .replace(/\/Users\/[^/]+/g, '/Users/<user>');
   }
 
   private notifyUser(report: CrashReport, analysis: CrashAnalysis): void {
@@ -865,7 +868,7 @@ export class CrashReporter extends EventEmitter {
   }
 
   private generateFingerprint(error: Error): string {
-    const crypto = require('crypto');
+
     const data = `${error.name}:${error.message}:${error.stack?.split('\n')[0] || ''}`;
     return crypto.createHash('sha256').update(data).digest('hex').substr(0, 16);
   }
@@ -895,7 +898,7 @@ export class CrashReporter extends EventEmitter {
 
   private async testNetworkConnectivity(): Promise<boolean> {
     try {
-      const https = require('https');
+
       return new Promise((resolve) => {
         const req = https.get('https://registry.npmjs.org/', (res: any) => {
           resolve(res.statusCode === 200);

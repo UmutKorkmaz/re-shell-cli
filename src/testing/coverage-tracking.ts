@@ -1051,15 +1051,19 @@ export class CoverageTracking extends EventEmitter {
         break;
 
       case 'html':
+        {
         const html = this.generateHtmlReport(report);
         await fs.writeFile(outputPath, html);
         break;
 
+        }
       case 'text':
+        {
         const text = this.generateTextReport(report);
         await fs.writeFile(outputPath, text);
         break;
 
+        }
       default:
         throw new Error(`Unsupported report format: ${config.format}`);
     }

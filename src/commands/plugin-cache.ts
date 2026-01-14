@@ -1,7 +1,8 @@
 import chalk from 'chalk';
+import { Command } from 'commander';
 import { createSpinner } from '../utils/spinner';
 import { ValidationError } from '../utils/error-handler';
-import { 
+import {
   createCommandCacheManager,
   PluginCommandCacheManager,
   CacheConfiguration,
@@ -272,7 +273,7 @@ export async function testCachePerformance(
       throw new ValidationError('Iterations must be a positive number');
     }
 
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -311,10 +312,10 @@ export async function testCachePerformance(
       plugin: { manifest: { name: 'test-plugin' } },
       cli: { program: tempProgram, rootPath: process.cwd(), configPath: '', version: '1.0.0' },
       logger: {
-        debug: () => {},
-        info: () => {},
-        warn: () => {},
-        error: () => {}
+        debug: () => { /* noop */ },
+        info: () => { /* noop */ },
+        warn: () => { /* noop */ },
+        error: () => { /* noop */ }
       },
       utils: { path: require('path'), chalk, spinner: null }
     } as any;

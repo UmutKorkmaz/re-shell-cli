@@ -441,26 +441,34 @@ export class ErrorScenarioTesting extends EventEmitter {
     try {
       switch (action) {
         case 'delete_required':
+          {
           const requiredFile = path.join(this.workDir, args.file || 'required.txt');
           await fs.remove(requiredFile);
           break;
 
+          }
         case 'corrupt_file':
+          {
           const corruptFile = path.join(this.workDir, args.file || 'data.json');
           await fs.writeFile(corruptFile, '{"invalid": json}');
           break;
 
+          }
         case 'permission_denied':
+          {
           const restrictedFile = path.join(this.workDir, args.file || 'restricted.txt');
           await fs.writeFile(restrictedFile, 'restricted content');
           await fs.chmod(restrictedFile, 0o000);
           break;
 
+          }
         case 'disk_full':
+          {
           // Simulate disk full by creating a large file
           const largeContent = 'x'.repeat(1024 * 1024 * 100); // 100MB
           await fs.writeFile(path.join(this.workDir, 'large.tmp'), largeContent);
           break;
+          }
       }
 
       // Now try to use the file to trigger the error
@@ -492,19 +500,25 @@ export class ErrorScenarioTesting extends EventEmitter {
     try {
       switch (action) {
         case 'connection_refused':
+          {
           const command = `curl -f ${args.url || 'http://localhost:99999'} --max-time 5`;
           execSync(command, { encoding: 'utf-8' });
           break;
 
+          }
         case 'timeout':
+          {
           const timeoutCommand = `curl -f ${args.url || 'http://httpbin.org/delay/30'} --max-time 5`;
           execSync(timeoutCommand, { encoding: 'utf-8' });
           break;
 
+          }
         case 'dns_failure':
+          {
           const dnsCommand = `curl -f http://nonexistent.invalid --max-time 5`;
           execSync(dnsCommand, { encoding: 'utf-8' });
           break;
+          }
       }
 
       return {
@@ -536,6 +550,7 @@ export class ErrorScenarioTesting extends EventEmitter {
           break;
 
         case 'child_exit':
+          {
           const child = spawn('node', ['-e', 'process.exit(1)'], { stdio: 'pipe' });
           await new Promise((resolve, reject) => {
             child.on('exit', resolve);
@@ -543,7 +558,9 @@ export class ErrorScenarioTesting extends EventEmitter {
           });
           break;
 
+          }
         case 'resource_exhaustion':
+          {
           // Try to spawn too many processes
           const processes: any[] = [];
           for (let i = 0; i < 1000; i++) {
@@ -559,6 +576,7 @@ export class ErrorScenarioTesting extends EventEmitter {
           // Clean up
           processes.forEach(p => p.kill());
           break;
+          }
       }
 
       return {
@@ -584,6 +602,7 @@ export class ErrorScenarioTesting extends EventEmitter {
     try {
       switch (action) {
         case 'out_of_memory':
+          {
           // Allocate large amounts of memory
           const arrays: any[] = [];
           for (let i = 0; i < 100; i++) {
@@ -591,7 +610,9 @@ export class ErrorScenarioTesting extends EventEmitter {
           }
           break;
 
+          }
         case 'memory_leak':
+          {
           // Simulate memory leak
           const leak: any[] = [];
           const interval = setInterval(() => {
@@ -600,6 +621,7 @@ export class ErrorScenarioTesting extends EventEmitter {
           
           setTimeout(() => clearInterval(interval), 5000);
           break;
+          }
       }
 
       return {
@@ -878,12 +900,14 @@ export class ErrorScenarioTesting extends EventEmitter {
 
     switch (check.condition) {
       case 'exists':
+        {
         const exists = await fs.pathExists(filePath);
         result.success = exists;
         result.actual = exists;
         result.expected = true;
         break;
 
+        }
       case 'contains':
         if (await fs.pathExists(filePath)) {
           const content = await fs.readFile(filePath, 'utf-8');

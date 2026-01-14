@@ -1845,7 +1845,7 @@ export function generateMockServer(spec: OpenAPISpec, options: ClientOptions = {
 /**
  * Generate mock data from schema
  */
-function generateMockDataFromSchema(schema: Schema, depth: number = 0): string {
+function generateMockDataFromSchema(schema: Schema, depth = 0): string {
   if (depth > 3) return 'null';
 
   const type = schema.type || 'string';

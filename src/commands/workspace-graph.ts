@@ -76,14 +76,34 @@ export async function manageWorkspaceGraph(options: WorkspaceGraphCommandOptions
     await showGraphSummary(options, spinner);
 
   } catch (error) {
+    if (error instanceof ValidationError) {
+      if (spinner) spinner.stop();
+      console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+      console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+      process.exit(1);
+    }
     if (spinner) spinner.fail(chalk.red('Workspace graph operation failed'));
-    throw error;
+    if (error instanceof Error) {
+      console.error(`Error: ${error.message}`);
+      console.error('Make sure you have a valid re-shell workspace. Run "re-shell init" to initialize.');
+    } else {
+      console.error('An unexpected error occurred');
+    }
+    process.exit(1);
   }
 }
 
 async function analyzeWorkspaceGraph(options: WorkspaceGraphCommandOptions, spinner?: ProgressSpinner): Promise<void> {
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
+
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
 
   if (spinner) spinner.setText(`Analyzing workspace dependency graph: ${inputFile}`);
 
@@ -111,6 +131,14 @@ async function detectWorkspaceCycles(options: WorkspaceGraphCommandOptions, spin
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
 
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
+
   if (spinner) spinner.setText(`Detecting dependency cycles: ${inputFile}`);
 
   try {
@@ -136,6 +164,14 @@ async function detectWorkspaceCycles(options: WorkspaceGraphCommandOptions, spin
 async function generateBuildOrder(options: WorkspaceGraphCommandOptions, spinner?: ProgressSpinner): Promise<void> {
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
+
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
 
   if (spinner) spinner.setText(`Generating build order: ${inputFile}`);
 
@@ -167,6 +203,14 @@ async function findCriticalPath(options: WorkspaceGraphCommandOptions, spinner?:
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
 
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
+
   if (spinner) spinner.setText(`Finding critical path: ${inputFile}`);
 
   try {
@@ -192,6 +236,14 @@ async function findCriticalPath(options: WorkspaceGraphCommandOptions, spinner?:
 async function visualizeWorkspaceGraph(options: WorkspaceGraphCommandOptions, spinner?: ProgressSpinner): Promise<void> {
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
+
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
 
   if (spinner) spinner.setText(`Generating graph visualization: ${inputFile}`);
 

@@ -572,6 +572,7 @@ async function interactiveBackupManagement(options: WorkspaceBackupCommandOption
       await restoreBackupInteractive(options);
       break;
     case 'show':
+      {
       const showResponse = await prompts({
         type: 'text',
         name: 'id',
@@ -581,10 +582,12 @@ async function interactiveBackupManagement(options: WorkspaceBackupCommandOption
         await showBackup({ ...options, name: showResponse.id, interactive: false });
       }
       break;
+      }
     case 'export':
       await exportBackupInteractive(options);
       break;
     case 'import':
+      {
       const importResponse = await prompts({
         type: 'text',
         name: 'file',
@@ -594,6 +597,7 @@ async function interactiveBackupManagement(options: WorkspaceBackupCommandOption
         await importBackup({ ...options, file: importResponse.file, interactive: false });
       }
       break;
+      }
     case 'compare':
       await compareBackupsInteractive(options);
       break;

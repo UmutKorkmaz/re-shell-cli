@@ -166,7 +166,7 @@ spec:
         - name: VAULT_API_ADDR
           value: "https://0.0.0.0:8200"
         - name: VAULT_CLUSTER_ADDR
-          value: "https://\$(HOSTNAME).vault:8201"
+          value: "https://$(HOSTNAME).vault:8201"
         - name: HOME
           value: /home/vault
         ports:

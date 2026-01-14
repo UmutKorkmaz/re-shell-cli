@@ -608,7 +608,8 @@ function processTemplateContent(content: string, context: FeatureContext): strin
     .replace(/\{\{pascalName\}\}/g, context.pascalName)
     .replace(/\{\{camelName\}\}/g, context.camelName)
     .replace(/\{\{port\}\}/g, context.port || '3000')
-    .replace(/\{\{description\}\}/g, `${context.name} feature`);
+    .replace(/\{\{description\}\}/g, `${context.name} feature`)
+    .replace(/\{\{projectName\}\}/g, `${context.normalizedName}-api`);
 }
 
 // Template content generators

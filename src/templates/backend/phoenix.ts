@@ -916,7 +916,7 @@ config :phoenix, :json_library, Jason
 config :hammer,
   backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60, cleanup_interval_ms: 60_000 * 10]}
 
-import_config "\#{config_env()}.exs"
+import_config "#{config_env()}.exs"
 `,
 
     // Dev config
@@ -1004,7 +1004,7 @@ config :{{projectName}}, {{ProjectName}}.Repo,
   username: "postgres",
   password: "password",
   hostname: "localhost",
-  database: "{{projectName}}_test\#{System.get_env("MIX_TEST_PARTITION")}",
+  database: "{{projectName}}_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
@@ -1076,8 +1076,8 @@ alias {{ProjectName}}.Catalog
 # Create some sample products
 for i <- 1..5 do
   Catalog.create_product(%{
-    name: "Product \#{i}",
-    description: "Description for product \#{i}",
+    name: "Product #{i}",
+    description: "Description for product #{i}",
     price: Decimal.new("9.99"),
     stock: 100
   })

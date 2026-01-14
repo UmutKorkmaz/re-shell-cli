@@ -2578,7 +2578,7 @@ export async function applyBestPractices(
 
   // Create folders
   for (const folder of config.folders) {
-    await fs.mkdir(`${projectPath}/${folder}`, { recursive: true }).catch(() => {});
+    await fs.mkdir(`${projectPath}/${folder}`, { recursive: true }).catch(() => { /* ignore */ });
   }
 
   // Create files
@@ -3395,7 +3395,7 @@ Generated with ❤️ by [Re-Shell CLI](https://github.com/re-shell/cli)
 function generateArchitectureDocs(config: ProjectDocsConfig): { path: string; content: string } {
   const { name, frontend, backend, database } = config;
 
-  let content = `# Architecture Documentation
+  const content = `# Architecture Documentation
 
 ## Overview
 

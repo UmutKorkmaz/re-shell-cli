@@ -666,7 +666,7 @@ end
   validates :role, inclusion: { in: ROLES }
   
   # Scopes
-  scope :search, ->(query) { where('name ILIKE ? OR email ILIKE ?', "%\#{query}%", "%\#{query}%") }
+  scope :search, ->(query) { where('name ILIKE ? OR email ILIKE ?', "%#{query}%", "%#{query}%") }
   scope :admins, -> { where(role: 'admin') }
   scope :active, -> { where(active: true) }
   
@@ -798,7 +798,7 @@ def auth_headers(user)
     ENV['JWT_SECRET'] || 'secret',
     'HS256'
   )
-  { 'Authorization' => "Bearer \#{token}" }
+  { 'Authorization' => "Bearer #{token}" }
 end
 `,
 
@@ -864,7 +864,7 @@ RSpec.describe API::Auth do
     
     context 'with valid token' do
       it 'returns user profile' do
-        header 'Authorization', "Bearer \#{auth_headers(user)['Authorization']}"
+        header 'Authorization', "Bearer #{auth_headers(user)['Authorization']}"
         get '/api/v1/auth/profile'
         
         expect(last_response.status).to eq(200)

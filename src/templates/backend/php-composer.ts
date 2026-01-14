@@ -355,7 +355,7 @@ if (!function_exists('env')) {
                 return null;
         }
         
-        if (preg_match('/\\\\A([\'"])(.*)\\\\1\\\\z/', $value, $matches)) {
+        if (preg_match('/\\\\A(['"])(.*)\\\\1\\\\z/', $value, $matches)) {
             return $matches[2];
         }
         

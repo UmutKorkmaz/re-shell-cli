@@ -731,7 +731,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\\./i,
+            urlPattern: /^https://api\\./i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
@@ -745,7 +745,7 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/fonts\\.(?:googleapis|gstatic)\\.com\\/./i,
+            urlPattern: /^https://fonts\\.(?:googleapis|gstatic)\\.com\\/./i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'google-fonts-cache',
@@ -756,7 +756,7 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
+            urlPattern: /.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
@@ -5744,7 +5744,7 @@ export class StrapiClient {
         ...query,
         filters: {
           ...query.filters,
-          slug: { \$eq: slug },
+          slug: { $eq: slug },
         },
       });
 

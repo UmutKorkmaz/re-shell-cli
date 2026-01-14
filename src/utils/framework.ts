@@ -41,7 +41,7 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
       'test': 'vitest'
     },
     configFiles: ['vite.config.js', '.eslintrc.js'],
-    entryFile: 'src/index.jsx',
+    entryFile: 'src/main.jsx',
     extensions: ['.js', '.jsx']
   },
   'react-ts': {
@@ -71,7 +71,7 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
       'type-check': 'tsc --noEmit'
     },
     configFiles: ['vite.config.ts', 'tsconfig.json', '.eslintrc.js'],
-    entryFile: 'src/index.tsx',
+    entryFile: 'src/main.tsx',
     extensions: ['.ts', '.tsx'],
     hasTypeScript: true
   },
@@ -135,10 +135,10 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     buildTool: 'vite',
     packageManager: ['npm', 'yarn', 'pnpm'],
     dependencies: {
-      'svelte-navigator': '^4.0.0'
+      'svelte-navigator': '^3.2.2'
     },
     devDependencies: {
-      'svelte': '^4.0.0',
+      'svelte': '^3.59.0',
       'vite': '^4.4.0',
       '@sveltejs/vite-plugin-svelte': '^2.4.0',
       'eslint': '^8.44.0',
@@ -161,10 +161,10 @@ export const SUPPORTED_FRAMEWORKS: Record<string, FrameworkConfig> = {
     buildTool: 'vite',
     packageManager: ['npm', 'yarn', 'pnpm'],
     dependencies: {
-      'svelte-navigator': '^4.0.0'
+      'svelte-navigator': '^3.2.2'
     },
     devDependencies: {
-      'svelte': '^4.0.0',
+      'svelte': '^3.59.0',
       'vite': '^4.4.0',
       '@sveltejs/vite-plugin-svelte': '^2.4.0',
       'typescript': '^5.0.0',

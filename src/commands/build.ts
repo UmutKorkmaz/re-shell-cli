@@ -75,6 +75,9 @@ export async function buildMicrofrontend(name?: string, options: BuildOptions = 
 
       // Determine build command based on package.json
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      if (!packageJson.scripts?.build) {
+        throw new Error(`No build script found in package.json for microfrontend "${name}".`);
+      }
       let buildCommand = 'npm run build';
 
       if (fs.existsSync(path.join(mfPath, 'pnpm-lock.yaml'))) {

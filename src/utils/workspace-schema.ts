@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as yaml from 'yaml';
 import chalk from 'chalk';
+import glob from 'glob';
 import { ValidationError } from './error-handler';
 
 // Workspace definition schema
@@ -448,7 +449,7 @@ export class WorkspaceSchemaValidator {
 
     try {
       for (const pattern of this.definition.patterns) {
-        const glob = require('glob');
+
         const matches = glob.sync(pattern, { cwd: this.rootPath });
 
         for (const match of matches) {
@@ -731,7 +732,7 @@ export class WorkspaceSchemaValidator {
     const definedPaths = new Set(Object.values(this.definition.workspaces).map(w => w.path));
     
     for (const pattern of this.definition.patterns) {
-      const glob = require('glob');
+
       const matches = glob.sync(pattern, { cwd: this.rootPath });
 
       for (const match of matches) {

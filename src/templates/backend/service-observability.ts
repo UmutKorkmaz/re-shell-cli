@@ -579,7 +579,7 @@ data:
             "title": "Error Rate",
             "targets": [
               {
-                "expr": "rate(http_requests_total{status=~\"5..\"}[5m])"
+                "expr": "rate(http_requests_total{status=~"5.."}[5m])"
               }
             ]
           },

@@ -1119,7 +1119,7 @@ services:
 
     # SPA fallback - all routes go to index.html
     location / {
-        try_files \$uri \$uri/ /index.html;
+        try_files $uri $uri/ /index.html;
     }
 
     # Cache static assets

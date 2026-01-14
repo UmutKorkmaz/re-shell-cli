@@ -313,6 +313,7 @@ export class StartupRegressionTester {
    */
   private getVersion(): string {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       return require('../../package.json').version;
     } catch {
       return 'unknown';

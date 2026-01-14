@@ -259,7 +259,7 @@ let health _req =
     ("status", \`String "healthy");
     ("timestamp", \`String "2024-01-01T00:00:00Z");
     ("version", \`String "1.0.0")
-  \] in
+  ] in
   json_resp data \`OK
 
 (* Register handler *)

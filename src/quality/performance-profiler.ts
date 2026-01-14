@@ -642,6 +642,7 @@ export class PerformanceProfiler extends EventEmitter {
   private getHeapLimit(): number {
     // Get V8 heap size limit
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const v8 = require('v8');
       const heapStats = v8.getHeapStatistics();
       return heapStats.heap_size_limit;

@@ -815,7 +815,7 @@ export function tabs() {
       <!-- Persistent Counter -->
       <section class="demo-section">
         <h2>Persistent Counter</h2>
-        <div x-data="{ count: \$persist(0) }" class="counter-component">
+        <div x-data="{ count: $persist(0) }" class="counter-component">
           <button @click="count--" class="btn btn-secondary">−</button>
           <span class="count" x-text="count"></span>
           <button @click="count++" class="btn btn-secondary">+</button>
@@ -1279,7 +1279,7 @@ Automatically trap focus inside modals and dropdowns.
 Persist state across page reloads using localStorage.
 
 \`\`\`html
-<div x-data="{ count: \$persist(0) }">
+<div x-data="{ count: $persist(0) }">
   <button @click="count++" x-text="count"></button>
 </div>
 \`\`\`

@@ -44,7 +44,7 @@ export const unisonTemplate: BackendTemplate = {
 {{projectName}}.Main.homeHandler : Request -> Response
 
 {{projectName}}.Main.homeHandler _request =
-  let html = \"""
+  let html = """
 <!DOCTYPE html>
 <html>
   <head>
@@ -62,7 +62,7 @@ export const unisonTemplate: BackendTemplate = {
     <p>API available at: <a href="/api/v1/health">/api/v1/health</a></p>
   </body>
 </html>
-  \"""
+  """
   Response.ok html
     |> Response.withHeader "Content-Type" "text/html"
 

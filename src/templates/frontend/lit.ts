@@ -1107,7 +1107,7 @@ render() {
       <!-- Styles don't leak out -->
       <style>\`
         h1 { color: blue; }
-      \</style>
+      </style>
       <h1>Scoped Styles</h1>
     </div>
   \`;

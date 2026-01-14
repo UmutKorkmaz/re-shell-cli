@@ -65,7 +65,7 @@ class val HomeHandler is Handler
         append("  <body>\\n").
         append("    <h1>Welcome to {{projectName}}</h1>\\n").
         append("    <p>Actor-based web application built with Pony and Jennet</p>\\n").
-        append("    <p>API available at: <a href=\\\"/api/v1/health\\\">/api/v1/health</a></p>\\n").
+        append("    <p>API available at: <a href=\\"/api/v1/health\\">/api/v1/health</a></p>\\n").
         append("  </body>\\n").
         append("</html>")
     end
@@ -302,7 +302,7 @@ class val Product
     // Project configuration
     'corral.json': `{
   "dependencies": [
-    "{\"url\":\"https://github.com/Zenghief/jennet\",\"pin\":\"main\"}"
+    "{"url":"https://github.com/Zenghief/jennet","pin":"main"}"
   ]
 }`
 ,

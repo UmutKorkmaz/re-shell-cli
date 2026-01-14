@@ -593,9 +593,9 @@ if command -v include-what-you-use &> /dev/null; then
     # Note: This is informational only, not failing the build
     find src include -name "*.cpp" | head -5 | \\
     while read file; do
-        echo "Checking \$file..."
+        echo "Checking $file..."
         include-what-you-use -Xiwyu --mapping_file=iwyu.imp \\
-                           -I include -std=${config.cppStandard} "\$file" 2>&1 | \\
+                           -I include -std=${config.cppStandard} "$file" 2>&1 | \\
         grep -v "has correct #includes" || true
     done
 fi
@@ -603,11 +603,11 @@ fi
 # Summary
 echo -e "\\n\${BLUE}Summary\${NC}"
 echo "======="
-if [ \$FAILED -eq 0 ]; then
+if [ $FAILED -eq 0 ]; then
     echo -e "\${GREEN}All quality checks passed!\${NC}"
     exit 0
 else
-    echo -e "\${RED}\$FAILED quality checks failed\${NC}"
+    echo -e "\${RED}$FAILED quality checks failed\${NC}"
     exit 1
 fi
 `;

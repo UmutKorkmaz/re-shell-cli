@@ -729,12 +729,12 @@ dev-sanic:
 
 # Debug mode with verbose output
 debug:
-	python scripts/hot_reload.py --framework \$(FRAMEWORK) --verbose --command \$(CMD)
+	python scripts/hot_reload.py --framework $(FRAMEWORK) --verbose --command $(CMD)
 
 # Performance profiling mode
 profile:
 	@echo "📊 Starting server with performance profiling..."
-	python -m cProfile -o profile.stats scripts/hot_reload.py --framework \$(FRAMEWORK) --command \$(CMD)
+	python -m cProfile -o profile.stats scripts/hot_reload.py --framework $(FRAMEWORK) --command $(CMD)
 
 # Benchmarking with wrk
 benchmark:

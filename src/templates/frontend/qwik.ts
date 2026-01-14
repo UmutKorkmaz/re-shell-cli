@@ -549,10 +549,10 @@ export const Header = component$(() => {
         </div>
 
         <nav class="nav">
-          <a href="/" class={\$('nav-link', { class: { active: location.url.pathname === '/' } })}>
+          <a href="/" class={$('nav-link', { class: { active: location.url.pathname === '/' } })}>
             Home
           </a>
-          <a href="/about/" class={\$('nav-link', { class: { active: location.url.pathname.startsWith('/about') } })}>
+          <a href="/about/" class={$('nav-link', { class: { active: location.url.pathname.startsWith('/about') } })}>
             About
           </a>
         </nav>

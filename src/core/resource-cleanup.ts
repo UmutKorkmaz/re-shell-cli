@@ -395,7 +395,7 @@ export class ResourceManager extends EventEmitter {
           const result = handle.cleanup();
           if (result && typeof result.then === 'function') {
             // Don't wait for async cleanup in emergency
-            result.catch(() => {});
+            result.catch(() => { /* ignore */ });
           }
         }
       } catch {
@@ -552,6 +552,7 @@ export class ResourceManager extends EventEmitter {
   }
 
   private calculateChecksum(data: any): string {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const crypto = require('crypto');
     return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
   }

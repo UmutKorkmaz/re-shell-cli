@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import * as path from 'path';
+import * as fsExtra from 'fs-extra';
 import { templateEngine, ConfigTemplate, TemplateVariable, TemplateHelpers } from '../utils/template-engine';
 import { configManager } from '../utils/config';
 import { ProgressSpinner } from '../utils/spinner';
@@ -441,6 +442,7 @@ async function createBuiltinTemplate(options: TemplateCommandOptions): Promise<v
     case 'react-project':
     case 'vue-project':
     case 'svelte-project':
+      {
       const framework = response.type.split('-')[0];
       template = TemplateHelpers.createProjectTemplate(
         `${framework}-project`,
@@ -448,12 +450,15 @@ async function createBuiltinTemplate(options: TemplateCommandOptions): Promise<v
         response.packageManager
       );
       break;
+      }
     case 'package-workspace':
     case 'app-workspace':
     case 'lib-workspace':
+      {
       const workspaceType = response.type.split('-')[0] as 'app' | 'package' | 'lib';
       template = TemplateHelpers.createWorkspaceTemplate(workspaceType);
       break;
+      }
     default:
       throw new ValidationError(`Unknown template type: ${response.type}`);
   }
@@ -703,7 +708,7 @@ async function applyTemplate(templateName: string, options: TemplateCommandOptio
   if (options.output) {
     // Save to file
     const outputPath = path.resolve(options.output);
-    await require('fs-extra').writeFile(outputPath, JSON.stringify(result, null, 2));
+    await fsExtra.writeFile(outputPath, JSON.stringify(result, null, 2));
     console.log(chalk.green(`✅ Configuration saved to: ${outputPath}`));
   } else if (options.json) {
     console.log(JSON.stringify(result, null, 2));
@@ -796,6 +801,7 @@ async function interactiveTemplateManagement(options: TemplateCommandOptions, sp
       await createTemplate(options);
       break;
     case 'show':
+      {
       const templates = await templateEngine.listTemplates();
       if (templates.length === 0) {
         console.log(chalk.yellow('No templates available.'));
@@ -813,7 +819,9 @@ async function interactiveTemplateManagement(options: TemplateCommandOptions, sp
         await showTemplate(showResponse.template, options);
       }
       break;
+      }
     case 'apply':
+      {
       const applyTemplates = await templateEngine.listTemplates();
       if (applyTemplates.length === 0) {
         console.log(chalk.yellow('No templates available.'));
@@ -831,7 +839,9 @@ async function interactiveTemplateManagement(options: TemplateCommandOptions, sp
         await applyTemplate(applyResponse.template, options);
       }
       break;
+      }
     case 'delete':
+      {
       const deleteTemplates = await templateEngine.listTemplates();
       if (deleteTemplates.length === 0) {
         console.log(chalk.yellow('No templates available.'));
@@ -849,5 +859,6 @@ async function interactiveTemplateManagement(options: TemplateCommandOptions, sp
         await deleteTemplate(deleteResponse.template, options);
       }
       break;
+      }
   }
 }

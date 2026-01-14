@@ -59,7 +59,7 @@ export enum HookPriority {
 export interface HookHandler {
   id: string;
   pluginName: string;
-  handler: Function;
+  handler: (...args: any[]) => any;
   priority: HookPriority;
   once?: boolean;
   condition?: (data: any) => boolean;
@@ -144,7 +144,7 @@ export class PluginHookSystem extends EventEmitter {
   // Register a hook handler
   register(
     hookType: HookType | string,
-    handler: Function,
+    handler: (...args: any[]) => any,
     pluginName: string,
     options: HookRegistrationOptions = {}
   ): string {
@@ -546,7 +546,7 @@ export class PluginHookAPI {
   // Register a hook (automatically includes plugin name)
   register(
     hookType: HookType | string,
-    handler: Function,
+    handler: (...args: any[]) => any,
     options?: HookRegistrationOptions
   ): string {
     return this.hookSystem.register(hookType, handler, this.pluginName, options);
@@ -579,7 +579,7 @@ export class PluginHookAPI {
   }
 
   // Convenience methods for common hooks
-  onCommand(command: string, handler: Function, options?: HookRegistrationOptions): string {
+  onCommand(command: string, handler: (...args: any[]) => any, options?: HookRegistrationOptions): string {
     return this.register(
       HookType.COMMAND_BEFORE,
       (data: any, context: HookContext) => {
@@ -591,7 +591,7 @@ export class PluginHookAPI {
     );
   }
 
-  onFileChange(pattern: RegExp | string, handler: Function, options?: HookRegistrationOptions): string {
+  onFileChange(pattern: RegExp | string, handler: (...args: any[]) => any, options?: HookRegistrationOptions): string {
     return this.register(
       HookType.FILE_CHANGE,
       (data: any, context: HookContext) => {
@@ -604,7 +604,7 @@ export class PluginHookAPI {
     );
   }
 
-  onWorkspaceBuild(workspace: string, handler: Function, options?: HookRegistrationOptions): string {
+  onWorkspaceBuild(workspace: string, handler: (...args: any[]) => any, options?: HookRegistrationOptions): string {
     return this.register(
       HookType.BUILD_START,
       (data: any, context: HookContext) => {

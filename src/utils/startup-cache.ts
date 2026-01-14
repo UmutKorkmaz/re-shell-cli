@@ -204,6 +204,7 @@ export class StartupCache {
    * Load cache metadata from disk
    */
   private loadMetadata(): CacheMetadata {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const currentVersion = require('../../package.json').version;
     
     if (!existsSync(this.cachePath)) {

@@ -187,6 +187,7 @@ export class Logger {
 
     // File output
     if (this.fileStream) {
+      // eslint-disable-next-line no-control-regex
       const fileMessage = this.json ? message : message.replace(/\x1b\[[0-9;]*m/g, ''); // Remove color codes
       const data = fileMessage + '\n';
       

@@ -448,7 +448,7 @@ export class TemplateMarketplace extends EventEmitter {
       
       // Track analytics
       if (this.config.enableAnalytics) {
-        this.trackInstall(templateId, targetVersion).catch(() => {});
+        this.trackInstall(templateId, targetVersion).catch(() => { /* ignore */ });
       }
       
       this.emit('install:complete', { templateId, version: targetVersion, path: installPath });
@@ -645,28 +645,30 @@ export class TemplateMarketplace extends EventEmitter {
     
     // Extract
     await fs.ensureDir(destination);
-    const tar = require('tar');
-    await tar.extract({
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const tarLib = require('tar');
+    await tarLib.extract({
       file: tempFile,
       cwd: destination
     });
-    
+
     // Cleanup
     await fs.remove(tempFile);
   }
 
   private async loadTemplateFromPath(templatePath: string): Promise<Template> {
     const manifestPath = path.join(templatePath, 'template.yaml');
-    const yaml = require('js-yaml');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const yamlLib = require('js-yaml');
     const content = await fs.readFile(manifestPath, 'utf8');
-    return yaml.load(content) as Template;
+    return yamlLib.load(content) as Template;
   }
 
   private async packageTemplate(templatePath: string): Promise<string> {
-    const tar = require('tar');
     const packagePath = path.join(this.localTemplatesDir, `.tmp-package-${Date.now()}.tar.gz`);
-    
-    await tar.create({
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const tarLib = require('tar');
+    await tarLib.create({
       gzip: true,
       file: packagePath,
       cwd: templatePath,

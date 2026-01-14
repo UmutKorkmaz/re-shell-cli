@@ -118,7 +118,7 @@ fn home_handler(r: zap.Request, s: *zap.Server) !void {
         \\  <body>
         \\    <h1>Welcome to {{projectName}}</h1>
         \\    <p>High-performance HTTP server built with Zig and Zap</p>
-        \\    <p>API available at: <a href=\\\"/api/v1/health\\\">/api/v1/health</a></p>
+        \\    <p>API available at: <a href=\\"/api/v1/health\\">/api/v1/health</a></p>
         \\  </body>
         \\</html>
     ;
@@ -219,7 +219,7 @@ fn list_products_handler(r: zap.Request, s: *zap.Server) !void {
     var response = std.ArrayList(u8).init(s.allocator);
     try response.append('\\\\');
     try response.append('{');
-    try response.appendSlice("\"products\": [");
+    try response.appendSlice(""products": [");
 
     for (products, 0..) |product, i| {
         if (i > 0) try response.append(',');
@@ -231,7 +231,7 @@ fn list_products_handler(r: zap.Request, s: *zap.Server) !void {
     }
 
     try response.appendSlice("], ");
-    try std.fmt.format(response.writer(), "\"count\": {d}", .{products.len});
+    try std.fmt.format(response.writer(), ""count": {d}", .{products.len});
     try response.append('}');
     try response.append('\\\\');
 

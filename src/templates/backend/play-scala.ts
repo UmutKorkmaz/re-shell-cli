@@ -897,8 +897,8 @@ class AuthControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(result) mustBe CREATED
       val json = contentAsJson(result)
-      (json \ "token").asOpt[String] mustBe defined
-      (json \ "user" \ "email").as[String] mustBe "test@example.com"
+      (json  "token").asOpt[String] mustBe defined
+      (json  "user"  "email").as[String] mustBe "test@example.com"
     }
 
     "login with valid credentials" in {
@@ -913,7 +913,7 @@ class AuthControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
 
       status(result) mustBe OK
       val json = contentAsJson(result)
-      (json \ "token").asOpt[String] mustBe defined
+      (json  "token").asOpt[String] mustBe defined
     }
   }
 }

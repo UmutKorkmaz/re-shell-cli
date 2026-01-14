@@ -277,20 +277,16 @@ export class MiddlewareChainManager extends EventEmitter {
 
       // Execute middleware with timeout
       const timeout = middleware.options?.timeout || 30000;
-      const middlewarePromise = new Promise<void>(async (resolve, reject) => {
-        try {
-          await middleware.handler(
-            modifiedArgs,
-            modifiedOptions,
-            middlewareContext,
-            async () => {
-              // Next function - captures modifications
-              resolve();
-            }
-          );
-        } catch (error) {
-          reject(error);
-        }
+      const middlewarePromise = new Promise<void>((resolve, reject) => {
+        middleware.handler(
+          modifiedArgs,
+          modifiedOptions,
+          middlewareContext,
+          async () => {
+            // Next function - captures modifications
+            resolve();
+          }
+        ).catch(reject);
       });
 
       await Promise.race([

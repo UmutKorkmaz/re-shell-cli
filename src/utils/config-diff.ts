@@ -538,11 +538,15 @@ export class ConfigDiffer {
       case 'concat':
         return [...left, ...right];
       case 'union':
+        {
         const unionSet = new Set([...left, ...right].map(item => JSON.stringify(item)));
         return Array.from(unionSet).map(item => JSON.parse(item));
+        }
       case 'intersect':
+        {
         const leftSet = new Set(left.map(item => JSON.stringify(item)));
         return right.filter(item => leftSet.has(JSON.stringify(item)));
+        }
       case 'custom':
         if (strategy.customResolver) {
           return strategy.customResolver(left, right, currentPath);

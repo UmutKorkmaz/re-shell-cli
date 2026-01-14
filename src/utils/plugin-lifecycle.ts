@@ -434,6 +434,7 @@ export class PluginLifecycleManager extends EventEmitter {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const pluginModule = require(mainFile);
       
       // Handle different export patterns
@@ -631,6 +632,7 @@ export class PluginLifecycleManager extends EventEmitter {
 
   // Setup hot reload for a plugin
   private async setupHotReload(registration: ManagedPluginRegistration): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const chokidar = require('chokidar');
     const watcher = chokidar.watch(registration.pluginPath, {
       ignored: /node_modules/,

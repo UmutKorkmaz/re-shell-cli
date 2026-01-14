@@ -303,7 +303,7 @@ end
 
   def generate_token(user) do
     # In production, use Guardian
-    "jwt-token-for-\#{user.id}"
+    "jwt-token-for-#{user.id}"
   end
 end
 `,
@@ -425,7 +425,7 @@ end
 config :{{projectNameSnake}},
   ecto_repos: [{{projectNamePascal}}.Repo]
 
-import_config "\#{config_env()}.exs"
+import_config "#{config_env()}.exs"
 `,
 
     'config/dev.exs': `import Config

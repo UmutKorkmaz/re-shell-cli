@@ -76,6 +76,7 @@ export class IncrementalBuilder {
       builds: {}
     };
     this.options = {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       maxParallelBuilds: Math.max(1, Math.floor(require('os').cpus().length / 2)),
       enableCache: true,
       cacheLocation: path.join(rootPath, '.re-shell', 'build-cache.json'),
@@ -667,6 +668,7 @@ export class IncrementalBuilder {
       }
     }
     
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('crypto').createHash('md5').update(hashes.join('')).digest('hex');
   }
 

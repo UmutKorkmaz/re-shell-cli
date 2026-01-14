@@ -118,7 +118,7 @@ async function scanForChanges(options: ChangeDetectorCommandOptions, spinner?: P
       trackMoves: options.trackMoves ?? true,
       recursiveDepth: options.maxDepth ?? 10,
       enableCache: options.enableCache ?? true,
-      cacheLocation: options.cacheLocation,
+      cacheLocation: options.cacheLocation ?? path.join(targetPath, '.re-shell', 'change-cache.json'),
       hashingOptions: {
         algorithm: options.algorithm ?? 'sha256',
         skipBinary: options.skipBinary ?? false,

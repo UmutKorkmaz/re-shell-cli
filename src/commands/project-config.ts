@@ -342,6 +342,7 @@ async function interactiveEditProjectConfig(): Promise<void> {
       await editQualitySettings(projectConfig);
       break;
     default:
+      {
       // Simple field edit
       const fieldResponse = await prompts([
         {
@@ -362,6 +363,7 @@ async function interactiveEditProjectConfig(): Promise<void> {
         (projectConfig as any)[response.field] = fieldResponse.value;
         await configManager.saveProjectConfig(projectConfig);
         console.log(chalk.green(`✅ Updated ${response.field} to: ${fieldResponse.value}`));
+      }
       }
   }
 }

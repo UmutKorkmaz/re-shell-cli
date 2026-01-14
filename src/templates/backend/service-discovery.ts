@@ -194,13 +194,13 @@ services:
         nginx &&
         # Register service with Consul
         curl -X PUT http://consul-client:8500/v1/agent/service/register -d '{
-          \\\"ID\\\": \\\"api-gateway-1\\\",
-          \\\"Name\\\": \\\"api-gateway\\\",
-          \\\"Address\\\": \\\"api-gateway\\\",
-          \\\"Port\\\": 80,
-          \\\"Check\\\": {
-            \\\"HTTP\\\": \\\"http://api-gateway/health\\\",
-            \\\"Interval\\\": \\\"10s\\\"
+          \\"ID\\": \\"api-gateway-1\\",
+          \\"Name\\": \\"api-gateway\\",
+          \\"Address\\": \\"api-gateway\\",
+          \\"Port\\": 80,
+          \\"Check\\": {
+            \\"HTTP\\": \\"http://api-gateway/health\\",
+            \\"Interval\\": \\"10s\\"
           }
         }'
       "
@@ -221,18 +221,18 @@ services:
     command: >
       sh -c "
         while ! curl -s http://consul-client:8500; do sleep 1; done &&
-        /http-echo -text=\\\"Hello from backend!\\\" -listen=:5678 &
+        /http-echo -text=\\"Hello from backend!\\" -listen=:5678 &
         # Register service with Consul
         sleep 2 &&
         curl -X PUT http://consul-client:8500/v1/agent/service/register -d '{
-          \\\"ID\\\": \\\"backend-service-1\\\",
-          \\\"Name\\\": \\\"backend-service\\\",
-          \\\"Address\\\": \\\"backend-service\\\",
-          \\\"Port\\\": 5678,
-          \\\"Tags\\\": [\\\"v1\\\", \\\"primary\\\"],
-          \\\"Check\\\": {
-            \\\"HTTP\\\": \\\"http://backend-service:5678/health\\\",
-            \\\"Interval\\\": \\\"10s\\\"
+          \\"ID\\": \\"backend-service-1\\",
+          \\"Name\\": \\"backend-service\\",
+          \\"Address\\": \\"backend-service\\",
+          \\"Port\\": 5678,
+          \\"Tags\\": [\\"v1\\", \\"primary\\"],
+          \\"Check\\": {
+            \\"HTTP\\": \\"http://backend-service:5678/health\\",
+            \\"Interval\\": \\"10s\\"
           }
         }' &&
         wait
@@ -872,15 +872,15 @@ echo "Address: \${SERVICE_ADDRESS}:\${SERVICE_PORT}"
 echo "Consul: \${CONSUL_ADDR}"
 
 curl -X PUT "http://\${CONSUL_ADDR}/v1/agent/service/register" -d "{
-  \\\"ID\\\": \\\"\${SERVICE_ID}\\",
-  \\\"Name\\\": \\\"\${SERVICE_NAME}\\",
-  \\\"Address\\\": \\\"\${SERVICE_ADDRESS}\\",
-  \\\"Port\\\": \${SERVICE_PORT},
-  \\\"Check\\\": {
-    \\\"HTTP\\\": \\\"\${HEALTH_CHECK}\\\",
-    \\\"Interval\\\": \\\"10s\\\",
-    \\\"Timeout\\\": \\\"5s\\\",
-    \\\"DeregisterCriticalServiceAfter\\\": \\\"30s\\\"
+  \\"ID\\": \\"\${SERVICE_ID}\\",
+  \\"Name\\": \\"\${SERVICE_NAME}\\",
+  \\"Address\\": \\"\${SERVICE_ADDRESS}\\",
+  \\"Port\\": \${SERVICE_PORT},
+  \\"Check\\": {
+    \\"HTTP\\": \\"\${HEALTH_CHECK}\\",
+    \\"Interval\\": \\"10s\\",
+    \\"Timeout\\": \\"5s\\",
+    \\"DeregisterCriticalServiceAfter\\": \\"30s\\"
   }
 }"
 

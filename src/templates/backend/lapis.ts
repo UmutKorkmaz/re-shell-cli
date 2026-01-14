@@ -27,7 +27,7 @@ events {
 http {
   include mime.types;
 
-  lua_package_path "\$prefix/?.lua;\$prefix/?/init.lua;;";
+  lua_package_path "$prefix/?.lua;$prefix/?/init.lua;;";
   lua_code_cache \${{CODE_CACHE}};
 
   server {

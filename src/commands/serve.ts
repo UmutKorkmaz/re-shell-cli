@@ -3,6 +3,7 @@ import * as path from 'path';
 import { exec } from 'child_process';
 import chalk from 'chalk';
 import { ProgressSpinner } from '../utils/spinner';
+import { processManager } from '../utils/error-handler';
 
 interface ServeOptions {
   port?: string;
@@ -112,6 +113,8 @@ export async function serveMicrofrontend(name?: string, options: ServeOptions = 
 
         // Prevent the Node.js process from exiting
         process.stdin.resume();
+        // Signal that this command should keep the process running
+        processManager.keepRunning();
       } catch (error: any) {
         throw new Error(`Failed to start development server: ${error.message}`);
       }
@@ -160,6 +163,8 @@ export async function serveMicrofrontend(name?: string, options: ServeOptions = 
 
         // Prevent the Node.js process from exiting
         process.stdin.resume();
+        // Signal that this command should keep the process running
+        processManager.keepRunning();
       } catch (error: any) {
         throw new Error(`Failed to start development servers: ${error.message}`);
       }

@@ -220,7 +220,7 @@ export function mapType(sourceType: string, targetLanguage: string): string | nu
 export function generateSerializationCode(
   sourceType: string,
   targetLanguage: string,
-  variableName: string = 'value'
+  variableName = 'value'
 ): string {
   const templates: Record<string, string> = {
     python: `json.dumps(${variableName}.isoformat()) if isinstance(${variableName}, datetime.datetime) else ${variableName}`,
@@ -243,7 +243,7 @@ export function generateSerializationCode(
 export function generateDeserializationCode(
   sourceType: string,
   targetLanguage: string,
-  variableName: string = 'json'
+  variableName = 'json'
 ): string {
   const templates: Record<string, string> = {
     python: `json.loads(${variableName})`,
@@ -372,7 +372,7 @@ export function generateTypeDefinition(
       Object.entries(properties).forEach(([name, info]) => {
         const goType = mapType(info.type, 'go') || 'interface{}';
         const jsonTag = info.required ? `\\"${name}\\"` : `\\"${name}\\",\\"omitempty\\"`;
-        lines.push(`  ${capitalize(name)} ${goType} \` ` + jsonTag + '\`');
+        lines.push(`  ${capitalize(name)} ${goType} \` ` + jsonTag + '`');
       });
       lines.push('}');
       break;

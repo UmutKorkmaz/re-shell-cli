@@ -278,25 +278,35 @@ function setupIPCHandlers(ipc: IPCBridge, options: TUIOptions): void {
     try {
       switch (command) {
         case 'init':
+          {
           const { initMonorepo } = await import('./init');
           return await initMonorepo(args.name || 'new-project', args);
         
+          }
         case 'add':
+          {
           const { addMicrofrontend } = await import('./add');
           return await addMicrofrontend(args.name || 'new-app', args);
         
+          }
         case 'list':
+          {
           const { listMicrofrontends } = await import('./list');
           return await listMicrofrontends(args);
         
+          }
         case 'build':
+          {
           const { buildMicrofrontend } = await import('./build');
           return await buildMicrofrontend(args);
         
+          }
         case 'serve':
+          {
           const { serveMicrofrontend } = await import('./serve');
           return await serveMicrofrontend(args);
         
+          }
         default:
           throw new Error(`Unknown command: ${command}`);
       }

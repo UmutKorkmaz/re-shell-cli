@@ -256,11 +256,13 @@ export class IntegrationTestFramework extends EventEmitter {
           break;
 
         case 'file':
+          {
           const filePath = path.join(env.workDir, step.action);
           await fs.ensureDir(path.dirname(filePath));
           await fs.writeFile(filePath, step.config?.content || '');
           break;
 
+          }
         case 'env':
           Object.assign(env.env, step.config || {});
           break;
@@ -393,15 +395,19 @@ export class IntegrationTestFramework extends EventEmitter {
         return `File deleted: ${filePath}`;
 
       case 'copy':
+        {
         const destPath = path.join(env.workDir, step.args?.destination);
         await fs.copy(filePath, destPath);
         return `File copied to: ${destPath}`;
 
+        }
       case 'move':
+        {
         const newPath = path.join(env.workDir, step.args?.destination);
         await fs.move(filePath, newPath);
         return `File moved to: ${newPath}`;
 
+        }
       default:
         throw new Error(`Unknown file operation: ${step.args?.operation}`);
     }
@@ -425,6 +431,7 @@ export class IntegrationTestFramework extends EventEmitter {
 
     switch (operation) {
       case 'start':
+        {
         const process = spawn(step.args?.command || processName, step.args?.args || [], {
           cwd: env.workDir,
           env: env.env,
@@ -433,7 +440,9 @@ export class IntegrationTestFramework extends EventEmitter {
         env.processes.set(processName, process);
         return `Process started: ${processName}`;
 
+        }
       case 'stop':
+        {
         const proc = env.processes.get(processName);
         if (proc) {
           proc.kill(step.args?.signal || 'SIGTERM');
@@ -441,6 +450,7 @@ export class IntegrationTestFramework extends EventEmitter {
         }
         return `Process stopped: ${processName}`;
 
+        }
       case 'restart':
         await this.executeProcessOperation({ ...step, args: { ...step.args, operation: 'stop' } }, env);
         await this.wait(1000);
@@ -622,6 +632,7 @@ export class IntegrationTestFramework extends EventEmitter {
 
           case 'service':
           case 'process':
+            {
             const process = env.processes.get(step.action);
             if (process) {
               process.kill(step.force ? 'SIGKILL' : 'SIGTERM');
@@ -629,6 +640,7 @@ export class IntegrationTestFramework extends EventEmitter {
             }
             break;
 
+            }
           case 'custom':
             await this.runCustomTeardown(step, env);
             break;

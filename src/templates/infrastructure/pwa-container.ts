@@ -1776,7 +1776,7 @@ echo "Files:"
 ls -la dist/
 
 # Docker build (optional)
-if [ "\$1" = "--docker" ]; then
+if [ "$1" = "--docker" ]; then
   echo "Building Docker image..."
   docker build -t pwa-app:latest .
   echo "Docker image built: pwa-app:latest"

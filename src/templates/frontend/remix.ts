@@ -825,7 +825,7 @@ app/
 │   ├── _index.tsx        # Index route
 │   ├── home.tsx          # Home page
 │   ├── posts.tsx         # Posts list (parent route)
-│   ├── posts.\$id.tsx    # Post detail (nested route)
+│   ├── posts.$id.tsx    # Post detail (nested route)
 │   └── api.users.ts      # API route
 ├── models/               # Data models
 ├── utils/                # Utility functions
@@ -849,7 +849,7 @@ export default function Posts() {
   );
 }
 
-// app/routes/posts.\$id.tsx - Child route
+// app/routes/posts.$id.tsx - Child route
 export default function PostDetail() {
   return <div>Post content</div>;
 }

@@ -83,16 +83,32 @@ export async function manageWorkspaceConflict(options: WorkspaceConflictCommandO
     await detectConflicts(options, spinner);
 
   } catch (error) {
+    if (error instanceof ValidationError) {
+      if (spinner) spinner.stop();
+      console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+      console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+      process.exit(1);
+    }
     if (spinner) spinner.fail(chalk.red('Conflict management failed'));
-    throw error;
+    if (error instanceof Error) {
+      console.error(`Error: ${error.message}`);
+      console.error('Make sure you have a valid re-shell workspace. Run "re-shell init" to initialize.');
+    } else {
+      console.error('An unexpected error occurred');
+    }
+    process.exit(1);
   }
 }
 
 async function detectConflicts(options: WorkspaceConflictCommandOptions, spinner?: ProgressSpinner): Promise<void> {
   const workspaceFile = options.workspaceFile || DEFAULT_WORKSPACE_FILE;
-  
+
   if (!(await fs.pathExists(workspaceFile))) {
-    throw new ValidationError(`Workspace file not found: ${workspaceFile}`);
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${workspaceFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
   }
 
   if (spinner) spinner.setText('Detecting workspace conflicts...');

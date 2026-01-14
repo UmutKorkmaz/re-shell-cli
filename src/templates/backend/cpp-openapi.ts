@@ -424,15 +424,15 @@ echo -e "\${BLUE}C++ OpenAPI Code Generator\${NC}"
 echo "=========================="
 
 # Check if OpenAPI spec exists
-if [ ! -f "\$SPEC_FILE" ]; then
-    echo -e "\${RED}Error: OpenAPI specification not found at \$SPEC_FILE\${NC}"
+if [ ! -f "$SPEC_FILE" ]; then
+    echo -e "\${RED}Error: OpenAPI specification not found at $SPEC_FILE\${NC}"
     exit 1
 fi
 
 # Validate OpenAPI spec
 echo -e "\${BLUE}Validating OpenAPI specification...\${NC}"
 if command -v swagger-cli &> /dev/null; then
-    swagger-cli validate \$SPEC_FILE || {
+    swagger-cli validate $SPEC_FILE || {
         echo -e "\${RED}OpenAPI specification validation failed\${NC}"
         exit 1
     }
@@ -447,29 +447,29 @@ if [ ! -f "openapi-generator-cli.jar" ]; then
 fi
 
 # Create output directory
-mkdir -p \$OUTPUT_DIR
+mkdir -p $OUTPUT_DIR
 
 # Generate server stubs based on framework
 FRAMEWORK="${config.framework}"
-case \$FRAMEWORK in
+case $FRAMEWORK in
     "pistache")
         echo -e "\${BLUE}Generating Pistache server stubs...\${NC}"
         java -jar openapi-generator-cli.jar generate \\
-            -i \$SPEC_FILE \\
+            -i $SPEC_FILE \\
             -g cpp-pistache-server \\
-            -o \$OUTPUT_DIR/server \\
+            -o $OUTPUT_DIR/server \\
             --additional-properties packageName=${config.namespace}
         ;;
     "crow"|"drogon"|"beast"|"cpp-httplib")
         echo -e "\${BLUE}Generating C++ REST SDK server stubs...\${NC}"
         java -jar openapi-generator-cli.jar generate \\
-            -i \$SPEC_FILE \\
+            -i $SPEC_FILE \\
             -g cpp-restsdk \\
-            -o \$OUTPUT_DIR/server \\
+            -o $OUTPUT_DIR/server \\
             --additional-properties packageName=${config.namespace},modelPackage=models,apiPackage=api
         ;;
     *)
-        echo -e "\${RED}Unsupported framework: \$FRAMEWORK\${NC}"
+        echo -e "\${RED}Unsupported framework: $FRAMEWORK\${NC}"
         exit 1
         ;;
 esac
@@ -478,32 +478,32 @@ esac
 if [ "${config.generateClient}" = "true" ]; then
     echo -e "\${BLUE}Generating C++ client SDK...\${NC}"
     java -jar openapi-generator-cli.jar generate \\
-        -i \$SPEC_FILE \\
+        -i $SPEC_FILE \\
         -g cpp-restsdk \\
-        -o \$OUTPUT_DIR/client \\
+        -o $OUTPUT_DIR/client \\
         --additional-properties packageName=${config.namespace}_client
 fi
 
 # Generate documentation
 echo -e "\${BLUE}Generating API documentation...\${NC}"
 java -jar openapi-generator-cli.jar generate \\
-    -i \$SPEC_FILE \\
+    -i $SPEC_FILE \\
     -g markdown \\
-    -o \$OUTPUT_DIR/docs
+    -o $OUTPUT_DIR/docs
 
 # Generate Postman collection
 echo -e "\${BLUE}Generating Postman collection...\${NC}"
 java -jar openapi-generator-cli.jar generate \\
-    -i \$SPEC_FILE \\
+    -i $SPEC_FILE \\
     -g postman-collection \\
-    -o \$OUTPUT_DIR/postman
+    -o $OUTPUT_DIR/postman
 
 echo -e "\${GREEN}Code generation completed!\${NC}"
 echo "Generated files:"
-echo "  - Server stubs: \$OUTPUT_DIR/server"
-[ "${config.generateClient}" = "true" ] && echo "  - Client SDK: \$OUTPUT_DIR/client"
-echo "  - Documentation: \$OUTPUT_DIR/docs"
-echo "  - Postman collection: \$OUTPUT_DIR/postman"
+echo "  - Server stubs: $OUTPUT_DIR/server"
+[ "${config.generateClient}" = "true" ] && echo "  - Client SDK: $OUTPUT_DIR/client"
+echo "  - Documentation: $OUTPUT_DIR/docs"
+echo "  - Postman collection: $OUTPUT_DIR/postman"
 `;
 
     // CMake integration for generated code

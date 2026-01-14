@@ -304,15 +304,17 @@ async function saveTextOutput(result: ImpactAnalysisResult, outputPath: string, 
   // Capture console output
   let output = '';
   const originalLog = console.log;
-  
+
   console.log = (...args) => {
     output += args.join(' ') + '\n';
   };
-  
-  await outputText(result, verbose);
-  
-  console.log = originalLog;
-  
+
+  try {
+    await outputText(result, verbose);
+  } finally {
+    console.log = originalLog;
+  }
+
   await fs.writeFile(outputPath, output);
   console.log(chalk.green(`✓ Impact analysis saved to ${outputPath}`));
 }

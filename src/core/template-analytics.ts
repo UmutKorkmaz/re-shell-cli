@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
+import * as crypto from 'crypto';
 import { Template, TemplateCategory } from './template-engine';
 
 export interface TemplateUsageEvent {
@@ -680,12 +682,11 @@ export class TemplateAnalytics extends EventEmitter {
   }
 
   private anonymizePath(filePath: string): string {
-    const home = require('os').homedir();
-    return filePath.replace(home, '~').replace(/\/Users\/[^\/]+/, '/Users/<user>');
+    const home = os.homedir();
+    return filePath.replace(home, '~').replace(/\/Users\/[^/]+/, '/Users/<user>');
   }
 
   private hashString(str: string): string {
-    const crypto = require('crypto');
     return crypto.createHash('sha256').update(str).digest('hex').substring(0, 8);
   }
 
@@ -844,7 +845,7 @@ export class TemplateAnalytics extends EventEmitter {
       this.syncInterval = undefined;
     }
     
-    this.persistEvents().catch(() => {});
+    this.persistEvents().catch(() => { /* ignore */ });
   }
 }
 

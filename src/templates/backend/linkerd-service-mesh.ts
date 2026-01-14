@@ -362,7 +362,7 @@ data:
             "type": "graph",
             "targets": [
               {
-                "expr": "sum(rate(linkerd_proxy_responses_total{classification=\"success\"}[1m])) by (deployment) / sum(rate(linkerd_proxy_responses_total[1m])) by (deployment)"
+                "expr": "sum(rate(linkerd_proxy_responses_total{classification="success"}[1m])) by (deployment) / sum(rate(linkerd_proxy_responses_total[1m])) by (deployment)"
               }
             ]
           },

@@ -1198,24 +1198,24 @@ export default function Homepage(): JSX.Element {
       description="${this.context.description || 'Description will go into a meta tag in <head />'}"
     >
       <main>
-        <div className=\{"container margin-top--lg margin-bottom--xl"\}>
-          <div className=\{"row"\}>
-            <div className=\{"col col--6 col--offset-3"\}>
-              <Heading as="h1" className=\{"hero__title"\}>
+        <div className={"container margin-top--lg margin-bottom--xl"}>
+          <div className={"row"}>
+            <div className={"col col--6 col--offset-3"}>
+              <Heading as="h1" className={"hero__title"}>
                 Welcome to ${this.context.name}
               </Heading>
-              <p className=\{"hero__subtitle"\}>
+              <p className={"hero__subtitle"}>
                 ${this.context.description || 'A modern documentation site built with Docusaurus'}
               </p>
-              <div className=\{"hero__buttons"\}>
+              <div className={"hero__buttons"}>
                 <a
-                  className=\{"button button--primary button--lg"\}
+                  className={"button button--primary button--lg"}
                   href="/docs/intro"
                 >
                   Get Started
                 </a>
                 <a
-                  className=\{"button button--secondary button--lg"\}
+                  className={"button button--secondary button--lg"}
                   href="/docs/getting-started"
                 >
                   Learn More
@@ -1227,24 +1227,24 @@ export default function Homepage(): JSX.Element {
 
         <HomepageFeatures />
 
-        <div className=\{"container margin-top--xl margin-bottom--xl"\}>
-          <div className=\{"row"\}>
-            <div className=\{"col col--6 col--offset-3"\}>
+        <div className={"container margin-top--xl margin-bottom--xl"}>
+          <div className={"row"}>
+            <div className={"col col--6 col--offset-3"}>
               <Heading as="h2" id="interactive-demo">
                 Interactive Demo
               </Heading>
-              <div style=\{{ padding: '2rem', textAlign: 'center' }}>
+              <div style={{ padding: '2rem', textAlign: 'center' }}>
                 <Counter initialValue={0} />
               </div>
             </div>
           </div>
 
-          <div className=\{"row margin-top--lg"\}>
-            <div className=\{"col col--6 col--offset-3"\}>
+          <div className={"row margin-top--lg"}>
+            <div className={"col col--6 col--offset-3"}>
               <Heading as="h2" id="badge-examples">
                 Badge Examples
               </Heading>
-              <div style=\{{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 <Badge type="info">New Feature</Badge>
                 <Badge type="success">Completed</Badge>
                 <Badge type="warning">Deprecated</Badge>

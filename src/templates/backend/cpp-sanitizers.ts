@@ -403,7 +403,7 @@ run_with_sanitizer() {
     
     echo -e "\\n\${YELLOW}Running \${name} with \${sanitizer}...\${NC}"
     
-    case \$sanitizer in
+    case $sanitizer in
         "asan")
             export ASAN_OPTIONS="print_stats=1:check_initialization_order=1:strict_init_order=1:detect_stack_use_after_return=1:print_legend=1:print_scariness=1"
             export ASAN_SYMBOLIZER_PATH=$(which llvm-symbolizer)
@@ -422,7 +422,7 @@ run_with_sanitizer() {
             ;;
     esac
     
-    if \$binary; then
+    if $binary; then
         echo -e "\${GREEN}✓ \${name} passed \${sanitizer}\${NC}"
     else
         echo -e "\${RED}✗ \${name} failed \${sanitizer}\${NC}"
@@ -439,7 +439,7 @@ build_with_sanitizer() {
     mkdir -p build_\${sanitizer}
     cd build_\${sanitizer}
     
-    case \$sanitizer in
+    case $sanitizer in
         "asan")
             cmake .. -DENABLE_ASAN=ON -DCMAKE_BUILD_TYPE=Debug
             ;;
@@ -471,7 +471,7 @@ run_valgrind() {
              --suppressions=valgrind.supp \\
              --gen-suppressions=all \\
              --error-exitcode=1 \\
-             \$TEST_BINARY
+             $TEST_BINARY
     
     if [ $? -eq 0 ]; then
         echo -e "\${GREEN}✓ Valgrind memory check passed\${NC}"
@@ -487,8 +487,8 @@ FAILED=0
 
 # Build and test with each sanitizer
 for sanitizer in "\${SANITIZERS[@]}"; do
-    if build_with_sanitizer \$sanitizer; then
-        if ! run_with_sanitizer \$sanitizer "./build_\${sanitizer}/tests" "Unit tests"; then
+    if build_with_sanitizer $sanitizer; then
+        if ! run_with_sanitizer $sanitizer "./build_\${sanitizer}/tests" "Unit tests"; then
             FAILED=$((FAILED + 1))
         fi
     else
@@ -509,11 +509,11 @@ fi
 # Summary
 echo -e "\\n\${BLUE}Summary\${NC}"
 echo "======="
-if [ \$FAILED -eq 0 ]; then
+if [ $FAILED -eq 0 ]; then
     echo -e "\${GREEN}All sanitizer tests passed!\${NC}"
     exit 0
 else
-    echo -e "\${RED}\$FAILED sanitizer tests failed\${NC}"
+    echo -e "\${RED}$FAILED sanitizer tests failed\${NC}"
     exit 1
 fi
 `;

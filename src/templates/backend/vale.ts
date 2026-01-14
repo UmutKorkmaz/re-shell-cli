@@ -128,7 +128,7 @@ fn health_handler(request C.HttpRequest) HttpResponse {
 
 # Home handler
 fn home_handler(request C.HttpRequest) HttpResponse {
-  var html = \"""
+  var html = """
 <!DOCTYPE html>
 <html>
   <head>

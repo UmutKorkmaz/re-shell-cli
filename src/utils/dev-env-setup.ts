@@ -205,7 +205,12 @@ export class DevEnvManager extends EventEmitter {
         }
       }
     } catch (error) {
-      this.emit('error', `Failed to list containers: ${(error as Error).message}`);
+      const msg = (error as Error).message || String(error);
+      if (msg.includes('connect') || msg.includes('docker') || msg.includes('ENOENT') || msg.includes('ECONNREFUSED')) {
+        console.error(chalk.yellow('Docker is not available. Please ensure Docker is running.'));
+      } else {
+        console.error(chalk.red(`Failed to list containers: ${msg}`));
+      }
     }
 
     return containers;
@@ -314,7 +319,7 @@ export class DevEnvManager extends EventEmitter {
       }
 
     } catch (error) {
-      this.emit('error', `Port forwarding failed: ${(error as Error).message}`);
+      console.error(chalk.red(`Port forwarding failed: ${(error as Error).message}`));
     }
 
     return status;

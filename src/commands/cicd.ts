@@ -813,12 +813,12 @@ stages:
         steps:
           - task: NodeTool@0
             inputs:
-              versionSpec: '\$(nodeVersion)'
+              versionSpec: '$(nodeVersion)'
             displayName: 'Install Node.js'
 
           - script: |
               corepack enable
-              corepack prepare pnpm@\$(pnpmVersion) --activate
+              corepack prepare pnpm@$(pnpmVersion) --activate
             displayName: 'Install pnpm'
 
           - script: pnpm install --frozen-lockfile
@@ -860,12 +860,12 @@ stages:
         steps:
           - task: NodeTool@0
             inputs:
-              versionSpec: '\$(nodeVersion)'
+              versionSpec: '$(nodeVersion)'
             displayName: 'Install Node.js'
 
           - script: |
               corepack enable
-              corepack prepare pnpm@\$(pnpmVersion) --activate
+              corepack prepare pnpm@$(pnpmVersion) --activate
             displayName: 'Install pnpm'
 
           - script: pnpm install --frozen-lockfile
@@ -893,12 +893,12 @@ stages:
               steps:
                 - task: NodeTool@0
                   inputs:
-                    versionSpec: '\$(nodeVersion)'
+                    versionSpec: '$(nodeVersion)'
                   displayName: 'Install Node.js'
 
                 - script: |
                     corepack enable
-                    corepack prepare pnpm@\$(pnpmVersion) --activate
+                    corepack prepare pnpm@$(pnpmVersion) --activate
                   displayName: 'Install pnpm'
 
                 - script: pnpm install --frozen-lockfile
@@ -910,8 +910,8 @@ stages:
                 - script: pnpm run deploy
                   displayName: 'Deploy'
                   env:
-                    DEPLOY_TOKEN: \$(DEPLOY_TOKEN)
-                    DEPLOY_URL: \$(DEPLOY_URL)
+                    DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                    DEPLOY_URL: $(DEPLOY_URL)
 `;
 
   await fs.writeFile(path.join(monorepoRoot, 'azure-pipelines.yml'), azurePipelineContent);
@@ -927,7 +927,7 @@ async function generateDeploymentScripts(monorepoRoot: string, environment: stri
 set -e
 
 ENVIRONMENT="\${1:-${environment}}"
-echo "Deploying to \$ENVIRONMENT environment..."
+echo "Deploying to $ENVIRONMENT environment..."
 
 # Build all packages
 echo "Building packages..."
@@ -938,7 +938,7 @@ echo "Running pre-deploy health check..."
 pnpm exec re-shell doctor --verbose
 
 # Deploy based on environment
-case "\$ENVIRONMENT" in
+case "$ENVIRONMENT" in
   "staging")
     echo "Deploying to staging..."
     pnpm run deploy:staging
@@ -948,7 +948,7 @@ case "\$ENVIRONMENT" in
     pnpm run deploy:production
     ;;
   *)
-    echo "Unknown environment: \$ENVIRONMENT"
+    echo "Unknown environment: $ENVIRONMENT"
     exit 1
     ;;
 esac
@@ -966,20 +966,20 @@ set -e
 ENVIRONMENT="\${1:-${environment}}"
 VERSION="\${2:-previous}"
 
-echo "Rolling back \$ENVIRONMENT to \$VERSION..."
+echo "Rolling back $ENVIRONMENT to $VERSION..."
 
 # Implement rollback logic based on your deployment strategy
-case "\$ENVIRONMENT" in
+case "$ENVIRONMENT" in
   "staging")
-    echo "Rolling back staging to \$VERSION..."
+    echo "Rolling back staging to $VERSION..."
     # Add staging rollback commands
     ;;
   "production")
-    echo "Rolling back production to \$VERSION..."
+    echo "Rolling back production to $VERSION..."
     # Add production rollback commands
     ;;
   *)
-    echo "Unknown environment: \$ENVIRONMENT"
+    echo "Unknown environment: $ENVIRONMENT"
     exit 1
     ;;
 esac

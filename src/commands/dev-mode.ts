@@ -1,8 +1,11 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import { configWatcher, setupConfigHotReload, startDevMode, HotReloadOptions } from '../utils/config-watcher';
-import { ProgressSpinner } from '../utils/spinner';
-import { ValidationError } from '../utils/error-handler';
+import { ProgressSpinner, flushOutput } from '../utils/spinner';
+import { ValidationError, processManager } from '../utils/error-handler';
+import { resolveProfile, EnvironmentProfile } from './profile';
 
 export interface DevModeCommandOptions {
   start?: boolean;
@@ -18,6 +21,9 @@ export interface DevModeCommandOptions {
   excludeWorkspaces?: boolean;
   json?: boolean;
   spinner?: ProgressSpinner;
+  profile?: string;
+  services?: string[];
+  selectServices?: boolean;
 }
 
 export async function manageDevMode(options: DevModeCommandOptions = {}): Promise<void> {
@@ -69,6 +75,69 @@ async function startDevelopmentMode(options: DevModeCommandOptions, spinner?: Pr
     return;
   }
 
+  // Handle profile-based development
+  let selectedServices: string[] = options.services || [];
+  let activeProfile: EnvironmentProfile | null = null;
+
+  if (options.profile) {
+    if (spinner) spinner.stop();
+    flushOutput();
+
+    // Load and resolve profile
+    activeProfile = await resolveProfile(options.profile);
+
+    if (!activeProfile) {
+      console.log(chalk.red(`\n✗ Profile "${options.profile}" not found\n`));
+      console.log(chalk.gray('Run "re-shell profile list" to see available profiles\n'));
+      return;
+    }
+
+    console.log(chalk.cyan.bold(`\n🔧 Using Profile: ${options.profile}\n`));
+    console.log(chalk.gray(`Environment: ${activeProfile.environment}`));
+    if (activeProfile.framework) {
+      console.log(chalk.gray(`Framework: ${activeProfile.framework}`));
+    }
+    if (activeProfile.description) {
+      console.log(chalk.gray(`${activeProfile.description}\n`));
+    }
+
+    // Get available services from workspace
+    const workspaceServices = await getWorkspaceServices();
+
+    // Service selection
+    if (options.selectServices || (selectedServices.length === 0 && activeProfile.config.services)) {
+      if (workspaceServices.length > 0) {
+        const { value: services } = await prompts({
+          type: 'multiselect',
+          name: 'value',
+          message: 'Select services to run in development mode:',
+          choices: workspaceServices.map(s => ({
+            title: s.name,
+            value: s.name,
+            description: s.type,
+          })),
+          instructions: false,
+        });
+
+        if (services) {
+          selectedServices = services;
+        }
+      }
+    }
+
+    // Apply profile configuration
+    if (activeProfile.config.env) {
+      console.log(chalk.cyan('\n📝 Applying environment variables from profile...'));
+      for (const [key, value] of Object.entries(activeProfile.config.env)) {
+        process.env[key] = value;
+        console.log(chalk.gray(`   ${key}=${value}`));
+      }
+    }
+
+    // Restart spinner
+    if (spinner) spinner.start();
+  }
+
   if (spinner) spinner.setText('Starting development mode with hot-reloading...');
 
   const hotReloadOptions: HotReloadOptions = {
@@ -78,7 +147,9 @@ async function startDevelopmentMode(options: DevModeCommandOptions, spinner?: Pr
     validateOnChange: !options.noValidation,
     autoBackup: !options.noBackup,
     restoreOnError: !options.noRestore,
-    includeWorkspaces: !options.excludeWorkspaces
+    includeWorkspaces: !options.excludeWorkspaces,
+    profile: activeProfile,
+    services: selectedServices.length > 0 ? selectedServices : undefined,
   };
 
   try {
@@ -90,7 +161,14 @@ async function startDevelopmentMode(options: DevModeCommandOptions, spinner?: Pr
 
     console.log(chalk.green('🚀 Development mode active'));
     console.log(chalk.cyan('   Configuration files are now being watched for changes'));
-    
+
+    if (activeProfile) {
+      console.log(chalk.gray(`   Profile: ${options.profile}`));
+      if (selectedServices.length > 0) {
+        console.log(chalk.gray(`   Services: ${selectedServices.join(', ')}`));
+      }
+    }
+
     if (hotReloadOptions.verbose) {
       console.log(chalk.gray('   Use --verbose for detailed change notifications'));
     }
@@ -100,10 +178,49 @@ async function startDevelopmentMode(options: DevModeCommandOptions, spinner?: Pr
     // Setup event listeners for development feedback
     setupDevModeListeners(hotReloadOptions.verbose || false);
 
+    // Keep the CLI process running for dev mode
+    processManager.keepRunning();
+
   } catch (error) {
     if (spinner) spinner.fail(chalk.red('Failed to start development mode'));
     throw error;
   }
+}
+
+/**
+ * Get available services from workspace configuration
+ */
+async function getWorkspaceServices(): Promise<Array<{ name: string; type: string }>> {
+  const services: Array<{ name: string; type: string }> = [];
+
+  try {
+    const workspaceConfigPath = path.join(process.cwd(), 're-shell.workspaces.yaml');
+
+    if (await fs.pathExists(workspaceConfigPath)) {
+      const content = await fs.readFile(workspaceConfigPath, 'utf8');
+      const yaml = await import('yaml');
+      const config = yaml.parse(content);
+
+      if (config.workspaces) {
+        for (const [type, workspaces] of Object.entries(config.workspaces)) {
+          if (Array.isArray(workspaces)) {
+            for (const workspace of workspaces) {
+              if (typeof workspace === 'object' && workspace.name) {
+                services.push({
+                  name: workspace.name,
+                  type: type,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    // Silently fail if workspace config doesn't exist
+  }
+
+  return services;
 }
 
 async function stopDevelopmentMode(options: DevModeCommandOptions, spinner?: ProgressSpinner): Promise<void> {

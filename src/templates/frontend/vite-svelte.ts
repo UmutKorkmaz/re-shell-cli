@@ -366,7 +366,7 @@ export const pwaPlugin = VitePWA({
     globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
     runtimeCaching: [
       {
-        urlPattern: /^https:\/\/api\\.example\\.com\\/.*$/i,
+        urlPattern: /^https://api\\.example\\.com\\/.*$/i,
         handler: 'NetworkFirst',
         options: {
           cacheName: 'api-cache',
@@ -1154,7 +1154,7 @@ import { count, increment, decrement } from './stores/counter';
 // In your component
 <script>
   import { count } from './stores/counter';
-<\/script>
+</script>
 
 <p>Count: {$count}</p>
 \`\`\`

@@ -691,6 +691,7 @@ export class EnvironmentValidator extends EventEmitter {
   private async checkInternetConnection(): Promise<boolean> {
     try {
       // Try to resolve a reliable domain
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const dns = require('dns').promises;
       await dns.resolve4('github.com');
       return true;

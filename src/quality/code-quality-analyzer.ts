@@ -636,7 +636,7 @@ export class CodeQualityAnalyzer extends EventEmitter {
 
   private countProperties(lines: string[]): number {
     const content = lines.join('\n');
-    const propRegex = /(?:private|protected|public)?\s*(\w+)\s*[:\?]?\s*[^=]*=/g;
+    const propRegex = /(?:private|protected|public)?\s*(\w+)\s*[:?]?\s*[^=]*=/g;
     const matches = content.match(propRegex);
     return matches ? matches.length : 0;
   }

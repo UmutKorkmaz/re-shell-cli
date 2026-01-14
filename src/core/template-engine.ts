@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as crypto from 'crypto';
+import { execSync } from 'child_process';
 import * as handlebars from 'handlebars';
 import * as yaml from 'js-yaml';
 
@@ -784,7 +786,7 @@ export class TemplateEngine extends EventEmitter {
 
         if (hook.command) {
           // Execute shell command
-          const { execSync } = require('child_process');
+
           const env = {
             ...process.env,
             ...hook.environment,
@@ -870,7 +872,7 @@ export class TemplateEngine extends EventEmitter {
 
   private getCacheKey(templateId: string, context: TemplateContext): string {
     const variables = JSON.stringify(context.variables);
-    const crypto = require('crypto');
+
     return crypto
       .createHash('sha256')
       .update(`${templateId}:${variables}`)

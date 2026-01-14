@@ -2,7 +2,8 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { configDiffer, ConfigDiff, MergeResult, MergeStrategies, MergeStrategy } from '../utils/config-diff';
+import yaml from 'yaml';
+import { configDiffer, ConfigDiffer, ConfigDiff, MergeResult, MergeStrategies, MergeStrategy } from '../utils/config-diff';
 import { configManager } from '../utils/config';
 import { ProgressSpinner } from '../utils/spinner';
 import { ValidationError } from '../utils/error-handler';
@@ -71,7 +72,7 @@ async function performDiff(options: ConfigDiffCommandOptions, spinner?: Progress
   );
 
   // Configure differ
-  const differ = new (require('../utils/config-diff').ConfigDiffer)({
+  const differ = new ConfigDiffer({
     ignoreOrder: options.ignoreOrder,
     ignorePaths: options.ignorePaths ? options.ignorePaths.split(',') : [],
     includeMetadata: true,
@@ -150,7 +151,7 @@ async function performMerge(options: ConfigDiffCommandOptions, spinner?: Progres
     if (outputPath.endsWith('.json')) {
       await fs.writeFile(outputPath, JSON.stringify(result.merged, null, 2));
     } else {
-      const yaml = require('yaml');
+
       await fs.writeFile(outputPath, yaml.stringify(result.merged));
     }
     
@@ -158,7 +159,7 @@ async function performMerge(options: ConfigDiffCommandOptions, spinner?: Progres
   } else if (options.json) {
     console.log(JSON.stringify(result.merged, null, 2));
   } else {
-    const yaml = require('yaml');
+
     console.log(chalk.cyan('\\n🔀 Merged Configuration:'));
     console.log(chalk.gray('═'.repeat(40)));
     console.log(yaml.stringify(result.merged));
@@ -209,7 +210,7 @@ async function applyDiff(options: ConfigDiffCommandOptions, spinner?: ProgressSp
     if (outputPath.endsWith('.json')) {
       await fs.writeFile(outputPath, JSON.stringify(result, null, 2));
     } else {
-      const yaml = require('yaml');
+
       await fs.writeFile(outputPath, yaml.stringify(result));
     }
     
@@ -217,7 +218,7 @@ async function applyDiff(options: ConfigDiffCommandOptions, spinner?: ProgressSp
   } else if (options.json) {
     console.log(JSON.stringify(result, null, 2));
   } else {
-    const yaml = require('yaml');
+
     console.log(chalk.cyan('\\n📄 Configuration with Applied Diff:'));
     console.log(chalk.gray('═'.repeat(40)));
     console.log(yaml.stringify(result));
@@ -585,7 +586,7 @@ async function loadConfigFromSource(source: string): Promise<any> {
     if (source.endsWith('.json')) {
       return JSON.parse(content);
     } else if (source.endsWith('.yaml') || source.endsWith('.yml')) {
-      const yaml = require('yaml');
+
       return yaml.parse(content);
     } else {
       throw new ValidationError(`Unsupported file format: ${source}`);

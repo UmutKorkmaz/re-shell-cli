@@ -263,7 +263,7 @@ let generate_token user =
 
 (* Health handler *)
 let health _req =
-  let json = \{|
+  let json = {|
     status: "healthy";
     timestamp: "2024-01-01T00:00:00Z";
     version: "1.0.0";
@@ -283,16 +283,16 @@ let register req =
   (* Check if user exists *)
   (match find_user_by_email email with
   | Some _ ->
-      let json = \{| error: "Email already registered" |} in
+      let json = {| error: "Email already registered" |} in
       Dream.json json |> Lwt.map (fun _ -> 409)
   | None ->
       (* Create user *)
       let password_hash = sha256_hex password in
       let* user = create_user ~email ~password:password_hash ~name in
       let token = generate_token user in
-      let json = \{|
+      let json = {|
         token: token;
-        user: \{|
+        user: {|
           id: user.id;
           email: user.email;
           name: user.name;
@@ -311,17 +311,17 @@ let login req =
 
   (match find_user_by_email email with
   | None ->
-      let json = \{| error: "Invalid credentials" |} in
+      let json = {| error: "Invalid credentials" |} in
       Dream.json json |> Lwt.map (fun _ -> 401)
   | Some user ->
       if user.password <> sha256_hex password then
-        let json = \{| error: "Invalid credentials" |} in
+        let json = {| error: "Invalid credentials" |} in
         Dream.json json |> Lwt.map (fun _ -> 401)
       else
         let token = generate_token user in
-        let json = \{|
+        let json = {|
           token: token;
-          user: \{|
+          user: {|
             id: user.id;
             email: user.email;
             name: user.name;
@@ -334,7 +334,7 @@ let login req =
 let list_products _req =
   let* products = get_all_products () in
   let products_json =
-    List.map (fun p -> \{|
+    List.map (fun p -> {|
       id: p.id;
       name: p.name;
       description: p.description;
@@ -343,7 +343,7 @@ let list_products _req =
       created_at: p.created_at;
       updated_at: p.updated_at;
     |}) products |> Ezjsonm.list in
-  let json = \{|
+  let json = {|
     products: products_json;
     count: List.length products;
   |} in
@@ -355,10 +355,10 @@ let get_product req =
   let* product_opt = get_product_by_id id in
   (match product_opt with
   | None ->
-      let json = \{| error: "Product not found" |} in
+      let json = {| error: "Product not found" |} in
       Dream.json json |> Lwt.map (fun _ -> 404)
   | Some product ->
-      let product_json = \{|
+      let product_json = {|
         id: product.id;
         name: product.name;
         description: product.description;
@@ -367,7 +367,7 @@ let get_product req =
         created_at: product.created_at;
         updated_at: product.updated_at;
       |} in
-      let json = \{| product: product_json |} in
+      let json = {| product: product_json |} in
       Dream.json json)
 
 (* Create product handler *)
@@ -388,7 +388,7 @@ let create_product req =
 
   let* product = create_product ~name ~description:(Option.value ~default:"" description)
     ~price ~stock:(Option.value ~default:0 stock) in
-  let product_json = \{|
+  let product_json = {|
     id: product.id;
     name: product.name;
     description: product.description;
@@ -397,7 +397,7 @@ let create_product req =
     created_at: product.created_at;
     updated_at: product.updated_at;
   |} in
-  let json = \{| product: product_json |} in
+  let json = {| product: product_json |} in
   Dream.json json |> Lwt.map (fun _ -> 201)
 
 (* Update product handler *)
@@ -426,10 +426,10 @@ let update_product req =
   let* product_opt = update_product id ~name ~description ~price ~stock in
   (match product_opt with
   | None ->
-      let json = \{| error: "Product not found" |} in
+      let json = {| error: "Product not found" |} in
       Dream.json json |> Lwt.map (fun _ -> 404)
   | Some product ->
-      let product_json = \{|
+      let product_json = {|
         id: product.id;
         name: product.name;
         description: product.description;
@@ -438,7 +438,7 @@ let update_product req =
         created_at: product.created_at;
         updated_at: product.updated_at;
       |} in
-      let json = \{| product: product_json |} in
+      let json = {| product: product_json |} in
       Dream.json json)
 
 (* Delete product handler *)
@@ -448,7 +448,7 @@ let delete_product req =
   (if success then
     Dream.respond "" |> Lwt.map (fun _ -> 204)
   else
-    let json = \{| error: "Product not found" |} in
+    let json = {| error: "Product not found" |} in
     Dream.json json |> Lwt.map (fun _ -> 404))
 `
 ,

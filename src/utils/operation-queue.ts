@@ -261,20 +261,23 @@ export class OperationQueue extends EventEmitter {
    */
   async waitForCompletion(timeout?: number): Promise<void> {
     return new Promise((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout | undefined;
+
       const check = () => {
         const stats = this.getStats();
         if (stats.pending + stats.scheduled + stats.running === 0) {
+          clearTimeout(timeoutId);
           resolve();
           return;
         }
-        
+
         setTimeout(check, 100);
       };
-      
+
       if (timeout) {
-        setTimeout(() => reject(new Error('Timeout waiting for queue completion')), timeout);
+        timeoutId = setTimeout(() => reject(new Error('Timeout waiting for queue completion')), timeout);
       }
-      
+
       check();
     });
   }
@@ -396,32 +399,36 @@ export class OperationQueue extends EventEmitter {
    * Execute a single task
    */
   private async executeTask(task: QueuedTask): Promise<void> {
+    let timeoutId: NodeJS.Timeout | undefined;
     try {
       // Set up timeout
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           reject(new Error(`Task "${task.name}" timed out after ${task.timeout}ms`));
         }, task.timeout);
       });
-      
+
       // Execute with timeout
-      await Promise.race([task.operation(), timeoutPromise]);
-      
+      const result = await Promise.race([task.operation(), timeoutPromise]);
+      clearTimeout(timeoutId);
+
       // Task completed successfully
       task.status = 'completed';
       task.completedAt = Date.now();
-      
+
       this.runningTasks.delete(task.id);
       this.completedTasks.push(task);
-      
+
       this.emit('taskCompleted', {
         id: task.id,
         name: task.name,
         duration: task.completedAt - task.startedAt!,
         attempts: task.attempts
       });
-      
+
+      return result;
     } catch (error) {
+      clearTimeout(timeoutId);
       // Task failed
       const duration = Date.now() - task.startedAt!;
       

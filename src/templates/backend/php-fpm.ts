@@ -806,7 +806,7 @@ case "$1" in
     
     opcache)
         echo -e "\${YELLOW}Clearing OPcache...\${NC}"
-        docker-compose exec php-fpm sh -c "echo '<?php opcache_reset(); echo \"OPcache cleared\\n\";' | php"
+        docker-compose exec php-fpm sh -c "echo '<?php opcache_reset(); echo "OPcache cleared\\n";' | php"
         echo -e "\${GREEN}OPcache cleared!\${NC}"
         ;;
     

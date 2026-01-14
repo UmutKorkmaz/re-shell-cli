@@ -132,10 +132,16 @@ function getGenerator(type: string) {
 async function generateComponent(monorepoRoot: string, name: string, options: GenerateOptions) {
   const framework = options.framework || 'react';
   const workspace = options.workspace || findBestWorkspace(monorepoRoot, 'component');
+
+  if (!workspace) {
+    console.error('No workspace found. Run "re-shell create" to create an app first, or use --workspace to specify a target directory.');
+    process.exit(1);
+  }
+
   const workspacePath = path.join(monorepoRoot, workspace);
 
   if (!await fs.pathExists(workspacePath)) {
-    throw new Error(`Workspace not found: ${workspace}`);
+    throw new Error(`Workspace not found: ${workspace}. Use --workspace to specify an existing workspace.`);
   }
 
   const template = getComponentTemplate(name, framework, options);
@@ -158,12 +164,18 @@ async function generateComponent(monorepoRoot: string, name: string, options: Ge
 
 async function generateHook(monorepoRoot: string, name: string, options: GenerateOptions) {
   const framework = options.framework || 'react';
-  
+
   if (framework !== 'react') {
     throw new Error('Hooks are currently only supported for React');
   }
 
   const workspace = options.workspace || findBestWorkspace(monorepoRoot, 'hook');
+
+  if (!workspace) {
+    console.error('No workspace found. Run "re-shell create" to create an app first, or use --workspace to specify a target directory.');
+    process.exit(1);
+  }
+
   const workspacePath = path.join(monorepoRoot, workspace);
 
   const hookName = name.startsWith('use') ? name : `use${name.charAt(0).toUpperCase() + name.slice(1)}`;
@@ -242,6 +254,12 @@ describe('${hookName}', () => {
 
 async function generateService(monorepoRoot: string, name: string, options: GenerateOptions) {
   const workspace = options.workspace || findBestWorkspace(monorepoRoot, 'service');
+
+  if (!workspace) {
+    console.error('No workspace found. Run "re-shell create" to create an app first, or use --workspace to specify a target directory.');
+    process.exit(1);
+  }
+
   const workspacePath = path.join(monorepoRoot, workspace);
 
   const serviceName = `${name.charAt(0).toUpperCase() + name.slice(1)}Service`;
@@ -404,6 +422,12 @@ describe('${serviceName}', () => {
 
 async function generateTestFile(monorepoRoot: string, name: string, options: GenerateOptions) {
   const workspace = options.workspace || findBestWorkspace(monorepoRoot, 'test');
+
+  if (!workspace) {
+    console.error('No workspace found. Run "re-shell create" to create an app first, or use --workspace to specify a target directory.');
+    process.exit(1);
+  }
+
   const workspacePath = path.join(monorepoRoot, workspace);
 
   const testContent = `describe('${name}', () => {
@@ -1299,21 +1323,43 @@ async function generateReadme(monorepoRoot: string, options: GenerateOptions) {
   // This is handled by generateProjectDocs
 }
 
-function findBestWorkspace(monorepoRoot: string, type: string): string {
-  // Default workspace patterns based on type
-  const workspacePatterns = {
-    component: ['apps/*', 'packages/ui', 'packages/components'],
-    hook: ['packages/hooks', 'packages/ui', 'apps/*'],
-    service: ['packages/services', 'packages/api', 'apps/*'],
-    test: ['apps/*', 'packages/*'],
+function findBestWorkspace(monorepoRoot: string, type: string): string | null {
+  // Priority-ordered candidate directories based on type
+  const workspaceCandidates: Record<string, string[]> = {
+    component: ['apps/web', 'apps/frontend', 'apps/client', 'apps/app', 'packages/ui', 'packages/components'],
+    hook: ['packages/hooks', 'packages/ui', 'apps/web', 'apps/frontend', 'apps/client', 'apps/app'],
+    service: ['packages/services', 'packages/api', 'apps/web', 'apps/frontend', 'apps/client'],
+    test: ['apps/web', 'apps/frontend', 'apps/client', 'apps/app', 'packages/ui'],
     config: ['packages/config', 'packages/core'],
-    documentation: ['docs']
+    documentation: ['docs'],
   };
 
-  const patterns = workspacePatterns[type as keyof typeof workspacePatterns] || ['apps/*'];
-  
-  // Return the first pattern (simplified logic)
-  return patterns[0].replace('*', 'web');
+  const candidates = workspaceCandidates[type] || ['apps/web'];
+
+  // Return the first candidate that actually exists on disk
+  for (const candidate of candidates) {
+    const candidatePath = path.join(monorepoRoot, candidate);
+    if (fs.existsSync(candidatePath)) {
+      return candidate;
+    }
+  }
+
+  // Fall back: scan apps/ and packages/ directories for any existing workspace
+  for (const baseDir of ['apps', 'packages']) {
+    const basePath = path.join(monorepoRoot, baseDir);
+    if (fs.existsSync(basePath)) {
+      try {
+        const entries = fs.readdirSync(basePath);
+        if (entries.length > 0) {
+          return path.join(baseDir, entries[0]);
+        }
+      } catch (_) {
+        // ignore read errors
+      }
+    }
+  }
+
+  return null;
 }
 
 async function updateExports(workspacePath: string, name: string, template: ComponentTemplate) {

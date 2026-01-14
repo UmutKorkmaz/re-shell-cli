@@ -649,6 +649,7 @@ export class PackageManagerDetector extends EventEmitter {
     const userConfig = path.join(os.homedir(), '.re-shell', 'config.yaml');
     if (await fs.pathExists(userConfig)) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const yaml = require('js-yaml');
         const config = yaml.load(await fs.readFile(userConfig, 'utf8'));
         if (config.defaultPackageManager) {

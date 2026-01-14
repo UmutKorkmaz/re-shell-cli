@@ -629,8 +629,8 @@ async function interactiveCleanup(): Promise<void> {
   ]);
 
   await cleanupBackups({
-    keepCount: response.keepCount || undefined,
-    keepDays: response.keepDays || undefined,
+    keepCount: response.keepCount != null ? response.keepCount : undefined,
+    keepDays: response.keepDays != null ? response.keepDays : undefined,
     dryRun: response.dryRun
   });
 }

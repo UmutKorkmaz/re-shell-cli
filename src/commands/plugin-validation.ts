@@ -1,7 +1,8 @@
 import chalk from 'chalk';
+import { Command } from 'commander';
 import { createSpinner } from '../utils/spinner';
 import { ValidationError } from '../utils/error-handler';
-import { 
+import {
   createCommandValidator,
   PluginCommandValidator,
   ValidationSchema,
@@ -34,7 +35,7 @@ export async function testCommandValidation(
   const { verbose = false, json = false, dryRun = false, strict = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -155,7 +156,7 @@ export async function createCommandValidationSchema(
   const { verbose = false, dryRun = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -382,7 +383,7 @@ export async function showCommandValidationSchema(
   const { verbose = false, json = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -511,7 +512,7 @@ export async function generateValidationTemplate(
   const { verbose = false, json = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();

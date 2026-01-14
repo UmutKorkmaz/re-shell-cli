@@ -1,6 +1,6 @@
 {
   "name": "@re-shell/cli",
-  "version": "0.23.0",
+  "version": "0.23.1",
   "description": "Full-stack development platform uniting microservices and microfrontends. Build complete applications with .NET (ASP.NET Core Web API, Minimal API), Java (Spring Boot, Quarkus, Micronaut, Vert.x), Rust (Actix-Web, Warp, Rocket, Axum), Python (FastAPI, Django, Flask) and Node.js backends alongside React, Vue, Svelte frontends - all managed through one powerful CLI",
   "main": "dist/index.js",
   "files": [
@@ -14,7 +14,7 @@
     "re-shell": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/utils/schemas && cp src/schemas/workspace-v2.schema.json dist/utils/schemas/re-shell-workspace.schema.json && mkdir -p dist/completions && cp src/completions/bash dist/completions/bash && cp src/completions/zsh dist/completions/zsh",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -55,7 +55,9 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
+    "@types/inquirer": "^9.0.9",
     "@types/js-yaml": "^4.0.9",
+    "@types/react": "^19.2.8",
     "boxen": "^8.0.1",
     "chalk": "^4.1.2",
     "chokidar": "^4.0.3",
@@ -70,9 +72,13 @@
     "fs-extra": "^11.0.0",
     "glob": "^10.4.5",
     "handlebars": "^4.7.8",
+    "ink": "^6.6.0",
+    "ink-spinner": "^5.0.0",
+    "inquirer": "^8.2.7",
     "js-yaml": "^4.1.1",
     "ora": "^5.4.1",
     "prompts": "^2.0.0",
+    "react": "^19.2.3",
     "semver": "^7.7.2",
     "simple-git": "^3.28.0",
     "yaml": "^2.3.2"

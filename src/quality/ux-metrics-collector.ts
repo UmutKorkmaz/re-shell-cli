@@ -745,6 +745,7 @@ export class UXMetricsCollector extends EventEmitter {
   private generateUserId(): string {
     // Generate anonymous user ID based on system characteristics
     const systemInfo = `${os.hostname()}-${os.platform()}-${os.arch()}`;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('crypto').createHash('sha256').update(systemInfo).digest('hex').substring(0, 16);
   }
 

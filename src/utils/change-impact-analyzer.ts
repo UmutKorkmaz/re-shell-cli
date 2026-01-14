@@ -412,12 +412,13 @@ export class ChangeImpactAnalyzer {
 
     // Follow dependency chain
     let current = criticalWorkspace;
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const deps = this.dependencyGraph.edges.get(current) || [];
       const nextDep = deps.find(dep => workspaces.includes(dep) && !visited.has(dep));
-      
+
       if (!nextDep) break;
-      
+
       path.unshift(nextDep); // Add to beginning to maintain dependency order
       visited.add(nextDep);
       current = nextDep;

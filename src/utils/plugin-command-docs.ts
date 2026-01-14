@@ -676,9 +676,11 @@ export class PluginCommandDocumentationGenerator extends EventEmitter {
         return definition.examples ? this.generateExamplesSection(definition.examples, template) : '';
       
       case DocumentationSection.SEE_ALSO:
+        {
         const related = this.findRelatedCommands(command);
         return related.length > 0 ? this.generateSeeAlsoSection(related, template) : '';
       
+        }
       case DocumentationSection.AUTHOR:
         return this.generateAuthorSection(command, template);
       

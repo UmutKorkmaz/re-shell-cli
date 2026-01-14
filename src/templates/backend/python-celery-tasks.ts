@@ -522,16 +522,16 @@ def generate_transaction_email(
         return generator(data)
     
     return {
-        'subject': f'\{transaction_type.title()} Notification',
-        'body': f'Transaction \{data.get("id")} completed.'
+        'subject': f'{transaction_type.title()} Notification',
+        'body': f'Transaction {data.get("id")} completed.'
     }
 
 
 def generate_order_email(data: Dict[str, Any]) -> Dict[str, Any]:
     """Generate order confirmation email."""
     return {
-        'subject': f'Order #\{data["id"]} Confirmed',
-        'body': f'Your order for \{len(data["items"])} items totaling \\$\{data["amount"]} has been confirmed.',
+        'subject': f'Order #{data["id"]} Confirmed',
+        'body': f'Your order for {len(data["items"])} items totaling \\$\{data["amount"]} has been confirmed.',
         'html_body': '<h1>Order Confirmed</h1>...'
     }
 
@@ -540,7 +540,7 @@ def generate_payment_email(data: Dict[str, Any]) -> Dict[str, Any]:
     """Generate payment confirmation email."""
     return {
         'subject': f'Payment Received - \\$\{data["amount"]}',
-        'body': f'We have received your payment of \\$\{data["amount"]} via \{data["method"]}.',
+        'body': f'We have received your payment of \\$\{data["amount"]} via {data["method"]}.',
         'html_body': '<h1>Payment Received</h1>...'
     }
 
@@ -549,7 +549,7 @@ def generate_refund_email(data: Dict[str, Any]) -> Dict[str, Any]:
     """Generate refund notification email."""
     return {
         'subject': f'Refund Processed - \\$\{data["amount"]}',
-        'body': f'Your refund of \\$\{data["amount"]} has been processed. Reason: \{data["reason"]}',
+        'body': f'Your refund of \\$\{data["amount"]} has been processed. Reason: {data["reason"]}',
         'html_body': '<h1>Refund Processed</h1>...'
     }
 

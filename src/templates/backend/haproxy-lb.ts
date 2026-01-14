@@ -95,7 +95,7 @@ listen stats
     stats enable
     stats uri /stats
     stats refresh 30s
-    stats realm HAProxy\ Stats
+    stats realm HAProxy Stats
     stats auth admin:admin
     stats show-legends
     stats show-desc "HAProxy Load Balancer Stats"

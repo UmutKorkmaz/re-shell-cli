@@ -308,7 +308,7 @@ async function interactiveRollback(): Promise<void> {
       name: 'version',
       message: 'Select target version:',
       choices: (prev) => {
-        const history = prev.configType === 'global' ? globalHistory : projectHistory;
+        const history = prev === 'global' ? globalHistory : projectHistory;
         return history.appliedMigrations.map(version => ({
           title: version,
           value: version

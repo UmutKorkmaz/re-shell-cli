@@ -41,6 +41,7 @@ export class ConcurrentOperationManager extends EventEmitter {
   private rateLimitWindow: number; // ms
   private maxOperationsPerWindow: number;
   private operationTimes: number[] = [];
+  private intervalIds: NodeJS.Timeout[] = [];
   
   private constructor(
     maxConcurrent = 5,
@@ -275,12 +276,24 @@ export class ConcurrentOperationManager extends EventEmitter {
   }
   
   /**
+   * Shutdown manager and clear all intervals
+   */
+  shutdown(): void {
+    for (const id of this.intervalIds) {
+      clearInterval(id);
+    }
+    this.intervalIds = [];
+  }
+
+  /**
    * Start processing operations from queue
    */
   private startProcessing(): void {
-    setInterval(() => {
+    const id = setInterval(() => {
       this.processQueue();
     }, 100);
+    id.unref();
+    this.intervalIds.push(id);
   }
   
   /**
@@ -406,14 +419,16 @@ export class ConcurrentOperationManager extends EventEmitter {
    */
   private setupCleanup(): void {
     // Clean completed operations periodically
-    setInterval(() => {
+    const cleanId = setInterval(() => {
       if (this.completed.length > 1000) {
         this.completed = this.completed.slice(-500);
       }
     }, 60000);
-    
+    cleanId.unref();
+    this.intervalIds.push(cleanId);
+
     // Monitor for stuck operations
-    setInterval(() => {
+    const monitorId = setInterval(() => {
       const now = Date.now();
       for (const [id, operation] of this.running) {
         const runtime = now - operation.timestamp;
@@ -426,6 +441,8 @@ export class ConcurrentOperationManager extends EventEmitter {
         }
       }
     }, 30000);
+    monitorId.unref();
+    this.intervalIds.push(monitorId);
   }
 }
 

@@ -497,6 +497,7 @@ export class UnifiedConfigManager extends EventEmitter {
 
   // Generate checksum for config
   private generateChecksum(config: Record<string, unknown>): string {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const crypto = require('crypto');
     return crypto.createHash('sha256').update(JSON.stringify(config)).digest('hex').slice(0, 16);
   }

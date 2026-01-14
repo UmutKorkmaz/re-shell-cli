@@ -442,23 +442,29 @@ export class PluginCommandCacheManager extends EventEmitter {
         break;
 
       case CacheInvalidationStrategy.LFU:
+        {
         const entriesByFrequency = Array.from(this.memoryCache.keys())
           .sort((a, b) => (this.accessFrequency.get(a) || 0) - (this.accessFrequency.get(b) || 0));
         keysToEvict.push(...entriesByFrequency.slice(0, count));
         break;
 
+        }
       case CacheInvalidationStrategy.FIFO:
+        {
         const entriesByCreation = Array.from(this.memoryCache.entries())
           .sort((a, b) => a[1].createdAt - b[1].createdAt);
         keysToEvict.push(...entriesByCreation.slice(0, count).map(([key]) => key));
         break;
 
+        }
       case CacheInvalidationStrategy.TTL:
+        {
         const expiredEntries = Array.from(this.memoryCache.entries())
           .filter(([, entry]) => this.isExpired(entry))
           .slice(0, count);
         keysToEvict.push(...expiredEntries.map(([key]) => key));
         break;
+        }
     }
 
     for (const key of keysToEvict) {
@@ -635,6 +641,7 @@ export class PluginCommandCacheManager extends EventEmitter {
 
         // Decompress if enabled
         if (this.config.compressionEnabled) {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           const zlib = require('zlib');
           data = zlib.gunzipSync(data);
         }
@@ -657,6 +664,7 @@ export class PluginCommandCacheManager extends EventEmitter {
 
       // Compress if enabled
       if (this.config.compressionEnabled) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const zlib = require('zlib');
         data = zlib.gzipSync(data);
       }

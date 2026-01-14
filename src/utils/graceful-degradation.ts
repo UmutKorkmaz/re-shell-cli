@@ -41,6 +41,8 @@ export class GracefulDegradation extends EventEmitter {
   private activatedActions: DegradationAction[] = [];
   private monitoring = false;
   private monitorInterval?: NodeJS.Timeout;
+  private lastCpuUsage?: NodeJS.CpuUsage;
+  private lastCpuTime?: number;
   
   private degradationLevels: DegradationLevel[] = [
     {
@@ -305,11 +307,18 @@ export class GracefulDegradation extends EventEmitter {
   private getCurrentConstraints(): SystemConstraints {
     const memory = process.memoryUsage();
     const memoryMB = memory.heapUsed / 1024 / 1024;
-    
-    // Estimate CPU usage (simplified)
-    const cpuUsage = process.cpuUsage();
-    const cpuPercent = (cpuUsage.user + cpuUsage.system) / 10000; // Rough estimate
-    
+
+    // Calculate CPU usage as a percentage of elapsed real time
+    const now = Date.now();
+    let cpuPercent = 0;
+    if (this.lastCpuUsage && this.lastCpuTime) {
+      const delta = process.cpuUsage(this.lastCpuUsage);
+      const elapsedUs = (now - this.lastCpuTime) * 1000; // ms to microseconds
+      cpuPercent = elapsedUs > 0 ? ((delta.user + delta.system) / elapsedUs) * 100 : 0;
+    }
+    this.lastCpuUsage = process.cpuUsage();
+    this.lastCpuTime = now;
+
     return {
       memory: {
         current: memoryMB,

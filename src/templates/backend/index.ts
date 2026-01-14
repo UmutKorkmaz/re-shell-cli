@@ -17,7 +17,34 @@ import { serviceCommunicationTemplate } from './service-communication';
 import { secretsManagementTemplate } from './secrets-management';
 import { serviceAuthTemplate } from './service-auth';
 import { serviceObservabilityTemplate } from './service-observability';
+import { openTelemetryTracingTemplate } from './opentelemetry-tracing';
 import { circuitBreakerTemplate } from './circuit-breaker';
+import { distributedErrorHandlingTemplate } from './distributed-error-handling';
+import { frontendServiceMeshClientTemplate } from './frontend-service-mesh-client';
+import { comprehensiveAuthServiceTemplate } from './comprehensive-auth-service';
+import { realtimeDataSyncTemplate } from './realtime-data-sync';
+import { microfrontendOrchestrationTemplate } from './microfrontend-orchestration';
+import { universalStateManagementTemplate } from './universal-state-management';
+import { crossFrameworkComponentSharingTemplate } from './cross-framework-component-sharing';
+import { apiContractTestingTemplate } from './api-contract-testing';
+import { unifiedDevEnvironmentTemplate } from './unified-dev-environment';
+import { pwaFeaturesTemplate } from './pwa-features';
+import { serviceCommunicationOptimizationTemplate } from './service-communication-optimization';
+import { distributedCachingTemplate } from './distributed-caching';
+import { databasePoolingTemplate } from './database-connection-pooling';
+import { performanceMonitoringTemplate } from './performance-monitoring';
+import { globalCdnIntegrationTemplate } from './global-cdn-integration';
+import { compressionOptimizationTemplate } from './compression-optimization';
+import { resourceLoadingOptimizationTemplate } from './resource-loading-optimization';
+import { databaseOptimizationOrmTemplate } from './database-optimization-orm';
+import { bottleneckDetectionTemplate } from './bottleneck-detection';
+import { loadTestingTemplate } from './load-testing-automation';
+import { enterpriseSsoTemplate } from './enterprise-sso';
+import { securityScanningTemplate } from './security-scanning';
+import { multiTenantTemplate } from './multi-tenant-architecture';
+import { complianceAuditTemplate } from './compliance-audit-logging';
+import { disasterRecoveryTemplate } from './disaster-recovery';
+import { enterpriseMonitoringTemplate } from './enterprise-monitoring';
 import { deploymentStrategiesTemplate } from './deployment-strategies';
 import { serviceDependenciesTemplate } from './service-dependencies';
 import { apiGatewayTemplate } from './api-gateway';
@@ -40,6 +67,7 @@ import { graphqlFederationTemplate } from './graphql-federation';
 import { apiSecurityScanTemplate } from './api-security-scan';
 import { websocketApiDocsTemplate } from './websocket-api-docs';
 import { graphqlCodegenTemplate } from './graphql-codegen';
+import { SharedConfigServerTemplate } from './shared-config-server';
 import { actixWebTemplate } from './actix-web';
 import { warpTemplate } from './warp';
 import { rocketTemplate } from './rocket';
@@ -242,7 +270,34 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'secrets-management': secretsManagementTemplate,
   'service-auth': serviceAuthTemplate,
   'service-observability': serviceObservabilityTemplate,
+  'opentelemetry-tracing': openTelemetryTracingTemplate,
   'circuit-breaker': circuitBreakerTemplate,
+  'distributed-error-handling': distributedErrorHandlingTemplate,
+  'frontend-service-mesh-client': frontendServiceMeshClientTemplate,
+  'comprehensive-auth-service': comprehensiveAuthServiceTemplate,
+  'realtime-data-sync': realtimeDataSyncTemplate,
+  'microfrontend-orchestration': microfrontendOrchestrationTemplate,
+  'universal-state-management': universalStateManagementTemplate,
+  'cross-framework-component-sharing': crossFrameworkComponentSharingTemplate,
+  'api-contract-testing': apiContractTestingTemplate,
+  'unified-dev-environment': unifiedDevEnvironmentTemplate,
+  'pwa-features': pwaFeaturesTemplate,
+  'service-communication-optimization': serviceCommunicationOptimizationTemplate,
+  'distributed-caching': distributedCachingTemplate,
+  'database-pooling': databasePoolingTemplate,
+  'performance-monitoring': performanceMonitoringTemplate,
+  'global-cdn-integration': globalCdnIntegrationTemplate,
+  'compression-optimization': compressionOptimizationTemplate,
+  'resource-loading-optimization': resourceLoadingOptimizationTemplate,
+  'database-optimization-orm': databaseOptimizationOrmTemplate,
+  'bottleneck-detection': bottleneckDetectionTemplate,
+  'load-testing-automation': loadTestingTemplate,
+  'enterprise-sso': enterpriseSsoTemplate,
+  'security-scanning': securityScanningTemplate,
+  'multi-tenant-architecture': multiTenantTemplate,
+  'compliance-audit-logging': complianceAuditTemplate,
+  'disaster-recovery': disasterRecoveryTemplate,
+  'enterprise-monitoring': enterpriseMonitoringTemplate,
   'deployment-strategies': deploymentStrategiesTemplate,
   'service-dependencies': serviceDependenciesTemplate,
   'api-gateway': apiGatewayTemplate,
@@ -257,6 +312,7 @@ export const backendTemplates: Record<string, BackendTemplate> = {
   'message-queue': messageQueueTemplate,
   'elasticsearch-config': elasticsearchConfigTemplate,
   'websocket-realtime': websocketRealtimeTemplate,
+  'shared-config-server': SharedConfigServerTemplate,
   'rate-limit-config': rateLimitConfigTemplate,
   'api-caching': apiCachingTemplate,
   'api-deprecation': apiDeprecationTemplate,
@@ -615,6 +671,7 @@ export { serviceCommunicationTemplate } from './service-communication';
 export { secretsManagementTemplate } from './secrets-management';
 export { serviceAuthTemplate } from './service-auth';
 export { serviceObservabilityTemplate } from './service-observability';
+export { openTelemetryTracingTemplate } from './opentelemetry-tracing';
 export { circuitBreakerTemplate } from './circuit-breaker';
 export { deploymentStrategiesTemplate } from './deployment-strategies';
 export { serviceDependenciesTemplate } from './service-dependencies';
@@ -630,6 +687,7 @@ export { neo4jConfigTemplate } from './neo4j-config';
 export { messageQueueTemplate } from './message-queue';
 export { elasticsearchConfigTemplate } from './elasticsearch-config';
 export { websocketRealtimeTemplate } from './websocket-realtime';
+export { SharedConfigServerTemplate } from './shared-config-server';
 export { rateLimitConfigTemplate } from './rate-limit-config';
 export { apiCachingTemplate } from './api-caching';
 export { apiDeprecationTemplate } from './api-deprecation';

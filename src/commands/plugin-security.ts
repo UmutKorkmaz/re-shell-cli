@@ -116,6 +116,7 @@ export async function checkSecurityPolicy(options: SecurityCommandOptions = {}):
     
     if (policy) {
       // Load custom policy from file
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const fs = require('fs-extra');
       const customPolicy = await fs.readJSON(policy);
       securityPolicy = { ...securityPolicy, ...customPolicy };

@@ -338,6 +338,7 @@ export class PluginMarketplace extends EventEmitter {
 
   // Check plugin compatibility
   private async checkCompatibility(plugin: MarketplacePlugin, version: string): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const semver = require('semver');
     
     // Check CLI version compatibility
@@ -405,6 +406,7 @@ export class PluginMarketplace extends EventEmitter {
     options: { global?: boolean }
   ): Promise<string> {
     const installDir = options.global 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       ? path.join(require('os').homedir(), '.re-shell', 'plugins')
       : path.join(process.cwd(), '.re-shell', 'plugins');
 
@@ -829,7 +831,7 @@ export function createMarketplace(config?: Partial<MarketplaceConfig>): PluginMa
 }
 
 export function isValidPluginId(id: string): boolean {
-  return /^[a-z0-9][a-z0-9\-]*[a-z0-9]$/.test(id) && id.length >= 2 && id.length <= 50;
+  return /^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(id) && id.length >= 2 && id.length <= 50;
 }
 
 export function formatFileSize(bytes: number): string {

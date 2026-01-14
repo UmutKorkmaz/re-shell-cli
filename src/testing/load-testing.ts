@@ -659,14 +659,18 @@ export class Component${Math.floor(Math.random() * 1000)} {
   ): Promise<void> {
     switch (operation.target) {
       case 'app':
+        {
         const appPath = path.join(this.workspaceDir, 'apps', `new-app-${index}`);
         await this.createApp(appPath, profile, index);
         break;
       
+        }
       case 'file':
+        {
         const filePath = path.join(this.workspaceDir, `file-${index}.ts`);
         await fs.writeFile(filePath, this.generateFileContent(profile, index));
         break;
+        }
     }
   }
 
@@ -681,11 +685,13 @@ export class Component${Math.floor(Math.random() * 1000)} {
         break;
       
       case 'app':
+        {
         const appPath = path.join(this.workspaceDir, 'apps', `app-${index % profile.apps}`);
         if (await fs.pathExists(appPath)) {
           await fs.readdir(appPath);
         }
         break;
+        }
     }
   }
 
@@ -696,6 +702,7 @@ export class Component${Math.floor(Math.random() * 1000)} {
   ): Promise<void> {
     switch (operation.target) {
       case 'file':
+        {
         const filePath = path.join(
           this.workspaceDir,
           'apps',
@@ -707,6 +714,7 @@ export class Component${Math.floor(Math.random() * 1000)} {
           await fs.appendFile(filePath, '\n// Updated');
         }
         break;
+        }
     }
   }
 
@@ -735,9 +743,11 @@ export class Component${Math.floor(Math.random() * 1000)} {
     // Simulate analysis operation
     switch (operation.target) {
       case 'workspace':
+        {
         const files = await fs.readdir(this.workspaceDir, { recursive: true });
         // Count files, calculate sizes, etc.
         break;
+        }
     }
   }
 

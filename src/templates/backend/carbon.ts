@@ -118,7 +118,7 @@ fn health_handler(request: Cpp.HttpRequest) -> HttpResponse {
 
 # Home handler
 fn home_handler(request: Cpp.HttpRequest) -> HttpResponse {
-  var html = \"""
+  var html = """
 <!DOCTYPE html>
 <html>
   <head>

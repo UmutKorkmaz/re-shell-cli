@@ -95,7 +95,6 @@ export class ChangeDetector {
       followSymlinks: false,
       trackMoves: true,
       enableCache: true,
-      cacheLocation: path.join(rootPath, '.re-shell', 'change-cache.json'),
       hashingOptions: {
         ...defaultHashingOptions,
         ...options.hashingOptions,
@@ -104,7 +103,8 @@ export class ChangeDetector {
           ...(options.hashingOptions?.excludePatterns || [])
         ]
       },
-      ...options
+      ...options,
+      cacheLocation: options.cacheLocation || path.join(process.cwd(), '.re-shell', 'change-cache.json'),
     };
     
     this.cacheFile = this.options.cacheLocation;

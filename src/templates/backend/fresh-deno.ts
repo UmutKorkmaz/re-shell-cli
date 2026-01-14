@@ -277,8 +277,8 @@ export async function createToken(payload: Omit<JWTPayload, "exp">): Promise<str
     ["sign"]
   );
 
-  const headerEncoded = btoa(JSON.stringify(header)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const payloadEncoded = btoa(JSON.stringify(tokenPayload)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const headerEncoded = btoa(JSON.stringify(header)).replace(/=/g, "").replace(/+/g, "-").replace(///g, "_");
+  const payloadEncoded = btoa(JSON.stringify(tokenPayload)).replace(/=/g, "").replace(/+/g, "-").replace(///g, "_");
 
   const data = \`\${headerEncoded}.\${payloadEncoded}\`;
   const signature = await crypto.subtle.sign(
@@ -289,8 +289,8 @@ export async function createToken(payload: Omit<JWTPayload, "exp">): Promise<str
 
   const signatureEncoded = btoa(String.fromCharCode(...new Uint8Array(signature)))
     .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
+    .replace(/+/g, "-")
+    .replace(///g, "_");
 
   return \`\${data}.\${signatureEncoded}\`;
 }

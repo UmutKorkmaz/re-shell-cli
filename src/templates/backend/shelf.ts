@@ -1585,15 +1585,15 @@ Middleware loggingMiddleware() {
         final response = await innerHandler(request);
         
         logger.info(
-          '\ \ '
-          '\ \ms',
+          '  '
+          ' ms',
         );
         
         return response;
       } catch (e) {
         logger.error(
-          '\ \ '
-          'ERROR \ms',
+          '  '
+          'ERROR ms',
           error: e,
         );
         rethrow;

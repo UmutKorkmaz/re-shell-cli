@@ -715,7 +715,7 @@ export class PluginSandbox extends EventEmitter {
 
   // Execute plugin in sandbox
   async executeInSandbox(
-    pluginFunction: Function,
+    pluginFunction: (...args: any[]) => any,
     context: any,
     timeout?: number
   ): Promise<any> {
@@ -782,6 +782,7 @@ export class PluginSandbox extends EventEmitter {
 
   // Create sandboxed filesystem interface
   private createSandboxedFS(): any {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const originalFS = require('fs-extra');
     const sandboxedFS = { ...originalFS };
 

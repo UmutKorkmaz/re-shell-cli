@@ -265,6 +265,7 @@ export async function validateVersions(options: DependencyCommandOptions = {}): 
       };
 
       // Validate version format
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const semver = require('semver');
       if (!semver.valid(plugin.manifest.version)) {
         result.valid = false;

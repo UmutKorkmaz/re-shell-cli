@@ -45,24 +45,39 @@ export class AsyncPool {
 
 // Mutex-like lock for file operations
 export class OperationLock {
-  private static locks = new Map<string, Promise<void>>();
+  private static queues = new Map<string, Array<() => void>>();
+  private static locked = new Set<string>();
 
   static async acquire(key: string): Promise<() => void> {
-    while (this.locks.has(key)) {
-      await this.locks.get(key);
+    if (!this.locked.has(key)) {
+      this.locked.add(key);
+      return () => {
+        const queue = this.queues.get(key);
+        if (queue && queue.length > 0) {
+          const next = queue.shift()!;
+          next();
+        } else {
+          this.locked.delete(key);
+        }
+      };
     }
 
-    let releaseLock: () => void;
-    const lockPromise = new Promise<void>(resolve => {
-      releaseLock = resolve;
+    return new Promise<() => void>(resolve => {
+      if (!this.queues.has(key)) {
+        this.queues.set(key, []);
+      }
+      this.queues.get(key)!.push(() => {
+        resolve(() => {
+          const queue = this.queues.get(key);
+          if (queue && queue.length > 0) {
+            const next = queue.shift()!;
+            next();
+          } else {
+            this.locked.delete(key);
+          }
+        });
+      });
     });
-
-    this.locks.set(key, lockPromise);
-
-    return () => {
-      this.locks.delete(key);
-      releaseLock!();
-    };
   }
 }
 
@@ -77,6 +92,8 @@ export function debounceAsync<T extends any[], R>(
 
   return (...args: T): Promise<R> => {
     return new Promise((resolve, reject) => {
+      if (latestReject) latestReject(new Error('Debounced'));
+
       latestResolve = resolve;
       latestReject = reject;
 

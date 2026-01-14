@@ -308,6 +308,7 @@ async function interactiveStateManagement(options: WorkspaceStateCommandOptions,
       await backupWorkspaceState({ ...options, interactive: false });
       break;
     case 'restore':
+      {
       const restoreResponse = await prompts({
         type: 'text',
         name: 'file',
@@ -317,10 +318,12 @@ async function interactiveStateManagement(options: WorkspaceStateCommandOptions,
         await restoreWorkspaceState({ ...options, interactive: false, file: restoreResponse.file });
       }
       break;
+      }
     case 'optimize':
       await optimizeWorkspaceStorage({ ...options, interactive: false });
       break;
     case 'pattern-cleanup':
+      {
       const patternResponse = await prompts({
         type: 'text',
         name: 'pattern',
@@ -335,6 +338,7 @@ async function interactiveStateManagement(options: WorkspaceStateCommandOptions,
         });
       }
       break;
+      }
     case 'detailed-stats':
       await showDetailedStatistics(options);
       break;

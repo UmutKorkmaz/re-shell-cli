@@ -81,8 +81,20 @@ export async function manageWorkspaceDefinition(options: WorkspaceDefinitionComm
     await showWorkspaceDefinitionStatus(options, spinner);
 
   } catch (error) {
+    if (error instanceof ValidationError) {
+      if (spinner) spinner.stop();
+      console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+      console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+      process.exit(1);
+    }
     if (spinner) spinner.fail(chalk.red('Workspace definition operation failed'));
-    throw error;
+    if (error instanceof Error) {
+      console.error(`Error: ${error.message}`);
+      console.error('Make sure you have a valid re-shell workspace. Run "re-shell init" to initialize.');
+    } else {
+      console.error('An unexpected error occurred');
+    }
+    process.exit(1);
   }
 }
 

@@ -872,47 +872,47 @@ html {
     return `// Color palette customization
 
 // Brand colors
-\$c-brand: #3eaf7c;
-\$c-brand-light: #4abf8a;
-\$c-brand-dark: #349666;
+$c-brand: #3eaf7c;
+$c-brand-light: #4abf8a;
+$c-brand-dark: #349666;
 
 // Background colors
-\$c-bg: #ffffff;
-\$c-bg-soft: #f8f9fa;
-\$c-bg-soft-hover: #e9ecef;
+$c-bg: #ffffff;
+$c-bg-soft: #f8f9fa;
+$c-bg-soft-hover: #e9ecef;
 
 // Text colors
-\$c-text: #2c3e50;
-\$c-text-light: #606266;
-\$c-text-lighter: #909399;
+$c-text: #2c3e50;
+$c-text-light: #606266;
+$c-text-lighter: #909399;
 
 // Border colors
-\$c-border: #eaecef;
-\$c-border-light: #f0f0f0;
+$c-border: #eaecef;
+$c-border-light: #f0f0f0;
 
 // Tip colors
-\$c-tip: #3eaf7c;
-\$c-tip-bg: #f0f9ff;
-\$c-tip-text: #0c5132;
-\$c-tip-border: #a8dcc8;
+$c-tip: #3eaf7c;
+$c-tip-bg: #f0f9ff;
+$c-tip-text: #0c5132;
+$c-tip-border: #a8dcc8;
 
 // Warning colors
-\$c-warning: #e7c000;
-\$c-warning-bg: #fff8e6;
-\$c-warning-text: #6d4e00;
-\$c-warning-border: #f5d76e;
+$c-warning: #e7c000;
+$c-warning-bg: #fff8e6;
+$c-warning-text: #6d4e00;
+$c-warning-border: #f5d76e;
 
 // Danger colors
-\$c-danger: #f26d6d;
-\$c-danger-bg: #ffe6e6;
-\$c-danger-text: #7a2323;
-\$c-danger-border: #f5b2b2;
+$c-danger: #f26d6d;
+$c-danger-bg: #ffe6e6;
+$c-danger-text: #7a2323;
+$c-danger-border: #f5b2b2;
 
 // Info colors
-\$c-info: #3aa675;
-\$c-info-bg: #f0f9ff;
-\$c-info-text: #0c5132;
-\$c-info-border: #a8dcc8;
+$c-info: #3aa675;
+$c-info-bg: #f0f9ff;
+$c-info-text: #0c5132;
+$c-info-border: #a8dcc8;
 `;
   }
 
@@ -1199,8 +1199,8 @@ plugins: [
 Customize colors in \`docs/.vuepress/styles/palette.scss\`:
 
 \`\`\`scss
-\$c-brand: #3eaf7c;
-\$c-brand-light: #4abf8a;
+$c-brand: #3eaf7c;
+$c-brand-light: #4abf8a;
 \`\`\`
 
 ## Environment Variables
@@ -1423,8 +1423,8 @@ Edit \`docs/.vuepress/config.ts\` to customize:
 Customize colors in \`docs/.vuepress/styles/palette.scss\`:
 
 \`\`\`scss
-\$c-brand: #3eaf7c;
-\$c-brand-light: #4abf8a;
+$c-brand: #3eaf7c;
+$c-brand-light: #4abf8a;
 \`\`\`
 
 ### Components

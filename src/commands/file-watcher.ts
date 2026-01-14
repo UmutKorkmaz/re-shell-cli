@@ -168,7 +168,7 @@ async function startFileWatcher(options: FileWatcherCommandOptions, spinner?: Pr
       });
 
       // Prevent the process from exiting
-      setInterval(() => {}, 1000);
+      setInterval(() => { /* keep alive */ }, 1000);
     } else {
       console.log(chalk.cyan('\\n🛠️  Commands:'));
       console.log('  • Show status: re-shell file-watcher status');

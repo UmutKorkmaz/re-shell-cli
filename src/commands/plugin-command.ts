@@ -1,7 +1,8 @@
 import chalk from 'chalk';
+import { Command } from 'commander';
 import { createSpinner } from '../utils/spinner';
 import { ValidationError } from '../utils/error-handler';
-import { 
+import {
   createPluginCommandRegistry,
   PluginCommandRegistry,
   RegisteredCommand,
@@ -31,7 +32,7 @@ export async function listPluginCommands(
 
     // Create a temporary command registry to inspect registered commands
     // In a real implementation, this would be injected from the main CLI
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -145,7 +146,7 @@ export async function showCommandConflicts(
   const { verbose = false, json = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -209,7 +210,7 @@ export async function resolveCommandConflicts(
   const { verbose = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -255,7 +256,7 @@ export async function showCommandStats(
   const { verbose = false, json = false, usage = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -344,7 +345,7 @@ export async function registerTestCommand(
       throw new ValidationError(`Plugin '${pluginName}' not found`);
     }
 
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -399,7 +400,7 @@ export async function unregisterCommand(
   const { verbose = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -444,7 +445,7 @@ export async function showCommandInfo(
   const { verbose = false, json = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();

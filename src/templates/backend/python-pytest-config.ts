@@ -481,7 +481,7 @@ markers = [
     "regression: Regression tests for bug prevention",
     "performance: Performance and benchmark tests",
     "security: Security-related tests",
-    "slow: Tests that take a long time to run (deselect with '-m \"not slow\"')",
+    "slow: Tests that take a long time to run (deselect with '-m "not slow"')",
     "fast: Quick tests that should always pass",
     "database: Tests that require database access",
     "network: Tests that require network access",
@@ -3683,7 +3683,7 @@ async def test_sanic_endpoint(test_client):
     def _count_tests_run(self, output: str) -> int:
         """Count tests run from pytest output."""
         import re
-        match = re.search(r'(\d+) passed', output)
+        match = re.search(r'(d+) passed', output)
         if match:
             return int(match.group(1))
         return 0
@@ -3691,7 +3691,7 @@ async def test_sanic_endpoint(test_client):
     def _count_tests_passed(self, output: str) -> int:
         """Count tests passed from pytest output."""
         import re
-        match = re.search(r'(\d+) passed', output)
+        match = re.search(r'(d+) passed', output)
         if match:
             return int(match.group(1))
         return 0
@@ -3699,7 +3699,7 @@ async def test_sanic_endpoint(test_client):
     def _extract_coverage(self, output: str) -> Optional[float]:
         """Extract coverage percentage from output."""
         import re
-        match = re.search(r'TOTAL.*?(\d+)%', output)
+        match = re.search(r'TOTAL.*?(d+)%', output)
         if match:
             return float(match.group(1))
         return None

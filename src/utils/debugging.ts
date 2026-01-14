@@ -80,7 +80,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
 
   // Common base configuration
   const baseConfig: Partial<VSCodeLaunchConfig> = {
-    cwd: '\${workspaceFolder}',
+    cwd: '${workspaceFolder}',
     console: 'integratedTerminal',
     skipFiles: ['<node_internals>/**'],
   };
@@ -110,7 +110,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
           ...baseConfig.env,
         },
         sourceMaps: tsConfig,
-        outFiles: tsConfig ? ['\${workspaceFolder}/dist/**/*.js'] : undefined,
+        outFiles: tsConfig ? ['${workspaceFolder}/dist/**/*.js'] : undefined,
       } as VSCodeLaunchConfig);
 
       // Add Jest debug config
@@ -121,7 +121,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
         request: 'launch',
         runtimeArgs: [
           '--inspect-brk',
-          '\${workspaceFolder}/node_modules/.bin/jest',
+          '${workspaceFolder}/node_modules/.bin/jest',
           '--runInBand',
           '--no-cache',
         ],
@@ -139,7 +139,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
         request: 'launch',
         runtimeExecutable: 'node',
         runtimeArgs: ['--inspect'],
-        program: '\${workspaceFolder}/node_modules/.bin/next',
+        program: '${workspaceFolder}/node_modules/.bin/next',
         args: ['dev'],
         console: 'integratedTerminal',
         env: {
@@ -154,7 +154,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
         type: 'chrome',
         request: 'launch',
         url: `http://localhost:${port || 3000}`,
-        webRoot: '\${workspaceFolder}',
+        webRoot: '${workspaceFolder}',
       } as VSCodeLaunchConfig);
     }
 
@@ -167,7 +167,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
         name: `${name}: Debug Vite Dev Server`,
         type: 'node',
         request: 'launch',
-        program: '\${workspaceFolder}/node_modules/.bin/vite',
+        program: '${workspaceFolder}/node_modules/.bin/vite',
         args: ['--debug', '--host'],
         console: 'integratedTerminal',
         env: {
@@ -181,7 +181,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
         type: 'chrome',
         request: 'launch',
         url: `http://localhost:${devPort}`,
-        webRoot: '\${workspaceFolder}',
+        webRoot: '${workspaceFolder}',
         sourceMaps: true,
       } as VSCodeLaunchConfig);
     }
@@ -199,7 +199,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       program: scriptPath,
       console: 'integratedTerminal',
       env: {
-        PYTHONPATH: '\${workspaceFolder}',
+        PYTHONPATH: '${workspaceFolder}',
         ...baseConfig.env,
       },
     } as VSCodeLaunchConfig);
@@ -214,7 +214,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       args: ['tests', '-v'],
       console: 'integratedTerminal',
       env: {
-        PYTHONPATH: '\${workspaceFolder}',
+        PYTHONPATH: '${workspaceFolder}',
         ...baseConfig.env,
       },
     } as VSCodeLaunchConfig);
@@ -243,7 +243,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       type: 'go',
       request: 'launch',
       mode: 'test',
-      program: '\${workspaceFolder}',
+      program: '${workspaceFolder}',
       env: {
         ...baseConfig.env,
       },
@@ -262,7 +262,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       request: 'launch',
       program: `\${workspaceFolder}/target/debug/${binaryName}`,
       args: [],
-      cwd: '\${workspaceFolder}',
+      cwd: '${workspaceFolder}',
       preLaunchTask: 'cargo build',
       env: {
         RUST_LOG: 'debug',
@@ -278,7 +278,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       request: 'launch',
       program: `\${workspaceFolder}/target/debug/${binaryName}`,
       args: ['--nocapture', '--test-threads=1'],
-      cwd: '\${workspaceFolder}',
+      cwd: '${workspaceFolder}',
       preLaunchTask: 'cargo test --no-run',
       env: {
         RUST_TEST_THREADS: '1',
@@ -312,7 +312,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       preLaunchTask: 'build',
       program: entryPoint || `\${workspaceFolder}/bin/Debug/net8.0/${name}.dll`,
       args: [],
-      cwd: '\${workspaceFolder}',
+      cwd: '${workspaceFolder}',
       stopAtEntry: false,
       console: 'integratedTerminal',
       env: {
@@ -334,8 +334,8 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       remoteHost: 'localhost',
       remotePort: 1234,
       localPort: 1234,
-      remoteWorkspaceRoot: '/workdir/\${workspaceFolderBasename}',
-      localWorkspaceRoot: '\${workspaceFolder}',
+      remoteWorkspaceRoot: '/workdir/${workspaceFolderBasename}',
+      localWorkspaceRoot: '${workspaceFolder}',
       env: {
         RAILS_ENV: 'development',
         ...baseConfig.env,
@@ -354,7 +354,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       request: 'launch',
       port: 9003,
       pathMappings: {
-        '\${workspaceFolder}': '\${workspaceFolder}',
+        '${workspaceFolder}': '${workspaceFolder}',
       },
       env: {
         ...baseConfig.env,
@@ -367,7 +367,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       type: 'php',
       request: 'launch',
       program: scriptPath,
-      cwd: '\${workspaceFolder}/public',
+      cwd: '${workspaceFolder}/public',
       runtimeArgs: ['serve', 'localhost:8000'],
       port: 9003,
       env: {
@@ -388,7 +388,7 @@ export function generateVSCodeLaunchConfig(project: ProjectDebugInfo): VSCodeLau
       program: targetName,
       args: [],
       stopAtEntry: false,
-      cwd: '\${workspaceFolder}',
+      cwd: '${workspaceFolder}',
       environment: [],
       externalConsole: false,
       MIMode: 'gdb',

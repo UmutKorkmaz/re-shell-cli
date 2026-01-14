@@ -534,6 +534,7 @@ export class IntelliSenseGenerator {
       },
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const yaml = require('yaml');
     await fs.writeFile(configPath, yaml.stringify(config), 'utf-8');
   }

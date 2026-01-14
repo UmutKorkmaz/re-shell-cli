@@ -31,7 +31,7 @@ application {
     mainClass.set("com.{{projectName}}.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
-    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=\$isDevelopment")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
 repositories {
@@ -250,7 +250,7 @@ fun Application.configureLogging() {
             val httpMethod = call.request.httpMethod.value
             val path = call.request.path()
             val duration = call.processingTimeMillis()
-            "\$httpMethod \$path -> \$status in \${duration}ms"
+            "$httpMethod $path -> $status in \${duration}ms"
         }
     }
 }
@@ -289,7 +289,7 @@ fun Application.configureDatabase() {
             jdbcUrl = "jdbc:h2:mem:{{projectName}};DB_CLOSE_DELAY=-1"
         } else {
             driverClassName = "org.postgresql.Driver"
-            jdbcUrl = "jdbc:postgresql://\$dbHost:\$dbPort/\$dbName"
+            jdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName"
             username = dbUser
             password = dbPassword
         }

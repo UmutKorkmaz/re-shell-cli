@@ -298,6 +298,7 @@ export class PluginCommandValidator extends EventEmitter {
           if (!mustExist) return true;
           
           try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const fs = require('fs');
             return fs.existsSync(value);
           } catch {
@@ -428,7 +429,9 @@ export class PluginCommandValidator extends EventEmitter {
         order: 4,
         transformer: (value) => {
           if (typeof value !== 'string') return value;
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           const path = require('path');
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           const os = require('os');
           
           // Expand ~ to home directory
@@ -450,6 +453,7 @@ export class PluginCommandValidator extends EventEmitter {
         order: 5,
         transformer: (value) => {
           if (typeof value !== 'string') return value;
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           const path = require('path');
           return path.resolve(value);
         }

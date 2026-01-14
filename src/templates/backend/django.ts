@@ -2024,14 +2024,14 @@ IMAGE_NAME="\${IMAGE_NAME:-{{service_name}}:latest}"
 IMAGE_TAG="\${IMAGE_TAG:-latest}"
 SEVERITY="\${SEVERITY:-HIGH,CRITICAL}"
 OUTPUT_DIR="security-reports"
-TIMESTAMP=\$(date +%Y%m%d_%H%M%S)
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # Create output directory
-mkdir -p "\$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
 
 echo -e "\${GREEN}=== Container Security Scanning ===\${NC}"
-echo "Image: \$IMAGE_NAME"
-echo "Severity: \$SEVERITY"
+echo "Image: $IMAGE_NAME"
+echo "Severity: $SEVERITY"
 echo ""
 
 # Function to run Trivy
@@ -2050,26 +2050,26 @@ run_trivy() {
     # Run Trivy filesystem scan
     echo "Running Trivy filesystem scan..."
     trivy fs \
-        --severity "\$SEVERITY" \
+        --severity "$SEVERITY" \
         --ignorefile .trivyignore \
         --format json \
-        --output "\$OUTPUT_DIR/trivy-fs-\$TIMESTAMP.json" \
+        --output "$OUTPUT_DIR/trivy-fs-$TIMESTAMP.json" \
         .
 
     # Run Trivy image scan
     echo "Running Trivy image scan..."
     trivy image \
-        --severity "\$SEVERITY" \
+        --severity "$SEVERITY" \
         --ignorefile .trivyignore \
         --format json \
-        --output "\$OUTPUT_DIR/trivy-image-\$TIMESTAMP.json" \
+        --output "$OUTPUT_DIR/trivy-image-$TIMESTAMP.json" \
         --format table \
-        "\$IMAGE_NAME"
+        "$IMAGE_NAME"
 
     # Check if critical vulnerabilities were found
-    CRITICAL_COUNT=\$(trivy image --severity CRITICAL --format json "\$IMAGE_NAME" 2>/dev/null | jq '.Results | length' 2>/dev/null || echo "0")
-    if [ "\$CRITICAL_COUNT" -gt 0 ]; then
-        echo -e "\${RED}Found \$CRITICAL_COUNT critical vulnerabilities!\${NC}"
+    CRITICAL_COUNT=$(trivy image --severity CRITICAL --format json "$IMAGE_NAME" 2>/dev/null | jq '.Results | length' 2>/dev/null || echo "0")
+    if [ "$CRITICAL_COUNT" -gt 0 ]; then
+        echo -e "\${RED}Found $CRITICAL_COUNT critical vulnerabilities!\${NC}"
         return 1
     fi
 
@@ -2097,10 +2097,10 @@ run_snyk() {
 
     # Run Snyk container test
     echo "Running Snyk container scan..."
-    snyk container test "\$IMAGE_NAME" \
+    snyk container test "$IMAGE_NAME" \
         --severity-threshold=high \
-        --json-file-output="\$OUTPUT_DIR/snyk-\$TIMESTAMP.json" \
-        --sarif-file-output="\$OUTPUT_DIR/snyk-\$TIMESTAMP.sarif" || true
+        --json-file-output="$OUTPUT_DIR/snyk-$TIMESTAMP.json" \
+        --sarif-file-output="$OUTPUT_DIR/snyk-$TIMESTAMP.sarif" || true
 
     echo -e "\${GREEN}Snyk scan completed.\${NC}"
 }
@@ -2115,11 +2115,11 @@ run_aqua() {
     if command -v trivy &> /dev/null; then
         echo "Running Aqua compliance checks via Trivy..."
         trivy image \
-            --severity "\$SEVERITY" \
+            --severity "$SEVERITY" \
             --compliance \
             --format json \
-            --output "\$OUTPUT_DIR/aqua-compliance-\$TIMESTAMP.json" \
-            "\$IMAGE_NAME" || true
+            --output "$OUTPUT_DIR/aqua-compliance-$TIMESTAMP.json" \
+            "$IMAGE_NAME" || true
     else
         echo -e "\${RED}Trivy required for Aqua compliance checks. Skipping...\${NC}"
     fi
@@ -2134,29 +2134,29 @@ main() {
     SKIP_SNYK="\${SKIP_SNYK:-false}"
     SKIP_AQUA="\${SKIP_AQUA:-false}"
 
-    while [[ "\$#" -gt 0 ]]; do
-        case \$1 in
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
             --skip-trivy) SKIP_TRIVY=true ;;
             --skip-snyk) SKIP_SNYK=true ;;
             --skip-aqua) SKIP_AQUA=true ;;
-            --image) IMAGE_NAME="\$2"; shift ;;
-            --severity) SEVERITY="\$2"; shift ;;
-            *) echo "Unknown parameter: \$1"; exit 1 ;;
+            --image) IMAGE_NAME="$2"; shift ;;
+            --severity) SEVERITY="$2"; shift ;;
+            *) echo "Unknown parameter: $1"; exit 1 ;;
         esac
         shift
     done
 
     # Run scans
-    [ "\$SKIP_TRIVY" = "false" ] && run_trivy
-    [ "\$SKIP_SNYK" = "false" ] && run_snyk
-    [ "\$SKIP_AQUA" = "false" ] && run_aqua
+    [ "$SKIP_TRIVY" = "false" ] && run_trivy
+    [ "$SKIP_SNYK" = "false" ] && run_snyk
+    [ "$SKIP_AQUA" = "false" ] && run_aqua
 
     echo ""
     echo -e "\${GREEN}=== All security scans completed ===\${NC}"
-    echo "Results saved to: \$OUTPUT_DIR/"
+    echo "Results saved to: $OUTPUT_DIR/"
 }
 
-main "\$@"
+main "$@"
 `,
       '.github/workflows/security-scan.yml': `name: Container Security Scan
 
@@ -2183,13 +2183,13 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -f Dockerfile.prod -t \$IMAGE_NAME .
-          docker tag \$IMAGE_NAME \${{ github.sha }}
+          docker build -f Dockerfile.prod -t $IMAGE_NAME .
+          docker tag $IMAGE_NAME \${{ github.sha }}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: \$IMAGE_NAME
+          image-ref: $IMAGE_NAME
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
@@ -2221,14 +2221,14 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -f Dockerfile.prod -t \$IMAGE_NAME .
+          docker build -f Dockerfile.prod -t $IMAGE_NAME .
 
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: \${{ secrets.SNYK_TOKEN }}
         with:
-          image: \$IMAGE_NAME
+          image: $IMAGE_NAME
           args: --severity-threshold=high
 
       - name: Upload Snyk results to GitHub Security tab
@@ -2248,21 +2248,21 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -f Dockerfile.prod -t \$IMAGE_NAME .
+          docker build -f Dockerfile.prod -t $IMAGE_NAME .
 
       - name: Run Aqua Trivy scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: \$IMAGE_NAME
+          image-ref: $IMAGE_NAME
           format: 'json'
           output: 'aqua-results.json'
           severity: 'CRITICAL,HIGH'
 
       - name: Check for critical vulnerabilities
         run: |
-          CRITICAL_COUNT=\$(jq '[.Results[] | .Vulnerabilities // [] | length] | add' aqua-results.json 2>/dev/null || echo "0")
-          if [ "\$CRITICAL_COUNT" -gt 0 ]; then
-            echo "Found \$CRITICAL_COUNT critical/high vulnerabilities"
+          CRITICAL_COUNT=$(jq '[.Results[] | .Vulnerabilities // [] | length] | add' aqua-results.json 2>/dev/null || echo "0")
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "Found $CRITICAL_COUNT critical/high vulnerabilities"
             exit 1
           fi
 
@@ -6378,7 +6378,7 @@ for i in $(seq 1 $((DURATION / INTERVAL))); do
     NET_TX=$(echo "$NET_STATS" | awk '{print $2}')
 
     # Disk stats (if available)
-    DISK_STATS=$(docker exec "$CONTAINER" cat /proc/diskstats 2>/dev/null | grep -v loop | head -1 | awk '{sum=\$4+$8; print sum}' || echo "0")
+    DISK_STATS=$(docker exec "$CONTAINER" cat /proc/diskstats 2>/dev/null | grep -v loop | head -1 | awk '{sum=$4+$8; print sum}' || echo "0")
     DISK_READ=$(echo "$DISK_STATS" | awk '{print $1}')
     DISK_WRITE=$(echo "$DISK_STATS" | awk '{print $2}')
 
@@ -6531,18 +6531,18 @@ if [ -n "$LATEST_METRICS" ]; then
     AVG_MEM=$(awk -F, 'NR>1 {sum+=$4; count++} END {if(count>0) print sum/count; else print 0}' "$LATEST_METRICS")
 
     # CPU recommendations
-    if (( $(echo "\$AVG_CPU > 80" | bc -l) )); then
+    if (( $(echo "$AVG_CPU > 80" | bc -l) )); then
         echo "- ⚠️ **High CPU usage** (\${AVG_CPU}%): Consider horizontal scaling or CPU optimization" >> "$REPORT_FILE"
-    elif (( $(echo "\$AVG_CPU > 50" | bc -l) )); then
+    elif (( $(echo "$AVG_CPU > 50" | bc -l) )); then
         echo "- 📊 **Moderate CPU usage** (\${AVG_CPU}%): Monitor for spikes" >> "$REPORT_FILE"
     else
         echo "- ✅ **CPU usage normal** (\${AVG_CPU}%)" >> "$REPORT_FILE"
     fi
 
     # Memory recommendations
-    if (( $(echo "\$AVG_MEM > 80" | bc -l) )); then
+    if (( $(echo "$AVG_MEM > 80" | bc -l) )); then
         echo "- ⚠️ **High memory usage** (\${AVG_MEM}%): Check for memory leaks and consider increasing limits" >> "$REPORT_FILE"
-    elif (( $(echo "\$AVG_MEM > 50" | bc -l) )); then
+    elif (( $(echo "$AVG_MEM > 50" | bc -l) )); then
         echo "- 📊 **Moderate memory usage** (\${AVG_MEM}%): Monitor trends" >> "$REPORT_FILE"
     else
         echo "- ✅ **Memory usage normal** (\${AVG_MEM}%)" >> "$REPORT_FILE"
@@ -7091,7 +7091,7 @@ if [ -n "$SA" ]; then
 
         # Check for role bindings
         ROLEBINDINGS=$(kubectl get rolebinding,clusterrolebinding -A -o json | \\
-            jq -r ".items[] | select(.subjects[]?.name == $(echo "$sa" | cut -d/ -f2)) | .kind + \"/\" + .metadata.name" 2>/dev/null || echo "")
+            jq -r ".items[] | select(.subjects[]?.name == $(echo "$sa" | cut -d/ -f2)) | .kind + "/" + .metadata.name" 2>/dev/null || echo "")
 
         if [ -z "$ROLEBINDINGS" ]; then
             warning "No role bindings found for $sa"
@@ -7176,7 +7176,7 @@ fi
 # Get public key for sealing secrets
 SEALED_SECRETS_CERT="./secrets/sealed-secrets-cert.pem"
 kubectl get secret -n sealed-secrets sealed-secrets-key \\
-    -o jsonpath='{.data.tls\.crt}' | base64 -d > "$SEALED_SECRETS_CERT"
+    -o jsonpath='{.data.tls.crt}' | base64 -d > "$SEALED_SECRETS_CERT"
 
 log "Sealed Secrets certificate saved to: $SEALED_SECRETS_CERT"
 log "Use this certificate with kubeseal: kubeseal --cert $SEALED_SECRETS_CERT"
@@ -7962,7 +7962,7 @@ fi
 log ""
 log "=== Test 6: Checking for Denied Traffic ==="
 
-if kubectl logs -n "$NAMESPACE" "$TEST_POD" --tail=100 2>/dev/null | grep -i "connection.*refused\|denied"; then
+if kubectl logs -n "$NAMESPACE" "$TEST_POD" --tail=100 2>/dev/null | grep -i "connection.*refused|denied"; then
     warning "⚠️ Found denied traffic in logs"
 else
     log "No denied traffic found in recent logs"
@@ -8952,51 +8952,51 @@ YELLOW='\\033[1;33m'
 NC='\\033[0m' # No Color
 
 log() {
-    echo -e "\${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]\${NC} \$*"
+    echo -e "\${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]\${NC} $*"
 }
 
 error() {
-    echo -e "\${RED}[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR]\${NC} \$*" >&2
+    echo -e "\${RED}[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR]\${NC} $*" >&2
 }
 
 warn() {
-    echo -e "\${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] [WARN]\${NC} \$*"
+    echo -e "\${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] [WARN]\${NC} $*"
 }
 
 # Send notification
 send_notification() {
-    local status="\$1"
-    local message="\$2"
+    local status="$1"
+    local message="$2"
 
-    if [ -n "\$SLACK_WEBHOOK" ]; then
-        curl -s -X POST "\$SLACK_WEBHOOK" \\
+    if [ -n "$SLACK_WEBHOOK" ]; then
+        curl -s -X POST "$SLACK_WEBHOOK" \\
             -H 'Content-Type: application/json' \\
             -d "{
-                \\\"text\\\": \\\"*Base Image Update - \$SERVICE_NAME*\\\nStatus: \\\\$status\\\n\\\$message\\\"
+                \\"text\\": \\"*Base Image Update - $SERVICE_NAME*\\\nStatus: \\\\$status\\\n\\$message\\"
             }" || true
     fi
 
-    if [ -n "\$NOTIFICATION_WEBHOOK" ]; then
-        curl -s -X POST "\$NOTIFICATION_WEBHOOK" \\
+    if [ -n "$NOTIFICATION_WEBHOOK" ]; then
+        curl -s -X POST "$NOTIFICATION_WEBHOOK" \\
             -H 'Content-Type: application/json' \\
             -d "{
-                \\\"service\\\": \\\"\$SERVICE_NAME\\\",
-                \\\"event\\\": \\\"base_image_update\\\",
-                \\\"status\\\": \\\"\$status\\\",
-                \\\"message\\\": \\\"\$message\\\"
+                \\"service\\": \\"$SERVICE_NAME\\",
+                \\"event\\": \\"base_image_update\\",
+                \\"status\\": \\"$status\\",
+                \\"message\\": \\"$message\\"
             }" || true
     fi
 }
 
 # Get latest base image version
 get_latest_version() {
-    local base_image="\$1"
+    local base_image="$1"
 
-    log "Checking for updates to: \$base_image"
+    log "Checking for updates to: $base_image"
 
     # Use skopeo to get available tags
     if command -v skopeo &> /dev/null; then
-        skopeo list-tags "docker://\$base_image" 2>/dev/null | \\
+        skopeo list-tags "docker://$base_image" 2>/dev/null | \\
             jq -r '.Tags[]' | \\
             grep -E '^3\\.11\\.' | \\
             sort -V | \\
@@ -9006,7 +9006,7 @@ get_latest_version() {
         local image_name="\${base_image##*/}"
         local repo="\${image_name%%:*}"
 
-        curl -s "https://registry.hub.docker.com/v2/repositories/\$repo/tags?page_size=100" | \\
+        curl -s "https://registry.hub.docker.com/v2/repositories/$repo/tags?page_size=100" | \\
             jq -r '.results[].name' | \\
             grep -E '^3\\.11\\.' | \\
             sort -V | \\
@@ -9016,30 +9016,30 @@ get_latest_version() {
 
 # Update Dockerfile with new base image
 update_dockerfile() {
-    local new_base="\$1"
+    local new_base="$1"
     local dockerfile="\${DOCKERFILE:-Dockerfile.prod}"
 
-    log "Updating \$dockerfile with base image: \$new_base"
+    log "Updating $dockerfile with base image: $new_base"
 
     # Backup original
-    cp "\$dockerfile" "\$dockerfile.backup"
+    cp "$dockerfile" "$dockerfile.backup"
 
     # Update FROM line
-    sed -i.bak "s|^FROM .*|FROM \$new_base|" "\$dockerfile"
+    sed -i.bak "s|^FROM .*|FROM $new_base|" "$dockerfile"
 
     log "Dockerfile updated successfully"
 }
 
 # Build new image
 build_image() {
-    local tag="\$1"
+    local tag="$1"
 
-    log "Building new image: \$SERVICE_NAME:\$tag"
+    log "Building new image: $SERVICE_NAME:$tag"
 
     docker build \\
         -f "\${DOCKERFILE:-Dockerfile.prod}" \\
-        -t "\$SERVICE_NAME:\$tag" \\
-        -t "\$SERVICE_NAME:latest" \\
+        -t "$SERVICE_NAME:$tag" \\
+        -t "$SERVICE_NAME:latest" \\
         .
 
     log "Image built successfully"
@@ -9047,12 +9047,12 @@ build_image() {
 
 # Run vulnerability scan on new image
 scan_image() {
-    local tag="\$1"
+    local tag="$1"
 
-    log "Scanning image for vulnerabilities: \$tag"
+    log "Scanning image for vulnerabilities: $tag"
 
     if command -v trivy &> /dev/null; then
-        trivy image --severity HIGH,CRITICAL "\$SERVICE_NAME:\$tag" || true
+        trivy image --severity HIGH,CRITICAL "$SERVICE_NAME:$tag" || true
     else
         warn "Trivy not found, skipping vulnerability scan"
     fi
@@ -9060,54 +9060,54 @@ scan_image() {
 
 # Test new image
 test_image() {
-    local tag="\$1"
+    local tag="$1"
 
-    log "Testing new image: \$tag"
+    log "Testing new image: $tag"
 
     # Start container
     local container_id
-    container_id=\$(docker run -d \\
+    container_id=$(docker run -d \\
         -e DJANGO_SETTINGS_MODULE=config.settings.production \\
         -e SECRET_KEY=test_key \\
-        "\$SERVICE_NAME:\$tag")
+        "$SERVICE_NAME:$tag")
 
     # Wait for startup
     sleep 10
 
     # Health check
-    if docker exec "\$container_id" curl -f http://localhost:8000/health; then
+    if docker exec "$container_id" curl -f http://localhost:8000/health; then
         log "Health check passed"
-        docker stop "\$container_id"
-        docker rm "\$container_id"
+        docker stop "$container_id"
+        docker rm "$container_id"
         return 0
     else
         error "Health check failed"
-        docker logs "\$container_id" 2>&1 || true
-        docker stop "\$container_id"
-        docker rm "\$container_id"
+        docker logs "$container_id" 2>&1 || true
+        docker stop "$container_id"
+        docker rm "$container_id"
         return 1
     fi
 }
 
 # Deploy to production
 deploy() {
-    local tag="\$1"
+    local tag="$1"
 
-    log "Deploying to production: \$tag"
+    log "Deploying to production: $tag"
 
     # Tag for registry
-    if [ -n "\$REGISTRY" ]; then
-        docker tag "\$SERVICE_NAME:\$tag" "\$REGISTRY/\$SERVICE_NAME:\$tag"
-        docker push "\$REGISTRY/\$SERVICE_NAME:\$tag"
+    if [ -n "$REGISTRY" ]; then
+        docker tag "$SERVICE_NAME:$tag" "$REGISTRY/$SERVICE_NAME:$tag"
+        docker push "$REGISTRY/$SERVICE_NAME:$tag"
     fi
 
     # Update Kubernetes deployment
     if command -v kubectl &> /dev/null; then
-        kubectl set image deployment/"\$SERVICE_NAME"-web \\
-            "\$SERVICE_NAME=\$REGISTRY/\$SERVICE_NAME:\$tag" \\
+        kubectl set image deployment/"$SERVICE_NAME"-web \\
+            "$SERVICE_NAME=$REGISTRY/$SERVICE_NAME:$tag" \\
             -n default
 
-        kubectl rollout status deployment/"\$SERVICE_NAME"-web -n default
+        kubectl rollout status deployment/"$SERVICE_NAME"-web -n default
     fi
 
     log "Deployment completed successfully"
@@ -9118,8 +9118,8 @@ rollback() {
     log "Initiating rollback..."
 
     if command -v kubectl &> /dev/null; then
-        kubectl rollout undo deployment/"\$SERVICE_NAME"-web -n default
-        kubectl rollout status deployment/"\$SERVICE_NAME"-web -n default
+        kubectl rollout undo deployment/"$SERVICE_NAME"-web -n default
+        kubectl rollout status deployment/"$SERVICE_NAME"-web -n default
     fi
 
     send_notification "FAILED" "Rollback initiated due to deployment failure"
@@ -9127,62 +9127,62 @@ rollback() {
 
 # Cleanup old images
 cleanup() {
-    log "Cleaning up old images (keeping last \$MAX_VERSIONS versions)"
+    log "Cleaning up old images (keeping last $MAX_VERSIONS versions)"
 
     # Remove old local images
-    docker images "\$SERVICE_NAME" --format '{{.Tag}}' | \\
+    docker images "$SERVICE_NAME" --format '{{.Tag}}' | \\
         sort -V | \\
-        head -n -\$MAX_VERSIONS | \\
-        xargs -I {} docker rmi "\$SERVICE_NAME:{}" 2>/dev/null || true
+        head -n -$MAX_VERSIONS | \\
+        xargs -I {} docker rmi "$SERVICE_NAME:{}" 2>/dev/null || true
 }
 
 # Main execution
 main() {
-    log "Starting base image update process for \$SERVICE_NAME"
+    log "Starting base image update process for $SERVICE_NAME"
 
     # Get current base image version
-    CURRENT_BASE="\$(grep '^FROM ' "\${DOCKERFILE:-Dockerfile.prod}" | awk '{print \$2}')"
-    log "Current base image: \$CURRENT_BASE"
+    CURRENT_BASE="$(grep '^FROM ' "\${DOCKERFILE:-Dockerfile.prod}" | awk '{print $2}')"
+    log "Current base image: $CURRENT_BASE"
 
     # Get latest version
-    LATEST_VERSION="\$(get_latest_version "\$CURRENT_BASE")"
+    LATEST_VERSION="$(get_latest_version "$CURRENT_BASE")"
 
-    if [ -z "\$LATEST_VERSION" ]; then
+    if [ -z "$LATEST_VERSION" ]; then
         error "Failed to get latest version"
         exit 1
     fi
 
-    LATEST_BASE="\${CURRENT_BASE%:*}:\$LATEST_VERSION"
-    log "Latest base image: \$LATEST_BASE"
+    LATEST_BASE="\${CURRENT_BASE%:*}:$LATEST_VERSION"
+    log "Latest base image: $LATEST_BASE"
 
     # Check if update is needed
-    if [ "\$CURRENT_BASE" = "\$LATEST_BASE" ]; then
+    if [ "$CURRENT_BASE" = "$LATEST_BASE" ]; then
         log "Already using latest base image"
         exit 0
     fi
 
     # Update available
-    warn "Update available: \$LATEST_BASE"
+    warn "Update available: $LATEST_BASE"
 
     # Create backup
-    update_dockerfile "\$LATEST_BASE"
+    update_dockerfile "$LATEST_BASE"
 
     # Build new version
-    TAG="v\$(date +%Y%m%d-%H%M%S)"
-    build_image "\$TAG"
+    TAG="v$(date +%Y%m%d-%H%M%S)"
+    build_image "$TAG"
 
     # Scan for vulnerabilities
-    scan_image "\$TAG"
+    scan_image "$TAG"
 
     # Test new image
-    if ! test_image "\$TAG"; then
+    if ! test_image "$TAG"; then
         error "Image tests failed"
         rollback
         exit 1
     fi
 
     # Deploy to production
-    deploy "\$TAG" || {
+    deploy "$TAG" || {
         error "Deployment failed"
         rollback
         exit 1
@@ -9192,14 +9192,14 @@ main() {
     cleanup
 
     # Send notification
-    send_notification "SUCCESS" "Successfully updated base image to \$LATEST_BASE"
+    send_notification "SUCCESS" "Successfully updated base image to $LATEST_BASE"
 
     log "Base image update completed successfully"
 }
 
 # Parse arguments
-while [[ \$# -gt 0 ]]; do
-    case \$1 in
+while [[ $# -gt 0 ]]; do
+    case $1 in
         --dry-run)
             DRY_RUN=true
             shift
@@ -9213,7 +9213,7 @@ while [[ \$# -gt 0 ]]; do
             shift
             ;;
         *)
-            error "Unknown option: \$1"
+            error "Unknown option: $1"
             exit 1
             ;;
     esac
@@ -9241,23 +9241,23 @@ BLUE='\\033[0;34m'
 NC='\\033[0m'
 
 log() {
-    echo -e "\${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]\${NC} \$*" | tee -a "\$PATCH_LOG_DIR/patch-manager.log"
+    echo -e "\${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]\${NC} $*" | tee -a "$PATCH_LOG_DIR/patch-manager.log"
 }
 
 error() {
-    echo -e "\${RED}[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR]\${NC} \$*" | tee -a "\$PATCH_LOG_DIR/patch-manager.log" >&2
+    echo -e "\${RED}[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR]\${NC} $*" | tee -a "$PATCH_LOG_DIR/patch-manager.log" >&2
 }
 
 warn() {
-    echo -e "\${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] [WARN]\${NC} \$*" | tee -a "\$PATCH_LOG_DIR/patch-manager.log"
+    echo -e "\${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] [WARN]\${NC} $*" | tee -a "$PATCH_LOG_DIR/patch-manager.log"
 }
 
 # Initialize patch state
 init_state() {
-    mkdir -p "\$STATE_DIR" "\$PATCH_LOG_DIR"
+    mkdir -p "$STATE_DIR" "$PATCH_LOG_DIR"
 
-    if [ ! -f "\$STATE_DIR/patches.json" ]; then
-        cat > "\$STATE_DIR/patches.json" << EOF
+    if [ ! -f "$STATE_DIR/patches.json" ]; then
+        cat > "$STATE_DIR/patches.json" << EOF
 {
   "current_version": "1.0.0",
   "patches_applied": [],
@@ -9278,21 +9278,21 @@ scan_vulnerabilities() {
         trivy image --format json --output /tmp/scan-results.json "\${SERVICE_NAME}:latest"
 
         # Parse results
-        CRITICAL_COUNT=\$(jq '[.Results[].Vulnerabilities // []] | add | map(select(.Severity == "CRITICAL")) | length' /tmp/scan-results.json)
-        HIGH_COUNT=\$(jq '[.Results[].Vulnerabilities // []] | add | map(select(.Severity == "HIGH")) | length' /tmp/scan-results.json)
+        CRITICAL_COUNT=$(jq '[.Results[].Vulnerabilities // []] | add | map(select(.Severity == "CRITICAL")) | length' /tmp/scan-results.json)
+        HIGH_COUNT=$(jq '[.Results[].Vulnerabilities // []] | add | map(select(.Severity == "HIGH")) | length' /tmp/scan-results.json)
 
-        log "Found \$CRITICAL_COUNT critical and \$HIGH_COUNT high severity vulnerabilities"
+        log "Found $CRITICAL_COUNT critical and $HIGH_COUNT high severity vulnerabilities"
 
         # Update state
-        jq --arg date "\$(date -Iseconds)" \\
-           --arg critical "\$CRITICAL_COUNT" \\
-           --arg high "\$HIGH_COUNT" \\
-           '.last_scan = \$date | .vulnerabilities = {critical: \$critical, high: \$high}' \\
-           "\$STATE_DIR/patches.json" > "\$STATE_DIR/patches.json.tmp"
-        mv "\$STATE_DIR/patches.json.tmp" "\$STATE_DIR/patches.json"
+        jq --arg date "$(date -Iseconds)" \\
+           --arg critical "$CRITICAL_COUNT" \\
+           --arg high "$HIGH_COUNT" \\
+           '.last_scan = $date | .vulnerabilities = {critical: $critical, high: $high}' \\
+           "$STATE_DIR/patches.json" > "$STATE_DIR/patches.json.tmp"
+        mv "$STATE_DIR/patches.json.tmp" "$STATE_DIR/patches.json"
 
         # Return true if vulnerabilities found
-        [ "\$CRITICAL_COUNT" -gt 0 ] || [ "\$HIGH_COUNT" -gt 0 ]
+        [ "$CRITICAL_COUNT" -gt 0 ] || [ "$HIGH_COUNT" -gt 0 ]
     else
         warn "Trivy not found, skipping vulnerability scan"
         return 1
@@ -9312,10 +9312,10 @@ scan_python_deps() {
     if command -v pip-audit &> /dev/null; then
         pip-audit --format json --output /tmp/pip-audit-results.json || true
 
-        VULN_COUNT=\$(jq '.vulnerabilities | length' /tmp/pip-audit-results.json 2>/dev/null || echo "0")
+        VULN_COUNT=$(jq '.vulnerabilities | length' /tmp/pip-audit-results.json 2>/dev/null || echo "0")
 
-        if [ "\$VULN_COUNT" -gt 0 ]; then
-            log "Found \$VULN_COUNT vulnerable Python packages"
+        if [ "$VULN_COUNT" -gt 0 ]; then
+            log "Found $VULN_COUNT vulnerable Python packages"
             return 0
         fi
     fi
@@ -9332,9 +9332,9 @@ scan_python_deps() {
 generate_patch_plan() {
     log "Generating patch plan..."
 
-    cat > "\$STATE_DIR/patch-plan.yaml" << EOF
-# Patch Plan for \$SERVICE_NAME
-# Generated: \$(date -Iseconds)
+    cat > "$STATE_DIR/patch-plan.yaml" << EOF
+# Patch Plan for $SERVICE_NAME
+# Generated: $(date -Iseconds)
 
 patches:
   - id: patch-001
@@ -9342,12 +9342,12 @@ patches:
     priority: critical
     auto_apply: true
     description: "Update base image to fix CVEs"
-    current_version: "\$(grep '^FROM ' Dockerfile.prod | awk '{print \$2}')"
-    target_version: "\$(get_latest_base_image)"
+    current_version: "$(grep '^FROM ' Dockerfile.prod | awk '{print $2}')"
+    target_version: "$(get_latest_base_image)"
     cves:
       - "CVE-2024-1234"
     estimated_downtime: "5m"
-    rollback_plan: "kubectl rollout undo deployment/\$SERVICE_NAME-web"
+    rollback_plan: "kubectl rollout undo deployment/$SERVICE_NAME-web"
 
   - id: patch-002
     type: python_package
@@ -9366,118 +9366,118 @@ patches:
     requires_testing: true
 EOF
 
-    log "Patch plan saved to \$STATE_DIR/patch-plan.yaml"
+    log "Patch plan saved to $STATE_DIR/patch-plan.yaml"
 }
 
 # Apply patch
 apply_patch() {
-    local patch_id="\$1"
+    local patch_id="$1"
 
-    log "Applying patch: \$patch_id"
+    log "Applying patch: $patch_id"
 
     # Pre-flight checks
     log "Running pre-flight checks..."
 
     # Check cluster health
     if command -v kubectl &> /dev/null; then
-        kubectl get pods -n default | grep "\$SERVICE_NAME" | grep -v Running && {
+        kubectl get pods -n default | grep "$SERVICE_NAME" | grep -v Running && {
             error "Service not healthy, aborting patch"
             exit 1
         }
     fi
 
     # Create backup point
-    BACKUP_POINT="backup-\$(date +%Y%m%d-%H%M%S)"
-    log "Creating backup point: \$BACKUP_POINT"
+    BACKUP_POINT="backup-$(date +%Y%m%d-%H%M%S)"
+    log "Creating backup point: $BACKUP_POINT"
 
-    kubectl rollout history deployment/\$SERVICE_NAME-web -n default > "\$PATCH_LOG_DIR/\$BACKUP_POINT-history.txt"
+    kubectl rollout history deployment/$SERVICE_NAME-web -n default > "$PATCH_LOG_DIR/$BACKUP_POINT-history.txt"
 
     # Apply patch based on type
     local patch_type
-    patch_type=\$(yq eval ".patches[] | select(.id == \\\"\$patch_id\\\") | .type" "\$STATE_DIR/patch-plan.yaml")
+    patch_type=$(yq eval ".patches[] | select(.id == \\"$patch_id\\") | .type" "$STATE_DIR/patch-plan.yaml")
 
-    case "\$patch_type" in
+    case "$patch_type" in
         base_image)
             log "Applying base image patch..."
             ./vulnerability/base-image-updater.sh
             ;;
         python_package)
             log "Applying Python package patch..."
-            update_python_packages "\$patch_id"
+            update_python_packages "$patch_id"
             ;;
         *)
-            error "Unknown patch type: \$patch_type"
+            error "Unknown patch type: $patch_type"
             exit 1
             ;;
     esac
 
     # Verify patch
-    if verify_patch "\$patch_id"; then
+    if verify_patch "$patch_id"; then
         log "Patch applied successfully"
 
         # Update state
-        jq --arg id "\$patch_id" \\
-           --arg date "\$(date -Iseconds)" \\
+        jq --arg id "$patch_id" \\
+           --arg date "$(date -Iseconds)" \\
            '.patches_applied += [{id: $id, applied_at: $date}] | .last_patch = $date' \\
-           "\$STATE_DIR/patches.json" > "\$STATE_DIR/patches.json.tmp"
-        mv "\$STATE_DIR/patches.json.tmp" "\$STATE_DIR/patches.json"
+           "$STATE_DIR/patches.json" > "$STATE_DIR/patches.json.tmp"
+        mv "$STATE_DIR/patches.json.tmp" "$STATE_DIR/patches.json"
 
         # Send notification
-        send_notification "PATCH_APPLIED" "Patch \$patch_id applied successfully"
+        send_notification "PATCH_APPLIED" "Patch $patch_id applied successfully"
     else
         error "Patch verification failed, rolling back..."
-        rollback_patch "\$patch_id"
+        rollback_patch "$patch_id"
         exit 1
     fi
 }
 
 # Update Python packages
 update_python_packages() {
-    local patch_id="\$1"
+    local patch_id="$1"
 
     log "Updating Python packages..."
 
     # Update requirements.txt
-    yq eval ".patches[] | select(.id == \\\"\$patch_id\\\") | .packages[]" "\$STATE_DIR/patch-plan.yaml" | \\
+    yq eval ".patches[] | select(.id == \\"$patch_id\\") | .packages[]" "$STATE_DIR/patch-plan.yaml" | \\
         while read -r pkg_info; do
             local name target_version
-            name=\$(echo "\$pkg_info" | yq eval '.name')
-            target_version=\$(echo "\$pkg_info" | yq eval '.target_version')
+            name=$(echo "$pkg_info" | yq eval '.name')
+            target_version=$(echo "$pkg_info" | yq eval '.target_version')
 
-            log "Updating \$name to \$target_version"
+            log "Updating $name to $target_version"
             sed -i "s/^\\\${name}==.*/\\\${name}==\\\${target_version}/" requirements.txt
         done
 
     # Rebuild and deploy
     log "Rebuilding container with updated packages..."
-    docker build -f Dockerfile.prod -t "\$SERVICE_NAME:patched" .
+    docker build -f Dockerfile.prod -t "$SERVICE_NAME:patched" .
 
     # Push to registry
-    if [ -n "\$REGISTRY" ]; then
-        docker push "\$REGISTRY/\$SERVICE_NAME:patched"
+    if [ -n "$REGISTRY" ]; then
+        docker push "$REGISTRY/$SERVICE_NAME:patched"
     fi
 
     # Update deployment
-    kubectl set image deployment/\$SERVICE_NAME-web "\$SERVICE_NAME=\$REGISTRY/\$SERVICE_NAME:patched"
-    kubectl rollout status deployment/\$SERVICE_NAME-web -n default
+    kubectl set image deployment/$SERVICE_NAME-web "$SERVICE_NAME=$REGISTRY/$SERVICE_NAME:patched"
+    kubectl rollout status deployment/$SERVICE_NAME-web -n default
 }
 
 # Verify patch
 verify_patch() {
-    local patch_id="\$1"
+    local patch_id="$1"
 
-    log "Verifying patch: \$patch_id"
+    log "Verifying patch: $patch_id"
 
     # Wait for rollout
-    kubectl rollout status deployment/\$SERVICE_NAME-web -n default --timeout=300s
+    kubectl rollout status deployment/$SERVICE_NAME-web -n default --timeout=300s
 
     # Health checks
     sleep 10
 
     # Check pod status
-    READY_PODS=\$(kubectl get deployment \$SERVICE_NAME-web -n default -o jsonpath='{.status.readyReplicas}')
+    READY_PODS=$(kubectl get deployment $SERVICE_NAME-web -n default -o jsonpath='{.status.readyReplicas}')
 
-    if [ "\$READY_PODS" -lt 1 ]; then
+    if [ "$READY_PODS" -lt 1 ]; then
         error "No ready pods after patch"
         return 1
     fi
@@ -9485,9 +9485,9 @@ verify_patch() {
     # Check application health
     if command -v curl &> /dev/null; then
         # Get pod IP
-        POD_IP=\$(kubectl get pods -n default -l app=\$SERVICE_NAME -o jsonpath='{.items[0].status.podIP}')
+        POD_IP=$(kubectl get pods -n default -l app=$SERVICE_NAME -o jsonpath='{.items[0].status.podIP}')
 
-        if curl -f -s "http://\$POD_IP:8000/health" > /dev/null; then
+        if curl -f -s "http://$POD_IP:8000/health" > /dev/null; then
             log "Health check passed"
         else
             error "Health check failed"
@@ -9508,31 +9508,31 @@ verify_patch() {
 
 # Rollback patch
 rollback_patch() {
-    local patch_id="\$1"
+    local patch_id="$1"
 
-    log "Rolling back patch: \$patch_id"
+    log "Rolling back patch: $patch_id"
 
     # Rollback deployment
-    kubectl rollout undo deployment/\$SERVICE_NAME-web -n default
-    kubectl rollout status deployment/\$SERVICE_NAME-web -n default
+    kubectl rollout undo deployment/$SERVICE_NAME-web -n default
+    kubectl rollout status deployment/$SERVICE_NAME-web -n default
 
     log "Rollback completed"
 
     # Update state
-    jq --arg id "\$patch_id" \\
+    jq --arg id "$patch_id" \\
        '.patches_pending += [{id: $id, rolled_back_at: now}]' \\
-       "\$STATE_DIR/patches.json" > "\$STATE_DIR/patches.json.tmp"
-    mv "\$STATE_DIR/patches.json.tmp" "\$STATE_DIR/patches.json"
+       "$STATE_DIR/patches.json" > "$STATE_DIR/patches.json.tmp"
+    mv "$STATE_DIR/patches.json.tmp" "$STATE_DIR/patches.json"
 
-    send_notification "PATCH_ROLLED_BACK" "Patch \$patch_id was rolled back"
+    send_notification "PATCH_ROLLED_BACK" "Patch $patch_id was rolled back"
 }
 
 # List available patches
 list_patches() {
     log "Available patches:"
 
-    if [ -f "\$STATE_DIR/patch-plan.yaml" ]; then
-        yq eval '.patches[] | "- \\(.id): \\(.description) (priority: \\(.priority))"' "\$STATE_DIR/patch-plan.yaml"
+    if [ -f "$STATE_DIR/patch-plan.yaml" ]; then
+        yq eval '.patches[] | "- \\(.id): \\(.description) (priority: \\(.priority))"' "$STATE_DIR/patch-plan.yaml"
     else
         warn "No patch plan found"
     fi
@@ -9540,17 +9540,17 @@ list_patches() {
 
 # Send notification
 send_notification() {
-    local status="\$1"
-    local message="\$2"
+    local status="$1"
+    local message="$2"
 
-    if [ -n "\$WEBHOOK_URL" ]; then
-        curl -s -X POST "\$WEBHOOK_URL" \\
+    if [ -n "$WEBHOOK_URL" ]; then
+        curl -s -X POST "$WEBHOOK_URL" \\
             -H "Content-Type: application/json" \\
             -d "{
-                \\\"service\\\": \\\"\$SERVICE_NAME\\\",
-                \\\"event\\\": \\\"patch_management\\\",
-                \\\"status\\\": \\\"\$status\\\",
-                \\\"message\\\": \\\"\$message\\\"
+                \\"service\\": \\"$SERVICE_NAME\\",
+                \\"event\\": \\"patch_management\\",
+                \\"status\\": \\"$status\\",
+                \\"message\\": \\"$message\\"
             }" || true
     fi
 }
@@ -9566,7 +9566,7 @@ main() {
 
     local command="\${1:-scan}"
 
-    case "\$command" in
+    case "$command" in
         scan)
             scan_vulnerabilities
             scan_python_deps
@@ -9575,37 +9575,37 @@ main() {
             generate_patch_plan
             ;;
         apply)
-            if [ -z "\$2" ]; then
-                error "Usage: \$0 apply <patch-id>"
+            if [ -z "$2" ]; then
+                error "Usage: $0 apply <patch-id>"
                 exit 1
             fi
-            apply_patch "\$2"
+            apply_patch "$2"
             ;;
         list)
             list_patches
             ;;
         verify)
-            if [ -z "\$2" ]; then
-                error "Usage: \$0 verify <patch-id>"
+            if [ -z "$2" ]; then
+                error "Usage: $0 verify <patch-id>"
                 exit 1
             fi
-            verify_patch "\$2"
+            verify_patch "$2"
             ;;
         rollback)
-            if [ -z "\$2" ]; then
-                error "Usage: \$0 rollback <patch-id>"
+            if [ -z "$2" ]; then
+                error "Usage: $0 rollback <patch-id>"
                 exit 1
             fi
-            rollback_patch "\$2"
+            rollback_patch "$2"
             ;;
         *)
-            echo "Usage: \$0 {scan|plan|apply|list|verify|rollback}"
+            echo "Usage: $0 {scan|plan|apply|list|verify|rollback}"
             exit 1
             ;;
     esac
 }
 
-main "\$@"
+main "$@"
 `,
       'scripts/remediation-scan.sh': `#!/bin/bash
 # Remediation Scan Script for {{service_name}}
@@ -9628,19 +9628,19 @@ BLUE='\\033[0;34m'
 NC='\\033[0m'
 
 log() {
-    echo -e "\${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]\${NC} \$*"
+    echo -e "\${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]\${NC} $*"
 }
 
 error() {
-    echo -e "\${RED}[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR]\${NC} \$*" >&2
+    echo -e "\${RED}[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR]\${NC} $*" >&2
 }
 
 warn() {
-    echo -e "\${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] [WARN]\${NC} \$*"
+    echo -e "\${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] [WARN]\${NC} $*"
 }
 
 info() {
-    echo -e "\${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')] [INFO]\${NC} \$*"
+    echo -e "\${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')] [INFO]\${NC} $*"
 }
 
 # Check if trivy is installed
@@ -9654,60 +9654,60 @@ check_trivy() {
 
 # Scan image for vulnerabilities
 scan_image() {
-    log "Scanning image: \$IMAGE_NAME (severity: \$SEVERITY_THRESHOLD+)"
+    log "Scanning image: $IMAGE_NAME (severity: $SEVERITY_THRESHOLD+)"
 
     local scan_output
-    scan_output=\$(mktemp)
+    scan_output=$(mktemp)
 
     trivy image \\
-        --severity "\$SEVERITY_THRESHOLD" \\
-        --format "\$OUTPUT_FORMAT" \\
-        --output "\$scan_output" \\
-        "\$IMAGE_NAME"
+        --severity "$SEVERITY_THRESHOLD" \\
+        --format "$OUTPUT_FORMAT" \\
+        --output "$scan_output" \\
+        "$IMAGE_NAME"
 
     # Count vulnerabilities by severity
     local critical high
-    critical=\$(trivy image --severity CRITICAL --format json "\$IMAGE_NAME" 2>/dev/null | jq '[.Results[].Vulnerabilities // []] | add | length' 2>/dev/null || echo "0")
-    high=\$(trivy image --severity HIGH --format json "\$IMAGE_NAME" 2>/dev/null | jq '[.Results[].Vulnerabilities // []] | add | length' 2>/dev/null || echo "0")
+    critical=$(trivy image --severity CRITICAL --format json "$IMAGE_NAME" 2>/dev/null | jq '[.Results[].Vulnerabilities // []] | add | length' 2>/dev/null || echo "0")
+    high=$(trivy image --severity HIGH --format json "$IMAGE_NAME" 2>/dev/null | jq '[.Results[].Vulnerabilities // []] | add | length' 2>/dev/null || echo "0")
 
-    log "Scan complete: \$critical critical, \$high high severity vulnerabilities"
+    log "Scan complete: $critical critical, $high high severity vulnerabilities"
 
     # Display results
-    cat "\$scan_output"
+    cat "$scan_output"
 
     # Save raw JSON for further processing
-    if [ "\$GENERATE_REPORT" = "true" ]; then
-        trivy image --severity "\$SEVERITY_THRESHOLD" --format json "\$IMAGE_NAME" > "/tmp/\$SERVICE_NAME-scan.json"
-        log "JSON report saved to: /tmp/\$SERVICE_NAME-scan.json"
+    if [ "$GENERATE_REPORT" = "true" ]; then
+        trivy image --severity "$SEVERITY_THRESHOLD" --format json "$IMAGE_NAME" > "/tmp/$SERVICE_NAME-scan.json"
+        log "JSON report saved to: /tmp/$SERVICE_NAME-scan.json"
     fi
 
-    rm -f "\$scan_output"
+    rm -f "$scan_output"
 
     # Return exit code based on findings
-    [ "\$critical" -gt 0 ] || [ "\$high" -gt 0 ]
+    [ "$critical" -gt 0 ] || [ "$high" -gt 0 ]
 }
 
 # Generate remediation recommendations
 generate_remediation_plan() {
     log "Generating remediation plan..."
 
-    local scan_file="/tmp/\$SERVICE_NAME-scan.json"
-    local plan_file="/tmp/\$SERVICE_NAME-remediation-plan.yaml"
+    local scan_file="/tmp/$SERVICE_NAME-scan.json"
+    local plan_file="/tmp/$SERVICE_NAME-remediation-plan.yaml"
 
-    if [ ! -f "\$scan_file" ]; then
+    if [ ! -f "$scan_file" ]; then
         error "Scan results not found. Run scan first."
         exit 1
     fi
 
     # Parse vulnerabilities and create remediation plan
-    cat > "\$plan_file" << EOF
-# Remediation Plan for \$SERVICE_NAME
-# Generated: \$(date -Iseconds)
+    cat > "$plan_file" << EOF
+# Remediation Plan for $SERVICE_NAME
+# Generated: $(date -Iseconds)
 
 summary:
-  image: \$IMAGE_NAME
-  scan_date: \$(date -Iseconds)
-  total_vulnerabilities: \$(jq '[.Results[].Vulnerabilities // []] | add | length' "\$scan_file")
+  image: $IMAGE_NAME
+  scan_date: $(date -Iseconds)
+  total_vulnerabilities: $(jq '[.Results[].Vulnerabilities // []] | add | length' "$scan_file")
 
 remediation_steps:
   - priority: P0
@@ -9717,10 +9717,10 @@ EOF
 
     # Add critical CVEs
     jq -r '.Results[].Vulnerabilities // [] | .[] | select(.Severity == "CRITICAL") |
-        "    - cve_id: \\(.VulnerabilityID)\\n      package: \\(.PkgName)\\n      version: \\(.InstalledVersion)\\n      fixed_in: \\(.FixedVersion // \\\"See vendor\\\")"' \\
-        "\$scan_file" >> "\$plan_file"
+        "    - cve_id: \\(.VulnerabilityID)\\n      package: \\(.PkgName)\\n      version: \\(.InstalledVersion)\\n      fixed_in: \\(.FixedVersion // \\"See vendor\\")"' \\
+        "$scan_file" >> "$plan_file"
 
-    cat >> "\$plan_file" << EOF
+    cat >> "$plan_file" << EOF
 
   - priority: P1
     description: "Update base image to address high-severity vulnerabilities"
@@ -9728,7 +9728,7 @@ EOF
       type: base_image_update
       target_image: python:3.11-slim
       estimated_time: "15 minutes"
-      rollback_plan: "kubectl rollout undo deployment/\$SERVICE_NAME-web"
+      rollback_plan: "kubectl rollout undo deployment/$SERVICE_NAME-web"
 
   - priority: P2
     description: "Update vulnerable Python packages"
@@ -9745,30 +9745,30 @@ compliance_notes: |
   - Update CVE tracking database with remediation dates
 EOF
 
-    log "Remediation plan saved to: \$plan_file"
-    cat "\$plan_file"
+    log "Remediation plan saved to: $plan_file"
+    cat "$plan_file"
 }
 
 # Apply automatic remediation for safe updates
 auto_remediate() {
     log "Starting automatic remediation..."
 
-    local scan_file="/tmp/\$SERVICE_NAME-scan.json"
+    local scan_file="/tmp/$SERVICE_NAME-scan.json"
 
     # Find safe-to-update packages (no API changes)
     local safe_packages
-    safe_packages=\$(jq -r '.Results[].Vulnerabilities // [] | .[] |
+    safe_packages=$(jq -r '.Results[].Vulnerabilities // [] | .[] |
         select(.Severity == "HIGH") |
         select(.PkgName | test("^(pip|setuptools|wheel)$")) |
         .PkgName' \\
-        "\$scan_file" | sort -u)
+        "$scan_file" | sort -u)
 
-    if [ -n "\$safe_packages" ]; then
-        info "Safe packages to update: \$safe_packages"
+    if [ -n "$safe_packages" ]; then
+        info "Safe packages to update: $safe_packages"
 
         # Update requirements.txt
-        for pkg in \$safe_packages; do
-            info "Updating \$pkg"
+        for pkg in $safe_packages; do
+            info "Updating $pkg"
             # This would update requirements.txt and rebuild
         done
     else
@@ -9777,12 +9777,12 @@ auto_remediate() {
 
     # Critical CVEs require manual review
     local critical_cves
-    critical_cves=\$(jq -r '.Results[].Vulnerabilities // [] | .[] | select(.Severity == "CRITICAL") | .VulnerabilityID' \\
-        "\$scan_file" | sort -u)
+    critical_cves=$(jq -r '.Results[].Vulnerabilities // [] | .[] | select(.Severity == "CRITICAL") | .VulnerabilityID' \\
+        "$scan_file" | sort -u)
 
-    if [ -n "\$critical_cves" ]; then
+    if [ -n "$critical_cves" ]; then
         warn "Critical CVEs found that require manual review:"
-        echo "\$critical_cves"
+        echo "$critical_cves"
         warn "Please review and create patch plan manually"
     fi
 }
@@ -9791,11 +9791,11 @@ auto_remediate() {
 generate_sbom() {
     log "Generating Software Bill of Materials (SBOM)..."
 
-    local sbom_file="/tmp/\$SERVICE_NAME-sbom.json"
+    local sbom_file="/tmp/$SERVICE_NAME-sbom.json"
 
     if command -v syft &> /dev/null; then
-        syft "\$IMAGE_NAME" -o json > "\$sbom_file"
-        log "SBOM saved to: \$sbom_file"
+        syft "$IMAGE_NAME" -o json > "$sbom_file"
+        log "SBOM saved to: $sbom_file"
     else
         warn "Syft not found, skipping SBOM generation"
     fi
@@ -9806,18 +9806,18 @@ main() {
     check_trivy
 
     # Parse arguments
-    while [[ \$# -gt 0 ]]; do
-        case \$1 in
+    while [[ $# -gt 0 ]]; do
+        case $1 in
             --image)
-                IMAGE_NAME="\$2"
+                IMAGE_NAME="$2"
                 shift 2
                 ;;
             --severity)
-                SEVERITY_THRESHOLD="\$2"
+                SEVERITY_THRESHOLD="$2"
                 shift 2
                 ;;
             --format)
-                OUTPUT_FORMAT="\$2"
+                OUTPUT_FORMAT="$2"
                 shift 2
                 ;;
             --auto-remediate)
@@ -9829,8 +9829,8 @@ main() {
                 shift
                 ;;
             *)
-                error "Unknown option: \$1"
-                echo "Usage: \$0 [--image IMAGE] [--severity SEVERITY] [--format FORMAT] [--auto-remediate] [--no-report]"
+                error "Unknown option: $1"
+                echo "Usage: $0 [--image IMAGE] [--severity SEVERITY] [--format FORMAT] [--auto-remediate] [--no-report]"
                 exit 1
                 ;;
         esac
@@ -9847,18 +9847,18 @@ main() {
         generate_sbom
 
         # Auto-remediate if enabled
-        if [ "\$AUTO_REMEDIATE" = "true" ]; then
+        if [ "$AUTO_REMEDIATE" = "true" ]; then
             auto_remediate
         fi
 
         exit 1
     else
-        log "No vulnerabilities found above severity threshold: \$SEVERITY_THRESHOLD"
+        log "No vulnerabilities found above severity threshold: $SEVERITY_THRESHOLD"
         exit 0
     fi
 }
 
-main "\$@"
+main "$@"
 `,
       'README.md': `# {{service_name}}
 

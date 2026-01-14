@@ -512,12 +512,11 @@ export class WorkspaceCacheManager {
   }
 
   private encodeKey(key: string): string {
-    return Buffer.from(key).toString('base64').replace(/[/+=]/g, '_');
+    return Buffer.from(key).toString('base64url');
   }
 
   private decodeKey(encodedKey: string): string {
-    const base64 = encodedKey.replace(/_/g, '+');
-    return Buffer.from(base64, 'base64').toString();
+    return Buffer.from(encodedKey, 'base64url').toString();
   }
 
   private isEntryValid(entry: CacheEntry): boolean {

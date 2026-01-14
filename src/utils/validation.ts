@@ -590,52 +590,48 @@ export function validateEnvironmentConfig(config: any): ValidationResult {
   return configValidator.validateConfiguration(config, ENVIRONMENT_CONFIG_SCHEMA, 'environment');
 }
 
-export function validateConfigFile(filePath: string, configType: 'global' | 'project'): Promise<ValidationResult> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      if (!await fs.pathExists(filePath)) {
-        resolve({
-          valid: false,
-          errors: [{
-            field: 'file',
-            message: `Configuration file not found: ${filePath}`,
-            severity: 'error',
-            code: 'FILE_NOT_FOUND',
-            suggestions: [`Create configuration file at ${filePath}`]
-          }],
-          warnings: [],
-          suggestions: []
-        });
-        return;
-      }
-
-      const content = await fs.readFile(filePath, 'utf8');
-      let config: any;
-
-      try {
-        config = yaml.parse(content);
-      } catch (parseError) {
-        resolve({
-          valid: false,
-          errors: [{
-            field: 'syntax',
-            message: `Invalid YAML syntax: ${(parseError as Error).message}`,
-            severity: 'error',
-            code: 'YAML_PARSE_ERROR',
-            suggestions: ['Check YAML syntax', 'Validate indentation', 'Check for special characters']
-          }],
-          warnings: [],
-          suggestions: []
-        });
-        return;
-      }
-
-      const schema = configType === 'global' ? GLOBAL_CONFIG_SCHEMA : PROJECT_CONFIG_SCHEMA;
-      const result = configValidator.validateConfiguration(config, schema, configType);
-      resolve(result);
-
-    } catch (error) {
-      reject(new ValidationError(`Failed to validate configuration: ${(error as Error).message}`));
+export async function validateConfigFile(filePath: string, configType: 'global' | 'project'): Promise<ValidationResult> {
+  try {
+    if (!await fs.pathExists(filePath)) {
+      return {
+        valid: false,
+        errors: [{
+          field: 'file',
+          message: `Configuration file not found: ${filePath}`,
+          severity: 'error',
+          code: 'FILE_NOT_FOUND',
+          suggestions: [`Create configuration file at ${filePath}`]
+        }],
+        warnings: [],
+        suggestions: []
+      };
     }
-  });
+
+    const content = await fs.readFile(filePath, 'utf8');
+    let config: any;
+
+    try {
+      config = yaml.parse(content);
+    } catch (parseError) {
+      return {
+        valid: false,
+        errors: [{
+          field: 'syntax',
+          message: `Invalid YAML syntax: ${(parseError as Error).message}`,
+          severity: 'error',
+          code: 'YAML_PARSE_ERROR',
+          suggestions: ['Check YAML syntax', 'Validate indentation', 'Check for special characters']
+        }],
+        warnings: [],
+        suggestions: []
+      };
+    }
+
+    const schema = configType === 'global' ? GLOBAL_CONFIG_SCHEMA : PROJECT_CONFIG_SCHEMA;
+    const result = configValidator.validateConfiguration(config, schema, configType);
+    return result;
+
+  } catch (error) {
+    throw new ValidationError(`Failed to validate configuration: ${(error as Error).message}`);
+  }
 }

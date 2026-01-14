@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { Command } from 'commander';
 import { createSpinner } from '../utils/spinner';
 import { ValidationError } from '../utils/error-handler';
 import { 
@@ -32,7 +33,7 @@ export async function listCommandConflicts(
 
   try {
     // Create conflict resolver with mock commands
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -251,7 +252,7 @@ export async function resolveConflict(
       throw new ValidationError(`Invalid strategy: ${strategy}. Valid options: ${validStrategies.join(', ')}`);
     }
 
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -339,7 +340,7 @@ export async function autoResolveConflicts(
   const { verbose = false, dryRun = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -404,7 +405,7 @@ export async function showConflictStats(
   const { verbose = false, json = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -493,7 +494,7 @@ export async function setPriorityOverride(
       throw new ValidationError('Priority must be a valid number');
     }
 
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -543,7 +544,7 @@ export async function showResolutionHistory(
   const { verbose = false, json = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();

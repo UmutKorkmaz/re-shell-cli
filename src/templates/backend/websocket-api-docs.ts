@@ -425,32 +425,32 @@ channels:
     description: Main WebSocket connection endpoint
     messages:
       connected:
-        \$ref: '#/components/messages/connected'
+        $ref: '#/components/messages/connected'
       user_joined:
-        \$ref: '#/components/messages/user_joined'
+        $ref: '#/components/messages/user_joined'
       user_left:
-        \$ref: '#/components/messages/user_left'
+        $ref: '#/components/messages/user_left'
 
   rooms/{roomName}:
     address: /rooms/{roomName}
     description: Room-based messaging
     parameters:
       roomName:
-        \$ref: '#/components/parameters/roomName'
+        $ref: '#/components/parameters/roomName'
     messages:
       chat_message:
-        \$ref: '#/components/messages/chat_message'
+        $ref: '#/components/messages/chat_message'
       join:
-        \$ref: '#/components/messages/join'
+        $ref: '#/components/messages/join'
       leave:
-        \$ref: '#/components/messages/leave'
+        $ref: '#/components/messages/leave'
 
   broadcast:
     address: /broadcast
     description: Broadcast to all connected clients
     messages:
       broadcast:
-        \$ref: '#/components/messages/broadcast'
+        $ref: '#/components/messages/broadcast'
 
 components:
   messages:
@@ -459,49 +459,49 @@ components:
       title: Connected
       summary: Sent when client successfully connects
       payload:
-        \$ref: '#/components/schemas/Connected'
+        $ref: '#/components/schemas/Connected'
 
     user_joined:
       name: user_joined
       title: User Joined
       summary: Sent when a user joins a room
       payload:
-        \$ref: '#/components/schemas/UserJoined'
+        $ref: '#/components/schemas/UserJoined'
 
     user_left:
       name: user_left
       title: User Left
       summary: Sent when a user leaves a room
       payload:
-        \$ref: '#/components/schemas/UserLeft'
+        $ref: '#/components/schemas/UserLeft'
 
     chat_message:
       name: chat_message
       title: Chat Message
       summary: Chat message within a room
       payload:
-        \$ref: '#/components/schemas/ChatMessage'
+        $ref: '#/components/schemas/ChatMessage'
 
     join:
       name: join
       title: Join Room
       summary: Request to join a room
       payload:
-        \$ref: '#/components/schemas/JoinRoom'
+        $ref: '#/components/schemas/JoinRoom'
 
     leave:
       name: leave
       title: Leave Room
       summary: Request to leave a room
       payload:
-        \$ref: '#/components/schemas/LeaveRoom'
+        $ref: '#/components/schemas/LeaveRoom'
 
     broadcast:
       name: broadcast
       title: Broadcast
       summary: Broadcast message to all clients
       payload:
-        \$ref: '#/components/schemas/Broadcast'
+        $ref: '#/components/schemas/Broadcast'
 
   schemas:
     Connected:

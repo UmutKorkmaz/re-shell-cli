@@ -26,7 +26,7 @@ use {{projectNamePascal}};
 use {{projectNamePascal}}::Model::DB;
 
 # Initialize database
-\{{projectNamePascal}}::Model::DB->init();
+{{projectNamePascal}}::Model::DB->init();
 
 my $app = {{projectNamePascal}}->apply_default_middlewares({{projectNamePascal}}->psgi_app(@_));
 
@@ -563,7 +563,7 @@ use warnings;
 use Test::More tests => 2;
 use Test::WWW::Mechanize::Catalyst 'Catalyst';
 
-my $mech = Test::WWW::Mechanize::Catalyst->new(catalyst_app => \{{projectNamePascal}}->psgi_app(@_));
+my $mech = Test::WWW::Mechanize::Catalyst->new(catalyst_app => {{projectNamePascal}}->psgi_app(@_));
 
 # Test health endpoint
 $mech->get_ok('/health', 'Health check works');

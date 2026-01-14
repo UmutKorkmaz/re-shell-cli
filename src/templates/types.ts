@@ -222,7 +222,7 @@ export interface TemplateEngineConfig {
   includeRegex?: RegExp;
   escapeHtml?: boolean;
   strictMode?: boolean;
-  customHelpers?: Record<string, Function>;
+  customHelpers?: Record<string, (...args: any[]) => any>;
 }
 
 // Language-specific template configurations

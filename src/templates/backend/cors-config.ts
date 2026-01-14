@@ -123,8 +123,8 @@ export class CorsMiddleware {
       .filter(origin => origin.includes('*'))
       .map(origin => {
         const pattern = origin
-          .replace(/\./g, '\\.')
-          .replace(/\*/g, '.*');
+          .replace(/./g, '\\.')
+          .replace(/*/g, '.*');
         return new RegExp('^' + pattern + '$');
       });
   }

@@ -2582,7 +2582,7 @@ module ApiClient
       request = request_class.new(uri)
       request['Content-Type'] = 'application/json'
       request['Accept'] = 'application/json'
-      request['Authorization'] = "Bearer #\{@config.api_key}" if @config.api_key
+      request['Authorization'] = "Bearer #{@config.api_key}" if @config.api_key
 
       @config.headers.each { |key, value| request[key] = value }
 

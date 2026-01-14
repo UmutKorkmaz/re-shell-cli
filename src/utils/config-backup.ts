@@ -121,6 +121,7 @@ export class ConfigBackupManager {
     // Collect templates
     const templates: any[] = [];
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { templateEngine } = require('./template-engine');
       templates.push(...await templateEngine.listTemplates());
     } catch (error) {
@@ -200,6 +201,7 @@ export class ConfigBackupManager {
 
     if (options.templates) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { templateEngine } = require('./template-engine');
         configurations.templates = await templateEngine.listTemplates();
       } catch (error) {
@@ -417,6 +419,7 @@ export class ConfigBackupManager {
   private async saveBackup(backupData: BackupData): Promise<string> {
     const content = JSON.stringify(backupData, null, 2);
     const size = Buffer.byteLength(content, 'utf8');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const checksum = require('crypto').createHash('md5').update(content).digest('hex');
 
     // Update metadata with calculated values
@@ -550,6 +553,7 @@ export class ConfigBackupManager {
     // Restore templates
     if (configurations.templates && (!selective || selective.templates)) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { templateEngine } = require('./template-engine');
         for (const template of configurations.templates) {
           await templateEngine.saveTemplate(template);

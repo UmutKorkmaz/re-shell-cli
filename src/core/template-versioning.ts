@@ -489,6 +489,7 @@ export class TemplateVersionManager extends EventEmitter {
     await fs.writeFile(archivePath, Buffer.from(buffer));
 
     // Extract archive
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const tar = require('tar');
     await tar.extract({
       file: archivePath,
@@ -503,9 +504,10 @@ export class TemplateVersionManager extends EventEmitter {
 
   private async loadTemplateFromPath(templatePath: string): Promise<Template> {
     const manifestPath = path.join(templatePath, 'template.yaml');
-    const yaml = require('js-yaml');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const yamlLib = require('js-yaml');
     const content = await fs.readFile(manifestPath, 'utf8');
-    return yaml.load(content) as Template;
+    return yamlLib.load(content) as Template;
   }
 
   private async backupTemplate(templateId: string, version: string): Promise<void> {

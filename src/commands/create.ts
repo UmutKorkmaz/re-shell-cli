@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import prompts from 'prompts';
 import chalk from 'chalk';
+import * as yaml from 'js-yaml';
 import { getFrameworkChoices, getFrameworkConfig, validateFramework } from '../utils/framework';
 import { findMonorepoRoot } from '../utils/monorepo';
 import { getBackendTemplate, listBackendTemplates, type BackendTemplate } from '../templates/backend/index';
@@ -268,7 +269,7 @@ async function createPolyglotProject(
   // Step 4: Add services
   const services: PolyglotService[] = [];
   let addingServices = true;
-  let servicePortBase = 3001;
+  const servicePortBase = 3001;
 
   console.log(chalk.blue('\n📦 Add microservices to your polyglot project:\n'));
 
@@ -501,7 +502,7 @@ async function createMicrofrontendProject(
   // Step 3: Add remote microfrontends
   const remotes: MicrofrontendRemote[] = [];
   let addingRemotes = true;
-  let portBase = 3001;
+  const portBase = 3001;
 
   console.log(chalk.blue('\n📦 Add remote microfrontends:\n'));
 
@@ -2233,6 +2234,126 @@ function getPrimaryLanguage(backend?: string, frontend?: string): string | null 
 }
 
 /**
+ * Auto-register service in workspace YAML
+ */
+async function autoRegisterInWorkspace(
+  monorepoRoot: string,
+  serviceName: string,
+  config: {
+    type: string;
+    projectType: string;
+    finalFrontend?: string;
+    finalBackend?: string;
+    finalDb?: string;
+    finalPort: string;
+    workspacePath: string;
+    packageManager: string;
+  }
+): Promise<void> {
+  const workspaceYamlPath = path.join(monorepoRoot, 're-shell.workspaces.yaml');
+
+  // Check if workspace YAML exists
+  if (!await fs.pathExists(workspaceYamlPath)) {
+    console.log(chalk.gray('\nNo workspace configuration found - skipping auto-registration'));
+    console.log(chalk.gray('Tip: Run "re-shell workspace init" to create a workspace configuration\n'));
+    return;
+  }
+
+  try {
+    const workspaceContent = await fs.readFile(workspaceYamlPath, 'utf8');
+    const workspaceConfig = yaml.load(workspaceContent) as Record<string, any>;
+
+    // Initialize services if not present
+    if (!workspaceConfig.services) {
+      workspaceConfig.services = {};
+    }
+
+    // Determine service type and framework
+    const serviceType: 'frontend' | 'backend' | 'worker' =
+      config.projectType === 'backend' ? 'backend' :
+      config.projectType === 'full-stack' ? 'backend' :
+      'frontend';
+
+    // For backend services, prefer backend framework; for frontend, prefer frontend
+    const framework = serviceType === 'backend' ? (config.finalBackend || config.finalFrontend) : (config.finalFrontend || config.finalBackend);
+
+    // Build service entry
+    const serviceEntry = {
+      name: serviceName,
+      displayName: toDisplayName(serviceName),
+      type: serviceType,
+      language: detectLanguage(framework),
+      framework: framework,
+      port: parseInt(config.finalPort) || undefined,
+      path: path.relative(monorepoRoot, config.workspacePath),
+    };
+
+    // Add to services
+    workspaceConfig.services[serviceName] = serviceEntry;
+
+    // Write back to YAML
+    const newYaml = yaml.dump(workspaceConfig, {
+      indent: 2,
+      lineWidth: -1,
+      sortKeys: false,
+      noRefs: true,
+    });
+
+    await fs.writeFile(workspaceYamlPath, newYaml, 'utf8');
+
+    console.log(chalk.gray(`\n✓ Auto-registered in workspace configuration`));
+    console.log(chalk.gray(`  Service: ${serviceName}`));
+    console.log(chalk.gray(`  Config: re-shell.workspaces.yaml\n`));
+  } catch (error: any) {
+    console.log(chalk.yellow('\n⚠ Failed to auto-register in workspace: ' + error.message));
+    console.log(chalk.gray('You can manually add the service to re-shell.workspaces.yaml\n'));
+  }
+}
+
+/**
+ * Convert kebab-case to display name
+ */
+function toDisplayName(name: string): string {
+  return name
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Detect language from framework string
+ */
+function detectLanguage(framework?: string): string {
+  if (!framework) return 'javascript';
+
+  const lowerFramework = framework.toLowerCase();
+  const typeScriptFrameworks = [
+    'react-ts', 'react', 'next', 'nuxt', 'vue-ts', 'vue',
+    'nestjs', 'angular', 'svelte', 'solid',
+    'express', 'fastify', 'koa',
+  ];
+
+  const pythonFrameworks = ['fastapi', 'django', 'flask', 'tornado', 'sanic'];
+  const goFrameworks = ['gin', 'fiber', 'echo', 'buffalo'];
+  const rustFrameworks = ['actix', 'rocket', 'axum'];
+
+  if (typeScriptFrameworks.some(f => lowerFramework.includes(f))) {
+    return 'typescript';
+  }
+  if (pythonFrameworks.some(f => lowerFramework.includes(f))) {
+    return 'python';
+  }
+  if (goFrameworks.some(f => lowerFramework.includes(f))) {
+    return 'go';
+  }
+  if (rustFrameworks.some(f => lowerFramework.includes(f))) {
+    return 'rust';
+  }
+
+  return 'javascript';
+}
+
+/**
  * Creates a new workspace (app/package/lib/tool) in an existing monorepo
  */
 async function createWorkspace(
@@ -2379,7 +2500,7 @@ async function createWorkspace(
 
   // Handle architecture template selection
   if (responses.useTemplate && responses.useTemplate !== 'no') {
-    let templateChoices = responses.useTemplate === 'yes'
+    const templateChoices = responses.useTemplate === 'yes'
       ? getPopularArchitectureTemplates()
       : getAllArchitectureTemplates();
 
@@ -2741,6 +2862,21 @@ async function createWorkspace(
   const healthCheckResult = await performProjectHealthCheck(workspacePath, projectConfig);
 
   const projectType = isBackendOnly ? 'backend' : isFullStack ? 'full-stack' : 'frontend';
+
+  // Auto-register in workspace YAML if in a monorepo
+  if (monorepoRoot) {
+    await autoRegisterInWorkspace(monorepoRoot, normalizedName, {
+      type,
+      projectType,
+      finalFrontend,
+      finalBackend,
+      finalDb,
+      finalPort,
+      workspacePath,
+      packageManager,
+    });
+  }
+
   console.log(
     chalk.green(`\n✓ ${type.charAt(0).toUpperCase() + type.slice(1)} "${normalizedName}" (${projectType}) created successfully!`)
   );

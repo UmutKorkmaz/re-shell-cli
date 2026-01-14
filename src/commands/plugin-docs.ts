@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import { createSpinner } from '../utils/spinner';
 import { ValidationError } from '../utils/error-handler';
 import { 
@@ -50,7 +51,7 @@ export async function generatePluginDocumentation(
   } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -151,7 +152,7 @@ export async function showCommandHelp(
   } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -210,7 +211,7 @@ export async function listDocumentedCommands(
   } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -311,7 +312,7 @@ export async function searchDocumentation(
   } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();
@@ -381,7 +382,7 @@ export async function showDocumentationStats(
   const { verbose = false, json = false } = options;
 
   try {
-    const { Command } = require('commander');
+
     const tempProgram = new Command();
     const commandRegistry = createPluginCommandRegistry(tempProgram);
     await commandRegistry.initialize();

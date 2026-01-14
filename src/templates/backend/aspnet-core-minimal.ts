@@ -21,7 +21,7 @@ export const aspnetCoreMinimalTemplate: BackendTemplate = {
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>bin\\Debug\\net8.0\\\${projectName}.xml</DocumentationFile>
-    <NoWarn>\$(NoWarn);1591</NoWarn>
+    <NoWarn>$(NoWarn);1591</NoWarn>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>

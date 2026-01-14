@@ -11,7 +11,7 @@ export const eggjsTemplate: BackendTemplate = {
   tags: ['nodejs', 'eggjs', 'koa', 'api', 'rest', 'enterprise', 'microservices', 'typescript'],
   port: 7001,
   dependencies: {},
-  features: [, 'security', 'database', 'queue', 'websockets', 'testing'],
+  features: ['security', 'database', 'queue', 'websockets', 'testing'],
   
   files: {
     // Package configuration

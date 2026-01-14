@@ -102,6 +102,7 @@ export class TemplateWizard extends EventEmitter {
       required: true,
       default: '1.0.0',
       validate: (value: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const semver = require('semver');
         if (!semver.valid(value)) {
           return 'Version must be valid semantic version (e.g., 1.0.0)';

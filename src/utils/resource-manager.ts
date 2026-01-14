@@ -165,13 +165,15 @@ export class ResourceManager {
    * Setup event handlers for graceful shutdown
    */
   private setupEventHandlers(): void {
-    const cleanup = async () => {
+    process.on('SIGINT', async () => {
       await this.cleanup();
-      process.exit(0);
-    };
-    
-    process.on('SIGINT', cleanup);
-    process.on('SIGTERM', cleanup);
+      process.exit(130);
+    });
+
+    process.on('SIGTERM', async () => {
+      await this.cleanup();
+      process.exit(143);
+    });
     process.on('exit', () => {
       // Synchronous cleanup only
       for (const tracker of this.resources.values()) {

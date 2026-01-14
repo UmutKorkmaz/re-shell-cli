@@ -82,11 +82,11 @@ export async function manageEnvironment(options: EnvironmentCommandOptions = {})
   }
 }
 
-async function listEnvironments(options: EnvironmentCommandOptions, spinner?: ProgressSpinner): Promise<void> {
+async function listEnvironments(options: EnvironmentCommandOptions, spinner?: ProgressSpinner, hasRetried = false): Promise<void> {
   if (spinner) spinner.setText('Loading environments...');
-  
+
   const environments = await environmentManager.listEnvironments();
-  
+
   if (spinner) spinner.stop();
 
   if (options.json) {
@@ -94,11 +94,14 @@ async function listEnvironments(options: EnvironmentCommandOptions, spinner?: Pr
   } else {
     console.log(chalk.cyan('\n🌍 Available Environments:'));
     console.log(chalk.gray('═'.repeat(40)));
-    
-    if (environments.length === 0) {
+
+    if (environments.length === 0 && !hasRetried) {
       console.log(chalk.yellow('No environments found. Creating defaults...'));
       await environmentManager.createDefaultEnvironments();
-      return listEnvironments(options, spinner);
+      return listEnvironments(options, spinner, true);
+    } else if (environments.length === 0) {
+      console.log('No environments available.');
+      return;
     }
 
     for (const env of environments) {

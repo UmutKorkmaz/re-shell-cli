@@ -565,6 +565,7 @@ export class ConfigManager {
 
   // Validation methods
   private validateGlobalConfig(config: any): void {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { validateGlobalConfig } = require('./validation');
     const result = validateGlobalConfig(config);
     
@@ -578,6 +579,7 @@ export class ConfigManager {
   }
 
   private validateProjectConfig(config: any): void {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { validateProjectConfig } = require('./validation');
     const result = validateProjectConfig(config);
     

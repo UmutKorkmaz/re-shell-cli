@@ -78,6 +78,12 @@ export async function manageWorkspaceHealth(options: WorkspaceHealthCommandOptio
     await showHealthStatus(options, spinner);
 
   } catch (error) {
+    if (error instanceof ValidationError) {
+      if (spinner) spinner.stop();
+      console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+      console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+      process.exit(1);
+    }
     if (spinner) spinner.fail(chalk.red('Workspace health operation failed'));
     throw error;
   }
@@ -86,6 +92,14 @@ export async function manageWorkspaceHealth(options: WorkspaceHealthCommandOptio
 async function performFullHealthCheck(options: WorkspaceHealthCommandOptions, spinner?: ProgressSpinner): Promise<void> {
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
+
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
 
   if (spinner) spinner.setText(`Performing comprehensive health check: ${inputFile}`);
 
@@ -124,6 +138,14 @@ async function validateWorkspaceTopology(options: WorkspaceHealthCommandOptions,
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
 
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
+
   if (spinner) spinner.setText(`Validating workspace topology: ${inputFile}`);
 
   try {
@@ -152,6 +174,14 @@ async function validateWorkspaceTopology(options: WorkspaceHealthCommandOptions,
 async function performQuickCheck(options: WorkspaceHealthCommandOptions, spinner?: ProgressSpinner): Promise<void> {
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
+
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
 
   if (spinner) spinner.setText(`Quick health check: ${inputFile}`);
 
@@ -222,7 +252,7 @@ async function watchWorkspaceHealth(options: WorkspaceHealthCommandOptions, spin
     });
 
     // Keep the process running
-    await new Promise(() => {}); // Run indefinitely
+    await new Promise(() => { /* run indefinitely */ });
 
   } catch (error) {
     if (spinner) spinner.fail(chalk.red('Health monitoring failed'));
@@ -233,6 +263,14 @@ async function watchWorkspaceHealth(options: WorkspaceHealthCommandOptions, spin
 async function fixHealthIssues(options: WorkspaceHealthCommandOptions, spinner?: ProgressSpinner): Promise<void> {
   const inputFile = options.file || DEFAULT_WORKSPACE_FILE;
   const inputPath = path.resolve(inputFile);
+
+  if (!(await fs.pathExists(inputPath))) {
+    if (spinner) spinner.stop();
+    console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
+    console.log(chalk.gray(`Expected: ${inputFile}`));
+    console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+    return;
+  }
 
   if (spinner) spinner.setText(`Analyzing health issues for auto-fix: ${inputFile}`);
 

@@ -40,28 +40,28 @@ val kotlinVersion = "1.9.21"
 
 dependencies {
     // http4k core
-    implementation("org.http4k:http4k-core:\$http4kVersion")
-    implementation("org.http4k:http4k-server-netty:\$http4kVersion")
-    implementation("org.http4k:http4k-client-okhttp:\$http4kVersion")
+    implementation("org.http4k:http4k-core:$http4kVersion")
+    implementation("org.http4k:http4k-server-netty:$http4kVersion")
+    implementation("org.http4k:http4k-client-okhttp:$http4kVersion")
 
     // Routing & contract
-    implementation("org.http4k:http4k-contract:\$http4kVersion")
-    implementation("org.http4k:http4k-format-jackson:\$http4kVersion")
+    implementation("org.http4k:http4k-contract:$http4kVersion")
+    implementation("org.http4k:http4k-format-jackson:$http4kVersion")
 
     // Security
-    implementation("org.http4k:http4k-security-oauth:\$http4kVersion")
+    implementation("org.http4k:http4k-security-oauth:$http4kVersion")
 
     // OpenAPI
-    implementation("org.http4k:http4k-contract-ui-swagger:\$http4kVersion")
+    implementation("org.http4k:http4k-contract-ui-swagger:$http4kVersion")
 
     // Template
-    implementation("org.http4k:http4k-template-handlebars:\$http4kVersion")
+    implementation("org.http4k:http4k-template-handlebars:$http4kVersion")
 
     // Resilience
-    implementation("org.http4k:http4k-resilience4j:\$http4kVersion")
+    implementation("org.http4k:http4k-resilience4j:$http4kVersion")
 
     // Metrics
-    implementation("org.http4k:http4k-metrics-micrometer:\$http4kVersion")
+    implementation("org.http4k:http4k-metrics-micrometer:$http4kVersion")
     implementation("io.micrometer:micrometer-registry-prometheus:1.12.1")
 
     // Database
@@ -87,8 +87,8 @@ dependencies {
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 
     // Testing
-    testImplementation("org.http4k:http4k-testing-kotest:\$http4kVersion")
-    testImplementation("org.http4k:http4k-testing-approval:\$http4kVersion")
+    testImplementation("org.http4k:http4k-testing-kotest:$http4kVersion")
+    testImplementation("org.http4k:http4k-testing-approval:$http4kVersion")
     testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
     testImplementation("io.kotest:kotest-assertions-core:5.8.0")
     testImplementation("io.mockk:mockk:1.13.8")

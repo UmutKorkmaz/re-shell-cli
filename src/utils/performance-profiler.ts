@@ -115,6 +115,7 @@ export class PerformanceProfiler {
       totalDuration,
       marks: Array.from(this.marks.values()),
       command: process.argv.slice(2).join(' ') || 'none',
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       version: require('../../package.json').version,
       platform: process.platform,
       nodeVersion: process.version

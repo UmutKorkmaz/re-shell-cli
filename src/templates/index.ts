@@ -61,9 +61,10 @@ export abstract class BaseTemplate {
 
   protected generateViteConfig(): string {
     const { normalizedName, port, hasTypeScript } = this.context;
-    const entryExt = this.framework.name.includes('vue') ? 
-      (hasTypeScript ? 'ts' : 'js') : 
-      (hasTypeScript ? 'tsx' : 'jsx');
+    // Vue and Svelte use .ts, others use .tsx for TypeScript
+    const entryExt = this.framework.name.includes('vue') || this.framework.name.includes('svelte')
+      ? (hasTypeScript ? 'ts' : 'js')
+      : (hasTypeScript ? 'tsx' : 'jsx');
 
     let plugins = '';
     let imports = '';
@@ -90,11 +91,11 @@ export abstract class BaseTemplate {
 import { resolve } from 'path';
 ${imports}
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [${plugins}],
-  build: {
+  build: mode === 'production' ? {
     lib: {
-      entry: resolve(__dirname, 'src/index.${entryExt}'),
+      entry: resolve(__dirname, 'src/main.${entryExt}'),
       name: '${normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1).replace(/-./g, x => x[1].toUpperCase())}',
       formats: ['umd'],
       fileName: 'mf'
@@ -107,7 +108,7 @@ export default defineConfig({
         }
       }
     }
-  },
+  } : {},
   server: {
     port: ${port},
     cors: true,
@@ -115,7 +116,7 @@ export default defineConfig({
       'Access-Control-Allow-Origin': '*'
     }
   }
-});`;
+}));`;
   }
 
   protected getExternalDependencies(): string[] {
@@ -188,6 +189,7 @@ export default defineConfig({
         break;
       case 'vue-ts':
         baseConfig.compilerOptions.jsx = 'preserve';
+        baseConfig.compilerOptions.module = 'ESNext';
         baseConfig.compilerOptions.types = ['vite/client'];
         break;
       case 'svelte-ts':

@@ -1,5 +1,8 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
+import { execSync, exec, spawn } from 'child_process';
+import { promisify } from 'util';
 import { EventEmitter } from 'events';
 import chalk from 'chalk';
 import { ValidationError } from './error-handler';
@@ -89,13 +92,13 @@ export interface PluginLogger {
 }
 
 export interface PluginHookSystemInterface {
-  register(hookName: string, handler: Function, options?: any): string;
+  register(hookName: string, handler: (...args: any[]) => any, options?: any): string;
   unregister(hookName: string, handlerId: string): boolean;
   execute(hookName: string, data?: any): Promise<any>;
   executeSync(hookName: string, data?: any): any[];
-  onCommand(command: string, handler: Function, options?: any): string;
-  onFileChange(pattern: RegExp | string, handler: Function, options?: any): string;
-  onWorkspaceBuild(workspace: string, handler: Function, options?: any): string;
+  onCommand(command: string, handler: (...args: any[]) => any, options?: any): string;
+  onFileChange(pattern: RegExp | string, handler: (...args: any[]) => any, options?: any): string;
+  onWorkspaceBuild(workspace: string, handler: (...args: any[]) => any, options?: any): string;
   getHooks(): any[];
   registerCustomHook(name: string): string;
 }
@@ -216,12 +219,11 @@ export class PluginRegistry extends EventEmitter {
     
     try {
       // npm global modules
-      const { execSync } = require('child_process');
       const npmGlobal = execSync('npm root -g', { encoding: 'utf8' }).trim();
       paths.push(path.join(npmGlobal, '@re-shell'));
-      
+
       // User's home directory
-      const homeDir = require('os').homedir();
+      const homeDir = os.homedir();
       paths.push(path.join(homeDir, '.re-shell', 'plugins'));
       
       // System-wide plugins (Unix-like systems)
@@ -444,8 +446,7 @@ export class PluginRegistry extends EventEmitter {
 
     try {
       // Search for packages with 'reshell-plugin' keyword
-      const { execSync } = require('child_process');
-      
+
       // Check local node_modules first
       const localNodeModules = path.join(this.rootPath, 'node_modules');
       if (await fs.pathExists(localNodeModules)) {
@@ -894,8 +895,6 @@ export class PluginRegistry extends EventEmitter {
 
   // Create plugin utilities
   private createPluginUtils(): PluginUtils {
-    const { exec, spawn } = require('child_process');
-    const { promisify } = require('util');
     const execAsync = promisify(exec);
     
     return {

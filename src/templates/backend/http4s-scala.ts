@@ -174,7 +174,7 @@ object Database {
     val admin = User(
       id = UUID.fromString("00000000-0000-0000-0000-000000000001"),
       email = "admin@example.com",
-      password = "\$2a\$12\$dummy", // In production, hash this
+      password = "$2a$12$dummy", // In production, hash this
       name = "Admin User",
       role = Role.ADMIN,
       createdAt = Instant.now(),

@@ -843,7 +843,7 @@ export class BlogComponent {
       slug: 'welcome',
       title: 'Welcome to ${this.context.name}',
       date: 'January 15, 2024',
-      excerpt: 'We\'re excited to launch our new static site built with Angular and Scully.'
+      excerpt: 'We're excited to launch our new static site built with Angular and Scully.'
     }
   ];
 }

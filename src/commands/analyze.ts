@@ -18,7 +18,7 @@ interface BundleAnalysis {
   size: {
     total: string;
     gzipped: string;
-    assets: { name: string; size: string; type: string }[];
+    assets: { name: string; size: string; rawBytes: number; type: string }[];
   };
   chunks: { name: string; size: string; modules: number }[];
   treeshaking: {
@@ -167,7 +167,7 @@ async function analyzeBundleSize(workspacePath: string, workspace: string, optio
 
     // Analyze build output
     const assets = await analyzeBuildAssets(outputPath);
-    const totalSize = assets.reduce((sum, asset) => sum + parseInt(asset.size) || 0, 0);
+    const totalSize = assets.reduce((sum, asset) => sum + asset.rawBytes, 0);
 
     // Try to detect webpack/vite stats
     const statsPath = path.join(workspacePath, 'stats.json');
@@ -425,26 +425,27 @@ async function getWorkspaces(monorepoRoot: string): Promise<string[]> {
   }
 }
 
-async function analyzeBuildAssets(outputPath: string): Promise<{ name: string; size: string; type: string }[]> {
+async function analyzeBuildAssets(outputPath: string): Promise<{ name: string; size: string; rawBytes: number; type: string }[]> {
   try {
     const assets = [];
     const items = await fs.readdir(outputPath, { withFileTypes: true });
-    
+
     for (const item of items) {
       if (item.isFile()) {
         const filePath = path.join(outputPath, item.name);
         const stats = await fs.stat(filePath);
         const ext = path.extname(item.name);
-        
+
         assets.push({
           name: item.name,
           size: formatBytes(stats.size),
+          rawBytes: stats.size,
           type: getFileType(ext)
         });
       }
     }
-    
-    return assets.sort((a, b) => parseInt(b.size) - parseInt(a.size));
+
+    return assets.sort((a, b) => b.rawBytes - a.rawBytes);
   } catch (error) {
     return [];
   }

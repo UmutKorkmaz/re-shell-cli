@@ -1,5 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import * as crypto from 'crypto';
 import { EventEmitter } from 'events';
 
@@ -139,7 +140,6 @@ export class Analytics extends EventEmitter {
 
   private getMachineId(): string {
     // Simple machine ID based on hostname and platform
-    const os = require('os');
     return crypto.createHash('md5')
       .update(os.hostname() + os.platform() + os.arch())
       .digest('hex');

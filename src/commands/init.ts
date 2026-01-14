@@ -1,14 +1,16 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
-import { execSync } from 'child_process';
-import prompts, { PromptObject } from 'prompts';
+import { execSync, spawn } from 'child_process';
+import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { initializeMonorepo, DEFAULT_MONOREPO_STRUCTURE } from '../utils/monorepo';
 import { initializeGitRepository } from '../utils/submodule';
 import { ProgressSpinner, flushOutput } from '../utils/spinner';
 import { AsyncPool } from '../utils/async-pool';
 import { configManager } from '../utils/config';
+
+let signalReceived: string | null = null;
 
 interface InitOptions {
   packageManager?: 'npm' | 'yarn' | 'pnpm' | 'bun';
@@ -47,6 +49,23 @@ const TEMPLATES = {
     dependencies: ['@clerk/nextjs', '@stripe/stripe-js', 'prisma'],
   },
 };
+
+/**
+ * Wrapper around inquirer prompts
+ */
+async function safePrompt<T = any>(questions: any[], options: { debug?: boolean } = {}): Promise<T> {
+  if (options.debug) {
+    console.log(chalk.gray('[DEBUG] Starting prompt...'));
+  }
+
+  const result = await inquirer.prompt<T>(questions);
+
+  if (options.debug) {
+    console.log(chalk.gray('[DEBUG] Prompt completed, keys:', Object.keys(result)));
+  }
+
+  return result;
+}
 
 // Helper functions
 async function checkSystemRequirements(): Promise<{ errors: string[]; warnings: string[] }> {
@@ -177,6 +196,23 @@ async function loadPreset(name: string): Promise<any> {
  * @param options - Initialization options
  */
 export async function initMonorepo(name: string, options: InitOptions = {}): Promise<void> {
+  // Register signal handlers for this command
+  const signals = ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGUSR1', 'SIGUSR2'];
+  signals.forEach(sig => {
+    process.on(sig as NodeJS.Signals, () => {
+      signalReceived = sig;
+      if (options.debug) {
+        console.log(chalk.yellow(`\n[DEBUG] Received signal: ${sig}`));
+      }
+    });
+  });
+
+  process.on('exit', (code) => {
+    if (code !== 0 && signalReceived && options.debug) {
+      console.log(chalk.yellow(`[DEBUG] Exit code ${code} after signal: ${signalReceived}`));
+    }
+  });
+
   // System requirements check
   const { errors, warnings } = await checkSystemRequirements();
 
@@ -251,17 +287,18 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
 
   // Check if directory already exists
   while (fs.existsSync(projectPath) && !options.force) {
-    const { action } = await prompts({
-      type: 'select',
+    const questions: any[] = [{
+      type: 'list',
       name: 'action',
       message: `Directory "${normalizedName}" already exists. What would you like to do?`,
       choices: [
-        { title: 'Enter a new project name', value: 'rename' },
-        { title: 'Overwrite existing directory', value: 'overwrite' },
-        { title: 'Cancel', value: 'cancel' },
+        { name: 'Enter a new project name', value: 'rename' },
+        { name: 'Overwrite existing directory', value: 'overwrite' },
+        { name: 'Cancel', value: 'cancel' },
       ],
-      initial: 0,
-    });
+      default: 'rename',
+    }];
+    const { action } = await safePrompt<{ action: string }>(questions, { debug: options.debug });
 
     if (action === 'cancel') {
       console.log(chalk.yellow('Operation cancelled.'));
@@ -273,12 +310,12 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
     }
 
     if (action === 'rename') {
-      const { newName } = await prompts({
-        type: 'text',
+      const questions: any[] = [{
+        type: 'input',
         name: 'newName',
         message: 'Enter a new project name:',
-        initial: normalizedName + '-2',
-        validate: value => {
+        default: normalizedName + '-2',
+        validate: (value: string) => {
           const validation = validateProjectName(value);
           if (validation !== true) {
             return validation;
@@ -290,7 +327,8 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
           }
           return true;
         },
-      });
+      }];
+      const { newName } = await safePrompt<{ newName: string }>(questions, { debug: options.debug });
 
       if (!newName) {
         console.log(chalk.yellow('Operation cancelled.'));
@@ -308,128 +346,108 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
   // Force non-interactive mode if not in a TTY environment or when --yes is used
   const forceNonInteractive = !process.stdout.isTTY || process.env.CI || options.yes;
 
+  // Debug: Log TTY status
+  if (options.debug) {
+    console.log('TTY Debug:');
+    console.log('  stdout.isTTY:', process.stdout.isTTY);
+    console.log('  stdin.isTTY:', process.stdin.isTTY);
+    console.log('  stderr.isTTY:', process.stderr.isTTY);
+    console.log('  CI:', process.env.CI);
+    console.log('  forceNonInteractive:', forceNonInteractive);
+  }
+
   if (!forceNonInteractive) {
     // Only run prompts if in interactive mode and --yes flag is not used
-    const promptsToRun: PromptObject[] = [];
+    const promptsToRun: any[] = [];
 
     // Welcome message
     console.log(chalk.bold.cyan('\n🚀 Welcome to Re-Shell CLI!\n'));
     console.log(chalk.gray("Let's create your new monorepo workspace.\n"));
 
-    // Project type selection (for future full-stack support)
+    // Project type selection
     promptsToRun.push({
-      type: 'select' as const,
+      type: 'list',
       name: 'projectType',
       message: 'Select project type:',
       choices: [
-        {
-          title: 'Microfrontend Monorepo',
-          value: 'frontend',
-          description: 'Frontend applications with module federation',
-        },
-        {
-          title: 'Full-Stack Monorepo (Coming Soon)',
-          value: 'fullstack',
-          description: 'Frontend + Backend services',
-          disabled: true,
-        },
-        {
-          title: 'Microservices (Coming Soon)',
-          value: 'backend',
-          description: 'Backend services only',
-          disabled: true,
-        },
+        { name: 'Microfrontend Monorepo', value: 'frontend' },
+        { name: 'Full-Stack Monorepo', value: 'fullstack' },
+        { name: 'Microservices Platform', value: 'backend' },
+        { name: 'Polyglot Microservices', value: 'polyglot' },
       ],
-      initial: 0,
+      default: 'frontend',
     });
 
     // Template selection
     promptsToRun.push({
-      type: 'select' as const,
+      type: 'list',
       name: 'template',
       message: 'Start with a template?',
       choices: [
-        { title: 'Blank monorepo', value: 'blank' },
-        {
-          title: 'E-commerce starter',
-          value: 'ecommerce',
-          description: 'Shell + product catalog + checkout',
-        },
-        {
-          title: 'Dashboard starter',
-          value: 'dashboard',
-          description: 'Shell + analytics + user management',
-        },
-        { title: 'SaaS starter', value: 'saas', description: 'Shell + auth + billing + admin' },
+        { name: 'Blank monorepo', value: 'blank' },
+        { name: 'E-commerce starter', value: 'ecommerce' },
+        { name: 'Dashboard starter', value: 'dashboard' },
+        { name: 'SaaS starter', value: 'saas' },
       ],
-      initial: 0,
+      default: 'blank',
     });
 
     // TypeScript selection
     promptsToRun.push({
-      type: 'confirm' as const,
+      type: 'confirm',
       name: 'typescript',
       message: 'Use TypeScript?',
-      initial: true,
+      default: true,
     });
 
     if (!options.packageManager) {
       const detectedPM = await detectPackageManager();
       promptsToRun.push({
-        type: 'select' as const,
+        type: 'list',
         name: 'packageManager',
         message: 'Select a package manager:',
         choices: [
-          { title: `pnpm (recommended)${detectedPM === 'pnpm' ? ' ✓' : ''}`, value: 'pnpm' },
-          { title: `yarn${detectedPM === 'yarn' ? ' ✓' : ''}`, value: 'yarn' },
-          { title: `npm${detectedPM === 'npm' ? ' ✓' : ''}`, value: 'npm' },
-          { title: `bun (experimental)${detectedPM === 'bun' ? ' ✓' : ''}`, value: 'bun' },
+          { name: `pnpm (recommended)${detectedPM === 'pnpm' ? ' ✓' : ''}`, value: 'pnpm', short: 'pnpm' },
+          { name: `yarn${detectedPM === 'yarn' ? ' ✓' : ''}`, value: 'yarn', short: 'yarn' },
+          { name: `npm${detectedPM === 'npm' ? ' ✓' : ''}`, value: 'npm', short: 'npm' },
+          { name: `bun (experimental)${detectedPM === 'bun' ? ' ✓' : ''}`, value: 'bun', short: 'bun' },
         ],
-        initial:
-          detectedPM === 'pnpm'
-            ? 0
-            : detectedPM === 'yarn'
-            ? 1
-            : detectedPM === 'npm'
-            ? 2
-            : detectedPM === 'bun'
-            ? 3
-            : 0,
+        default: detectedPM === 'pnpm' ? 'pnpm' : detectedPM === 'yarn' ? 'yarn' : detectedPM === 'npm' ? 'npm' : detectedPM === 'bun' ? 'bun' : 'pnpm',
       });
     }
 
     if (options.git === undefined) {
       promptsToRun.push({
-        type: 'confirm' as const,
+        type: 'confirm',
         name: 'git',
         message: 'Initialize Git repository?',
-        initial: true,
+        default: true,
       });
     }
 
     if (options.submodules === undefined) {
       promptsToRun.push({
-        type: 'confirm' as const,
+        type: 'confirm',
         name: 'submodules',
         message: 'Set up Git submodule support?',
-        initial: true,
+        default: true,
       });
     }
 
     // Only ask about custom structure if not using --yes
     promptsToRun.push({
-      type: 'confirm' as const,
+      type: 'confirm',
       name: 'customStructure',
       message: 'Customize directory structure?',
-      initial: false,
+      default: false,
     });
 
     // Ask about saving as preset
     promptsToRun.push({
-      type: 'confirm' as const,
+      type: 'confirm',
       name: 'saveAsPreset',
       message: 'Save this configuration as a preset for future use?',
-      initial: false,
+      default: false,
     });
 
     if (promptsToRun.length > 0) {
@@ -438,7 +456,24 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
         options.spinner.stop();
       }
 
-      responses = await prompts(promptsToRun);
+      // Debug: Log before prompts
+      if (options.debug) {
+        console.log(chalk.gray('\n[DEBUG] Starting prompts...'));
+      }
+
+      // Run prompts with safe wrapper
+      responses = await safePrompt(promptsToRun, { debug: options.debug });
+
+      // Debug: Log after prompts
+      if (options.debug) {
+        console.log(chalk.gray(`[DEBUG] Prompts completed, responses:`), responses);
+      }
+
+      // Check if user cancelled (prompts returns empty object on cancel)
+      if (!responses || Object.keys(responses).length === 0) {
+        console.log(chalk.yellow('\n✖ Operation cancelled'));
+        process.exit(0);
+      }
 
       // Restart spinner after prompts
       if (options.spinner) {
@@ -454,20 +489,20 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
       options.spinner.stop();
     }
 
-    const structureResponses = await prompts([
+    const structureResponses = await safePrompt([
       {
-        type: 'text',
+        type: 'input',
         name: 'apps',
         message: 'Applications directory name:',
-        initial: 'apps',
+        default: 'apps',
       },
       {
-        type: 'text',
+        type: 'input',
         name: 'packages',
         message: 'Packages directory name:',
-        initial: 'packages',
+        default: 'packages',
       },
-    ]);
+    ], { debug: options.debug });
     customStructure = structureResponses;
 
     // Restart spinner
@@ -493,12 +528,12 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
       options.spinner.stop();
     }
 
-    const { presetName } = await prompts({
-      type: 'text',
+    const questions: any[] = [{
+      type: 'input',
       name: 'presetName',
       message: 'Enter a name for this preset:',
-      initial: 'my-preset',
-      validate: value => {
+      default: 'my-preset',
+      validate: (value: string) => {
         if (!value || value.trim() === '') {
           return 'Preset name cannot be empty';
         }
@@ -507,7 +542,8 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
         }
         return true;
       },
-    });
+    }];
+    const { presetName } = await safePrompt<{ presetName: string }>(questions, { debug: options.debug });
 
     if (presetName) {
       await savePreset(presetName, {
@@ -708,18 +744,62 @@ out/
 
     // All operations completed successfully - the main CLI will handle the success message
     // Store success info for the CLI to display
+    const projectType = responses.projectType || 'frontend';
+    let nextSteps: string[] = [];
+
+    switch (projectType) {
+      case 'frontend':
+        nextSteps = [
+          `cd ${normalizedName}`,
+          finalOptions.skipInstall ? `${finalOptions.packageManager} install` : null,
+          'rs create shell-app --framework react-ts',
+          'rs create my-feature --framework vue-ts',
+          `${finalOptions.packageManager} run dev`,
+        ].filter(Boolean);
+        break;
+
+      case 'fullstack':
+        nextSteps = [
+          `cd ${normalizedName}`,
+          finalOptions.skipInstall ? `${finalOptions.packageManager} install` : null,
+          'rs create shell --framework react-ts --frontend',
+          'rs create api --backend fastify --db prisma',
+          'rs create admin --frontend vue --backend nestjs',
+          `${finalOptions.packageManager} run dev`,
+        ].filter(Boolean);
+        break;
+
+      case 'backend':
+        nextSteps = [
+          `cd ${normalizedName}`,
+          finalOptions.skipInstall ? `${finalOptions.packageManager} install` : null,
+          'rs create api --backend express',
+          'rs create auth-service --backend nestjs --db typeorm',
+          'rs create user-service --backend fastify',
+          `${finalOptions.packageManager} run dev`,
+        ].filter(Boolean);
+        break;
+
+      case 'polyglot':
+        nextSteps = [
+          `cd ${normalizedName}`,
+          finalOptions.skipInstall ? `${finalOptions.packageManager} install` : null,
+          'rs create api-gateway --backend express',
+          'rs create payment-service --backend python-fastapi',
+          'rs create analytics-service --backend go-ktor',
+          'rs create notification-service --backend rust-actix',
+          `${finalOptions.packageManager} run dev`,
+        ].filter(Boolean);
+        break;
+    }
+
     (global as any).__RE_SHELL_INIT_SUCCESS__ = {
       name: normalizedName,
       packageManager: finalOptions.packageManager,
       submodules: finalOptions.submodules,
       template: finalOptions.template,
-      nextSteps: [
-        `cd ${normalizedName}`,
-        finalOptions.skipInstall ? `${finalOptions.packageManager} install` : null,
-        'rs create shell-app --framework react-ts',
-        'rs create my-app --framework vue-ts',
-        `${finalOptions.packageManager} run dev`,
-      ].filter(Boolean),
+      projectType: projectType,
+      nextSteps,
     };
   } catch (error) {
     // Clean up on failure

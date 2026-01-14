@@ -518,17 +518,17 @@ void UserRoutes::setup(httplib::Server& server) {
         listUsers(req, res);
     });
     
-    server.Get(R"(/api/users/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
+    server.Get(R"(/api/users/(d+))", [](const httplib::Request& req, httplib::Response& res) {
         if (!AuthMiddleware::authenticate(req, res)) return;
         getUser(req, res);
     });
     
-    server.Put(R"(/api/users/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
+    server.Put(R"(/api/users/(d+))", [](const httplib::Request& req, httplib::Response& res) {
         if (!AuthMiddleware::authenticate(req, res)) return;
         updateUser(req, res);
     });
     
-    server.Delete(R"(/api/users/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
+    server.Delete(R"(/api/users/(d+))", [](const httplib::Request& req, httplib::Response& res) {
         if (!AuthMiddleware::authenticate(req, res)) return;
         deleteUser(req, res);
     });

@@ -561,6 +561,7 @@ export class OperationManager extends EventEmitter {
   }
 
   private async uninstallPackages(packages: string[]): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { execSync } = require('child_process');
     const packageManager = this.detectPackageManager();
     
@@ -745,7 +746,7 @@ export class OperationManager extends EventEmitter {
 
         // Cleanup backup directory
         if (operation.context.backupDirectory) {
-          fs.remove(operation.context.backupDirectory).catch(() => {});
+          fs.remove(operation.context.backupDirectory).catch(() => { /* ignore */ });
         }
       }
     }

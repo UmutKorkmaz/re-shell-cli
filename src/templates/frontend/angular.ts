@@ -80,6 +80,11 @@ export class AngularTemplate extends BaseTemplate {
       content: this.generateHomeComponentHtml()
     });
 
+    files.push({
+      path: 'src/app/home/home.component.scss',
+      content: this.generateHomeComponentStyles()
+    });
+
     // About component
     files.push({
       path: 'src/app/about/about.component.ts',
@@ -89,6 +94,11 @@ export class AngularTemplate extends BaseTemplate {
     files.push({
       path: 'src/app/about/about.component.html',
       content: this.generateAboutComponentHtml()
+    });
+
+    files.push({
+      path: 'src/app/about/about.component.scss',
+      content: this.generateAboutComponentStyles()
     });
 
     // Core components (header, footer)
@@ -103,6 +113,11 @@ export class AngularTemplate extends BaseTemplate {
     });
 
     files.push({
+      path: 'src/app/core/header/header.component.scss',
+      content: this.generateHeaderComponentStyles()
+    });
+
+    files.push({
       path: 'src/app/core/footer/footer.component.ts',
       content: this.generateFooterComponent()
     });
@@ -110,6 +125,11 @@ export class AngularTemplate extends BaseTemplate {
     files.push({
       path: 'src/app/core/footer/footer.component.html',
       content: this.generateFooterComponentHtml()
+    });
+
+    files.push({
+      path: 'src/app/core/footer/footer.component.scss',
+      content: this.generateFooterComponentStyles()
     });
 
     // Service
@@ -254,12 +274,7 @@ export class AngularTemplate extends BaseTemplate {
                 tsConfig: 'tsconfig.app.json',
                 assets: ['src/favicon.ico', 'src/assets'],
                 styles: ['src/styles.scss'],
-                scripts: [],
-                server: 'src/main.server.ts',
-                prerender: true,
-                ssr: {
-                  entry: 'server.ts'
-                }
+                scripts: []
               },
               configurations: {
                 production: {
@@ -380,7 +395,7 @@ export class AngularTemplate extends BaseTemplate {
     return `import { bootstrapApplication } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
-import routes from './app/app.routes';
+import { routes } from './app/app.routes';
 
 import { AppComponent } from './app/app.component';
 
@@ -1325,6 +1340,115 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
+`;
+  }
+
+  protected generateHomeComponentStyles() {
+    return `.home-container {
+  padding: 20px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.feature-card {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.counter-demo {
+  margin-top: 20px;
+}
+
+.loading {
+  color: #666;
+}
+
+.error {
+  color: #f44336;
+}
+`;
+  }
+
+  protected generateAboutComponentStyles() {
+    return `.about-container {
+  padding: 20px;
+}
+
+.tech-stack ul {
+  list-style: none;
+  padding: 0;
+}
+
+.tech-stack li {
+  padding: 8px 0;
+}
+
+.feature-item {
+  margin: 30px 0;
+}
+
+.feature-item h3 {
+  color: #1976d2;
+}
+
+pre {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+`;
+  }
+
+  protected generateHeaderComponentStyles() {
+    return `.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #1976d2;
+  color: white;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+`;
+  }
+
+  protected generateFooterComponentStyles() {
+    return `.footer {
+  padding: 20px;
+  text-align: center;
+  background: #f5f5f5;
+  margin-top: auto;
+}
+
+.footer-container p {
+  margin: 5px 0;
+}
+
+.footer-links a {
+  margin: 0 10px;
+  color: #1976d2;
+}
 `;
   }
 }

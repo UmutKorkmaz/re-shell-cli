@@ -757,7 +757,7 @@ ${hook.script}
       /^-/,           // Cannot start with dash
       /\.$/,          // Cannot end with dot
       /\.lock$/,      // Cannot end with .lock
-      /[\s~^:?*\[\\]/, // Invalid characters
+      /[\s~^:?*[\\]/, // Invalid characters
       /\.\./,         // Cannot contain ..
       /@\{/,          // Cannot contain @{
       /\/\//          // Cannot contain //

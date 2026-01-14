@@ -88,9 +88,9 @@ export async function createUser({ name, email, born = null }) {
   const cypher = \`
     CREATE (u:User {
       id: randomUUID(),
-      name: \$name,
-      email: \$email,
-      born: \$born,
+      name: $name,
+      email: $email,
+      born: $born,
       createdAt: datetime()
     })
     RETURN u
@@ -102,7 +102,7 @@ export async function createUser({ name, email, born = null }) {
 
 export async function getUserById(id) {
   const cypher = \`
-    MATCH (u:User {id: \$id})
+    MATCH (u:User {id: $id})
     RETURN u
   \`;
   const results = await executeQuery(cypher, { id });
@@ -111,7 +111,7 @@ export async function getUserById(id) {
 
 export async function getUserByEmail(email) {
   const cypher = \`
-    MATCH (u:User {email: \$email})
+    MATCH (u:User {email: $email})
     RETURN u
   \`;
   const results = await executeQuery(cypher, { email });
@@ -120,8 +120,8 @@ export async function getUserByEmail(email) {
 
 export async function updateUser(id, updates) {
   const cypher = \`
-    MATCH (u:User {id: \$id})
-    SET u += \$updates
+    MATCH (u:User {id: $id})
+    SET u += $updates
     RETURN u
   \`;
   const results = await executeWrite(cypher, { id, updates });
@@ -130,7 +130,7 @@ export async function updateUser(id, updates) {
 
 export async function deleteUser(id) {
   const cypher = \`
-    MATCH (u:User {id: \$id})
+    MATCH (u:User {id: $id})
     DETACH DELETE u
   \`;
   await executeWrite(cypher, { id });
@@ -140,10 +140,10 @@ export async function deleteUser(id) {
 // Add friendship relationship
 export async function addFriendship(user1Id, user2Id, since = null) {
   const cypher = \`
-    MATCH (u1:User {id: \$user1Id})
-    MATCH (u2:User {id: \$user2Id})
+    MATCH (u1:User {id: $user1Id})
+    MATCH (u2:User {id: $user2Id})
     CREATE (u1)-[f:FRIENDS_WITH]->(u2)
-    SET f.since = \$since,
+    SET f.since = $since,
         f.createdAt = datetime()
     RETURN f
   \`;
@@ -159,7 +159,7 @@ export async function addFriendship(user1Id, user2Id, since = null) {
 // Get friends of user
 export async function getFriends(userId, depth = 1) {
   const cypher = \`
-    MATCH (u:User {id: \$id})-[:FRIENDS_WITH*1..\${depth}]-(friend:User)
+    MATCH (u:User {id: $id})-[:FRIENDS_WITH*1..\${depth}]-(friend:User)
     RETURN DISTINCT friend
     ORDER BY friend.name
   \`;
@@ -170,7 +170,7 @@ export async function getFriends(userId, depth = 1) {
 // Get friends of friends (foaf)
 export async function getFriendsOfFriends(userId) {
   const cypher = \`
-    MATCH (u:User {id: \$id})-[:FRIENDS_WITH]->(friend)-[:FRIENDS_WITH]->(foaf:User)
+    MATCH (u:User {id: $id})-[:FRIENDS_WITH]->(friend)-[:FRIENDS_WITH]->(foaf:User)
     WHERE NOT (u)-[:FRIENDS_WITH]-(foaf) AND u <> foaf
     RETURN foaf, COUNT(DISTINCT friend) as mutualFriends
     ORDER BY mutualFriends DESC
@@ -187,9 +187,9 @@ export async function createProduct({ name, price, category }) {
   const cypher = \`
     CREATE (p:Product {
       id: randomUUID(),
-      name: \$name,
-      price: \$price,
-      category: \$category,
+      name: $name,
+      price: $price,
+      category: $category,
       createdAt: datetime()
     })
     RETURN p
@@ -201,7 +201,7 @@ export async function createProduct({ name, price, category }) {
 
 export async function getProductById(id) {
   const cypher = \`
-    MATCH (p:Product {id: \$id})
+    MATCH (p:Product {id: $id})
     RETURN p
   \`;
   const results = await executeQuery(cypher, { id });
@@ -210,7 +210,7 @@ export async function getProductById(id) {
 
 export async function getProductsByCategory(category) {
   const cypher = \`
-    MATCH (p:Product {category: \$category})
+    MATCH (p:Product {category: $category})
     RETURN p
     ORDER BY p.name
   \`;
@@ -222,7 +222,7 @@ export async function getProductsByCategory(category) {
 export async function getProductRecommendations(userId, limit = 10) {
   const cypher = \`
     // Find users who bought similar products
-    MATCH (u:User {id: \$id})-[:BOUGHT]->(:Product)<-[:BOUGHT]-(other:User)
+    MATCH (u:User {id: $id})-[:BOUGHT]->(:Product)<-[:BOUGHT]-(other:User)
     
     // Find products those users bought that this user hasn't
     MATCH (other)-[:BOUGHT]->(rec:Product)
@@ -230,7 +230,7 @@ export async function getProductRecommendations(userId, limit = 10) {
     
     RETURN rec, COUNT(DISTINCT other) as score
     ORDER BY score DESC
-    LIMIT \$limit
+    LIMIT $limit
   \`;
   
   const results = await executeQuery(cypher, { id: userId, limit });
@@ -241,15 +241,15 @@ export async function getProductRecommendations(userId, limit = 10) {
 export async function getFrequentlyBoughtTogether(productId, limit = 5) {
   const cypher = \`
     // Find users who bought this product
-    MATCH (p:Product {id: \$id})<-[:BOUGHT]-(u:User)
+    MATCH (p:Product {id: $id})<-[:BOUGHT]-(u:User)
     
     // Find other products those users bought
     MATCH (u)-[:BOUGHT]->(other:Product)
-    WHERE other.id <> \$id
+    WHERE other.id <> $id
     
     RETURN other, COUNT(DISTINCT u) as frequency
     ORDER BY frequency DESC
-    LIMIT \$limit
+    LIMIT $limit
   \`;
   
   const results = await executeQuery(cypher, { id: productId, limit });
@@ -263,7 +263,7 @@ export async function getFrequentlyBoughtTogether(productId, limit = 5) {
 export async function findShortestPath(user1Id, user2Id) {
   const cypher = \`
     MATCH path = shortestPath(
-      (u1:User {id: \$user1Id})-[:FRIENDS_WITH*]-(u2:User {id: \$user2Id})
+      (u1:User {id: $user1Id})-[:FRIENDS_WITH*]-(u2:User {id: $user2Id})
     )
     RETURN [node IN nodes(path) | node.name] as names,
            length(path) as degrees
@@ -276,7 +276,7 @@ export async function findShortestPath(user1Id, user2Id) {
 // Find common friends between two users
 export async function findCommonFriends(user1Id, user2Id) {
   const cypher = \`
-    MATCH (u1:User {id: \$user1Id})-[:FRIENDS_WITH]-(common:User)-[:FRIENDS_WITH]-(u2:User {id: \$user2Id})
+    MATCH (u1:User {id: $user1Id})-[:FRIENDS_WITH]-(common:User)-[:FRIENDS_WITH]-(u2:User {id: $user2Id})
     RETURN common
     ORDER BY common.name
   \`;
@@ -288,7 +288,7 @@ export async function findCommonFriends(user1Id, user2Id) {
 // Get user influence (number of friends within N degrees)
 export async function getUserInfluence(userId, maxDegrees = 3) {
   const cypher = \`
-    MATCH (u:User {id: \$id})-[:FRIENDS_WITH*1..\${maxDegrees}]-(reachable:User)
+    MATCH (u:User {id: $id})-[:FRIENDS_WITH*1..\${maxDegrees}]-(reachable:User)
     RETURN u.name as userName,
            COUNT(DISTINCT reachable) as reachableCount
   \`;
@@ -300,7 +300,7 @@ export async function getUserInfluence(userId, maxDegrees = 3) {
 // Find clusters of connected friends
 export async function findFriendClusters(userId) {
   const cypher = \`
-    MATCH (u:User {id: \$id})-[:FRIENDS_WITH*1..2]-(friend:User)
+    MATCH (u:User {id: $id})-[:FRIENDS_WITH*1..2]-(friend:User)
     WITH u, collect(DISTINCT friend) as friends
     
     UNWIND friends as f1
@@ -322,7 +322,7 @@ export async function findFriendClusters(userId) {
 export async function suggestPeopleYouMayKnow(userId, limit = 10) {
   const cypher = \`
     // Find friends of friends who aren't already friends
-    MATCH (u:User {id: \$id})-[:FRIENDS_WITH]->(friend)-[:FRIENDS_WITH]->(suggestion:User)
+    MATCH (u:User {id: $id})-[:FRIENDS_WITH]->(friend)-[:FRIENDS_WITH]->(suggestion:User)
     WHERE NOT (u)-[:FRIENDS_WITH]-(suggestion) AND u <> suggestion
     
     // Count mutual friends
@@ -331,7 +331,7 @@ export async function suggestPeopleYouMayKnow(userId, limit = 10) {
     
     RETURN suggestion, mutualFriends
     ORDER BY mutualFriends DESC
-    LIMIT \$limit
+    LIMIT $limit
   \`;
   
   const results = await executeQuery(cypher, { id: userId, limit });
@@ -345,11 +345,11 @@ export async function suggestPeopleYouMayKnow(userId, limit = 10) {
 export async function findSimilarProducts(productId, limit = 5) {
   const cypher = \`
     // Get the product category
-    MATCH (p:Product {id: \$id})
+    MATCH (p:Product {id: $id})
     
     // Find products in the same category
     MATCH (similar:Product {category: p.category})
-    WHERE similar.id <> \$id
+    WHERE similar.id <> $id
     
     // Count co-purchases
     OPTIONAL MATCH (u:User)-[:BOUGHT]->(p)
@@ -358,7 +358,7 @@ export async function findSimilarProducts(productId, limit = 5) {
     WITH similar, COUNT(DISTINCT u) as coPurchases
     RETURN similar, coPurchases
     ORDER BY coPurchases DESC
-    LIMIT \$limit
+    LIMIT $limit
   \`;
   
   const results = await executeQuery(cypher, { id: productId, limit });
@@ -369,7 +369,7 @@ export async function findSimilarProducts(productId, limit = 5) {
 export async function collaborativeFilteringRecommendations(userId, limit = 10) {
   const cypher = \`
     // Find users who bought the same products as our user
-    MATCH (target:User {id: \$id})-[:BOUGHT]->(:Product)<-[:BOUGHT]-(similar:User)
+    MATCH (target:User {id: $id})-[:BOUGHT]->(:Product)<-[:BOUGHT]-(similar:User)
     
     // Find products those similar users bought that our user hasn't
     MATCH (similar)-[:BOUGHT]->(rec:Product)
@@ -378,7 +378,7 @@ export async function collaborativeFilteringRecommendations(userId, limit = 10) 
     WITH rec, COUNT(DISTINCT similar) as score
     RETURN rec, score
     ORDER BY score DESC
-    LIMIT \$limit
+    LIMIT $limit
   \`;
   
   const results = await executeQuery(cypher, { id: userId, limit });
@@ -397,7 +397,7 @@ export async function getPopularProducts(limit = 10) {
     
     RETURN p, weightedScore
     ORDER BY weightedScore DESC
-    LIMIT \$limit
+    LIMIT $limit
   \`;
   
   const results = await executeQuery(cypher, { limit });

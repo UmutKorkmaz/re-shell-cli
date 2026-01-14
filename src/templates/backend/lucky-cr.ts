@@ -216,7 +216,7 @@ end
     end
 
     private def generate_token(user : User) : String
-      "jwt-token-for-\#{user.id}"
+      "jwt-token-for-#{user.id}"
     end
   end
 end
@@ -245,7 +245,7 @@ end
     end
 
     private def generate_token(user : User) : String
-      "jwt-token-for-\#{user.id}"
+      "jwt-token-for-#{user.id}"
     end
   end
 end

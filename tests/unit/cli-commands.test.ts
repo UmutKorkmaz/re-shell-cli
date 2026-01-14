@@ -61,10 +61,15 @@ vi.mock('prompts', () => ({
   }))
 }));
 
-vi.mock('path', () => ({
-  resolve: vi.fn((dir, ...segments) => `${dir}/${segments.join('/')}`),
-  join: vi.fn((...args) => args.join('/'))
-}));
+vi.mock('path', async () => {
+  const actual = await vi.importActual<typeof import('path')>('path');
+  return {
+    ...actual,
+    default: actual,
+    resolve: vi.fn((dir: string, ...segments: string[]) => `${dir}/${segments.join('/')}`),
+    join: vi.fn((...args: string[]) => args.join('/'))
+  };
+});
 
 vi.mock('child_process', () => ({
   exec: vi.fn(),
@@ -86,6 +91,31 @@ describe('CLI Command Unit Tests', () => {
 
     // Mock process.cwd
     vi.spyOn(process, 'cwd').mockReturnValue(testDir);
+
+    // Restore fs mock implementations after resetAllMocks
+    vi.mocked(fs.existsSync).mockImplementation((p) => mockExistsSync(String(p)));
+    vi.mocked(fs.readFileSync).mockImplementation((p) => {
+      const content = mockFiles.get(String(p)) || JSON.stringify({ version: '0.2.0' });
+      return content;
+    });
+    vi.mocked(fs.writeFileSync).mockImplementation((p, content) => {
+      mockFiles.set(String(p), content);
+    });
+    vi.mocked(fs.mkdirSync).mockImplementation((p) => {
+      mockFiles.set(String(p), 'directory');
+      return undefined as any;
+    });
+    vi.mocked(fs.removeSync).mockImplementation((p) => { mockFiles.delete(String(p)); });
+    vi.mocked(fs.readdirSync).mockReturnValue(['mf1', 'mf2'] as any);
+
+    // Set up core files for Re-Shell project detection
+    mockFiles.set('package.json', JSON.stringify({
+      name: 'reshell-project',
+      workspaces: ['packages/*', 'apps/*']
+    }));
+    mockFiles.set('packages', 'directory');
+    mockFiles.set('apps', 'directory');
+    mockFiles.set(`${testDir}/apps`, 'directory');
 
     // Set up mocked files for the microfrontend
     mockFiles.set(`${testDir}/apps/${testMfName}`, 'directory');
@@ -153,10 +183,20 @@ describe('CLI Command Unit Tests', () => {
 
   describe('addMicrofrontend', () => {
     it('should add a microfrontend with custom options', async () => {
+      // Remove existing directory entry so addMicrofrontend doesn't prompt for overwrite
+      mockFiles.delete(`${testDir}/apps/${testMfName}`);
+
+      // Mock existsSync to detect Re-Shell project but not existing mf dir
+      vi.mocked(fs.existsSync).mockImplementation((p) => {
+        if (p === 'package.json') return true;
+        if (p === 'apps') return true;
+        if (p === 'packages') return true;
+        return false;
+      });
+
       // Mock the writeFileSync to capture the package.json content
       vi.mocked(fs.writeFileSync).mockImplementation((filepath, content) => {
         mockFiles.set(String(filepath), content);
-        return { filepath, content };
       });
 
       // Call the function under test
@@ -195,8 +235,16 @@ describe('CLI Command Unit Tests', () => {
 
   describe('removeMicrofrontend', () => {
     it('should prompt for confirmation when force flag is not set', async () => {
-      // Make sure the microfrontend directory exists in the apps directory
-      mockFiles.set(`apps/${testMfName}`, 'directory');
+      const mfPath = `${testDir}/apps/${testMfName}`;
+
+      // Mock existsSync for Re-Shell project detection and mf directory
+      vi.mocked(fs.existsSync).mockImplementation((p) => {
+        if (p === 'package.json') return true;
+        if (p === 'apps') return true;
+        if (p === 'packages') return true;
+        if (String(p) === mfPath) return true;
+        return false;
+      });
 
       // Mock prompts to simulate user confirmation
       const promptsMock = await import('prompts');
@@ -215,8 +263,18 @@ describe('CLI Command Unit Tests', () => {
 
   describe('listMicrofrontends', () => {
     it('should handle empty project with no microfrontends', async () => {
-      // Mock empty apps directory but make sure it exists
-      mockFiles.set('apps', 'directory');
+      const appsDir = `${testDir}/apps`;
+
+      // Mock existsSync for project detection and apps dir
+      vi.mocked(fs.existsSync).mockImplementation((p) => {
+        if (p === 'package.json') return true;
+        if (p === 'apps') return true;
+        if (p === 'packages') return true;
+        if (String(p) === appsDir) return true;
+        return false;
+      });
+
+      // Mock empty apps directory
       vi.mocked(fs.readdirSync).mockReturnValue([]);
 
       // Call the function under test
@@ -229,15 +287,41 @@ describe('CLI Command Unit Tests', () => {
 
   describe('buildMicrofrontend', () => {
     it('should build a specific microfrontend', async () => {
-      // Make sure the microfrontend directory exists in the apps directory
-      mockFiles.set(`apps/${testMfName}`, 'directory');
+      const mfPath = `${testDir}/apps/${testMfName}`;
+      const pkgJsonPath = `${mfPath}/package.json`;
 
-      // Mock child_process.execAsync
+      // Mock existsSync to detect project, mf dir, and package.json
+      vi.mocked(fs.existsSync).mockImplementation((p) => {
+        if (p === 'package.json') return true;
+        if (p === 'apps') return true;
+        if (p === 'packages') return true;
+        if (String(p) === mfPath) return true;
+        if (String(p) === pkgJsonPath) return true;
+        return false;
+      });
+
+      // Mock readFileSync to return package.json for the microfrontend
+      vi.mocked(fs.readFileSync).mockImplementation((p) => {
+        if (String(p) === pkgJsonPath) {
+          return JSON.stringify({
+            name: `@re-shell/${testMfName}`,
+            scripts: { build: 'vite build' }
+          });
+        }
+        return JSON.stringify({ version: '0.2.0' });
+      });
+
+      // Mock process.chdir (not supported in workers)
+      vi.spyOn(process, 'chdir').mockImplementation(() => {});
+
+      // Mock child_process.exec
       const childProcessMock = await import('child_process');
-      const execAsyncMock = vi.fn().mockResolvedValue({ stdout: 'Build successful', stderr: '' });
-      vi.mocked(childProcessMock.exec).mockImplementation((cmd, opts, callback) => {
+      vi.mocked(childProcessMock.exec).mockImplementation((cmd: any, opts: any, callback: any) => {
+        if (typeof opts === 'function') {
+          callback = opts;
+        }
         if (callback) {
-          callback(null, { stdout: 'Build successful', stderr: '' } as any, '');
+          callback(null, 'Build successful', '');
         }
         return { stdout: 'Build successful', stderr: '' } as any;
       });
@@ -256,14 +340,20 @@ describe('CLI Command Unit Tests', () => {
       mockFiles.set('apps/mf1', 'directory');
       mockFiles.set('apps/mf2', 'directory');
 
-      // Mock child_process.execAsync
+      // Mock process.stdin.resume
+      vi.spyOn(process.stdin, 'resume').mockImplementation(() => process.stdin);
+
+      // Create a mock ChildProcess-like object
+      const mockChildProcess = {
+        stdout: { on: vi.fn() },
+        stderr: { on: vi.fn() },
+        on: vi.fn(),
+        pid: 12345
+      };
+
+      // Mock child_process.exec to return a process-like object
       const childProcessMock = await import('child_process');
-      vi.mocked(childProcessMock.exec).mockImplementation((cmd, opts, callback) => {
-        if (callback) {
-          callback(null, { stdout: 'Server started', stderr: '' } as any, '');
-        }
-        return { stdout: 'Server started', stderr: '' } as any;
-      });
+      vi.mocked(childProcessMock.exec).mockReturnValue(mockChildProcess as any);
 
       // Call the function under test
       await serveMicrofrontend(undefined, { port: '3000', host: 'localhost', open: true });

@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
 import { execSync } from 'child_process';
+import { globSync } from 'glob';
 import { findMonorepoRoot } from '../utils/monorepo';
 
 interface HealthCheck {
@@ -639,11 +640,18 @@ async function getWorkspaces(monorepoRoot: string): Promise<string[]> {
     const packageJson = await fs.readJson(packageJsonPath);
     
     if (packageJson.workspaces) {
-      if (Array.isArray(packageJson.workspaces)) {
-        return packageJson.workspaces;
-      } else if (packageJson.workspaces.packages) {
-        return packageJson.workspaces.packages;
-      }
+      const rawPatterns: string[] = Array.isArray(packageJson.workspaces)
+        ? packageJson.workspaces
+        : packageJson.workspaces.packages || [];
+      const resolvedWorkspaces = rawPatterns.flatMap(pattern => {
+        if (pattern.includes('*')) {
+          return globSync(pattern, { cwd: monorepoRoot }).filter(p =>
+            fs.existsSync(path.join(monorepoRoot, p, 'package.json'))
+          );
+        }
+        return [pattern];
+      });
+      return resolvedWorkspaces;
     }
     
     // Fallback: scan for package.json files
@@ -718,7 +726,7 @@ function displayResults(checks: HealthCheck[], options: DoctorOptions) {
 
   // Overall health score
   const totalChecks = checks.length;
-  const healthScore = Math.round((successCount / totalChecks) * 100);
+  const healthScore = totalChecks > 0 ? Math.round((successCount / totalChecks) * 100) : 0;
   
   let healthColor = chalk.green;
   let healthStatus = 'Excellent';

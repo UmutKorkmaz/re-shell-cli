@@ -26,6 +26,8 @@ export interface HotReloadOptions {
   verbose?: boolean;
   includeWorkspaces?: boolean;
   excludePatterns?: string[];
+  profile?: any;
+  services?: string[];
 }
 
 // Configuration watcher class
@@ -48,8 +50,10 @@ export class ConfigWatcher extends EventEmitter {
       verbose: false,
       includeWorkspaces: true,
       excludePatterns: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+      profile: options.profile || null,
+      services: options.services || [],
       ...options
-    };
+    } as Required<HotReloadOptions>;
   }
 
   // Start watching configuration files
@@ -351,9 +355,11 @@ export class ConfigWatcher extends EventEmitter {
           newConfig = await configManager.loadProjectConfig();
           break;
         case 'workspace':
+          {
           const workspacePath = path.dirname(path.dirname(filePath));
           newConfig = await configManager.loadWorkspaceConfig(workspacePath);
           break;
+          }
       }
 
       // Validate configuration if enabled
@@ -421,6 +427,7 @@ export class ConfigWatcher extends EventEmitter {
 
   private async createChangeBackup(filePath: string, configType: string): Promise<void> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { configBackupManager } = require('./config-backup');
       const backupName = `auto-${configType}-${Date.now()}`;
       const backupId = await configBackupManager.createSelectiveBackup(
@@ -442,6 +449,7 @@ export class ConfigWatcher extends EventEmitter {
     if (!backupId) return;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { configBackupManager } = require('./config-backup');
       await configBackupManager.restoreFromBackup(backupId, { force: true });
       

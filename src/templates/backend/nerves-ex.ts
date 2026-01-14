@@ -213,7 +213,7 @@ end
   end
 
   def generate_token(user) do
-    "nerves-jwt-\#{user.id}"
+    "nerves-jwt-#{user.id}"
   end
 end
 `,
@@ -281,7 +281,7 @@ config :logger, level: :debug
 config :{{projectNameSnake}},
   target: Mix.Project.config()[:target]
 
-import_config "\#{config_target()}.exs"
+import_config "#{config_target()}.exs"
 `,
 
     'config/rpi0.exs': `import Config

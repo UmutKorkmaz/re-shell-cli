@@ -836,11 +836,12 @@ export class OpenAPIGenerator {
 
     for (const pat of patterns) {
       // Replace in correct order: ** first, then *, then escape special chars
-      let regexPattern = pat
+      const regexPattern = pat
         .replace(/\*\*/g, '\x00') // Temporarily replace ** with placeholder
         .replace(/\*/g, '[^/]*')   // Then replace single *
         .replace(/\?/g, '[^/]')    // Replace ?
         .replace(/\./g, '\\.')     // Escape dots
+        // eslint-disable-next-line no-control-regex
         .replace(/\x00/g, '.*');   // Finally restore ** to .*
       const regex = new RegExp('^' + regexPattern + '$');
 

@@ -1828,7 +1828,7 @@ linter:
     - unnecessary_statements`,
 
     'build.yaml': `targets:
-  \$default:
+  $default:
     builders:
       angel3_orm_generator:
         generate_for:

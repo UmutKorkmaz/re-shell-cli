@@ -767,7 +767,7 @@ public class CreateUserDtoValidator : AbstractValidator<CreateUserDto>
             .NotEmpty()
             .MinimumLength(6)
             .MaximumLength(100)
-            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)")
+            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*d)")
             .WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one digit");
             
         RuleFor(x => x.PhoneNumber)

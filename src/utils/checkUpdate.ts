@@ -184,6 +184,7 @@ function detectPackageManager(): string {
   
   // Check if pnpm is available
   try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('child_process').execSync('pnpm --version', { stdio: 'ignore' });
     return 'pnpm';
   } catch {
@@ -192,6 +193,7 @@ function detectPackageManager(): string {
   
   // Check if yarn is available
   try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('child_process').execSync('yarn --version', { stdio: 'ignore' });
     return 'yarn';
   } catch {

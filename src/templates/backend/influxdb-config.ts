@@ -639,11 +639,11 @@ curl -X POST "$INFLUXDB_URL/api/v2/tasks?org=$ORG" \\
   -H "Content-Type: application/json" \\
   -d '{
     "name": "downsample-raw-data",
-    "flux": "from(bucket: \"'"$BUCKET"'\")
+    "flux": "from(bucket: "'"$BUCKET"'")
       |> range(start: -1h)
       |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)
-      |> set(key: \"_measurement\", value: \"'"$BUCKET"'_downsampled\")
-      |> to(bucket: \"'"$BUCKET"'_downsampled\", org: \"'"$ORG"'\")",
+      |> set(key: "_measurement", value: "'"$BUCKET"'_downsampled")
+      |> to(bucket: "'"$BUCKET"'_downsampled", org: "'"$ORG"'")",
     "every": "1h",
     "status": "active"
   }'

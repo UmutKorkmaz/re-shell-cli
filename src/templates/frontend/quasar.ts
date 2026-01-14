@@ -129,8 +129,8 @@ export class QuasarTemplate extends BaseTemplate {
         'build:pwa': 'quasar build -m pwa',
         'build:electron': 'quasar build -m electron',
         lint: 'eslint --ext .js,.vue ./src',
-        format: 'prettier --write \"**/*.{js,vue,scss,md,json}\"',
-        test: 'echo \"No test specified\" && exit 0'
+        format: 'prettier --write "**/*.{js,vue,scss,md,json}"',
+        test: 'echo "No test specified" && exit 0'
       },
       dependencies: {
         '@quasar/extras': '^1.16.9',
@@ -405,7 +405,7 @@ module.exports = configure(function (ctx) {
 <script setup>
 import { useQuasar } from 'quasar';
 
-const \$q = useQuasar();
+const $q = useQuasar();
 
 // Access store
 import { useExampleStore } from 'stores/example-store';
@@ -587,7 +587,7 @@ const features = [
     <q-footer elevated class="bg-grey-8 text-white">
       <q-toolbar>
         <q-toolbar-title>
-          <div>{{ \$q.screen.gt.sm ? '© ' + new Date().getFullYear() + ' ${this.context.name}' : '' }}</div>
+          <div>{{ $q.screen.gt.sm ? '© ' + new Date().getFullYear() + ' ${this.context.name}' : '' }}</div>
         </q-toolbar-title>
         <q-btn flat round dense icon="favorite" />
       </q-toolbar>
@@ -967,11 +967,11 @@ brand: {
 <script setup>
 import { useQuasar } from 'quasar';
 
-const \$q = useQuasar();
-const darkMode = ref(\$q.dark.isActive);
+const $q = useQuasar();
+const darkMode = ref($q.dark.isActive);
 
 function toggleDarkMode() {
-  \$q.dark.toggle();
+  $q.dark.toggle();
 }
 </script>
 \`\`\`

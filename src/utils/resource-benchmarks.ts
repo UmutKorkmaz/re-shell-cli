@@ -73,7 +73,7 @@ export class ResourceBenchmarks {
   private monitoring = false;
   private memoryPeak = 0;
   
-  private constructor() {}
+  private constructor() { /* singleton */ }
   
   static getInstance(): ResourceBenchmarks {
     if (!ResourceBenchmarks.instance) {

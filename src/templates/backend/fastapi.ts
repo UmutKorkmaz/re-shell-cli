@@ -11,7 +11,7 @@ export const fastapiTemplate: BackendTemplate = {
   tags: ['python', 'fastapi', 'api', 'rest', 'swagger', 'type-hints'],
   port: 8000,
   dependencies: {},
-  features: [, 'swagger', 'websockets', 'graphql', 'authentication', 'database', 'validation', 'testing'],
+  features: ['swagger', 'websockets', 'graphql', 'authentication', 'database', 'validation', 'testing'],
   
   files: {
     // Python project configuration
@@ -116,7 +116,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-ra -q --strict-markers"
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "slow: marks tests as slow (deselect with '-m "not slow"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests"]
 

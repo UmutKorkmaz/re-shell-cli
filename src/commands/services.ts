@@ -3,7 +3,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, execSync, ChildProcess } from 'child_process';
 import chalk from 'chalk';
 import { glob } from 'glob';
 
@@ -548,7 +548,7 @@ async function stopNpmProcesses(
         await fs.unlink(pidPath);
       } catch (err) {
         // Process might not be running
-        await fs.unlink(pidPath).catch(() => {});
+        await fs.unlink(pidPath).catch(() => { /* ignore */ });
       }
     }
 
@@ -611,6 +611,7 @@ async function watchDockerHealth(
   console.log(chalk.blue('Watching service health...'));
   console.log(chalk.gray('Press Ctrl+C to stop.\n'));
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     // Clear screen
     console.clear();
@@ -1625,7 +1626,6 @@ async function createMigrationBackup(projectPath: string, serviceName: string): 
   const backupPath = path.join(backupDir, `${serviceName}-migrate-${timestamp}.tar.gz`);
 
   // Create tar.gz backup
-  const { execSync } = require('child_process');
   execSync(`tar -czf "${backupPath}" -C "${projectPath}" src package.json 2>/dev/null || true`);
 }
 

@@ -2,6 +2,8 @@ import { EventEmitter } from 'events';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
+import * as https from 'https';
+import { execSync } from 'child_process';
 
 export interface HealthCheck {
   id: string;
@@ -242,7 +244,7 @@ export class HealthDiagnostics extends EventEmitter {
 
         for (const manager of managers) {
           try {
-            const { execSync } = require('child_process');
+
             execSync(`${manager} --version`, { stdio: 'ignore' });
             available.push(manager);
           } catch {
@@ -285,7 +287,7 @@ export class HealthDiagnostics extends EventEmitter {
       enabled: true,
       check: async () => {
         try {
-          const { execSync } = require('child_process');
+
           const version = execSync('git --version', { encoding: 'utf8' }).trim();
           
           return {
@@ -400,7 +402,7 @@ export class HealthDiagnostics extends EventEmitter {
       enabled: true,
       check: async () => {
         try {
-          const https = require('https');
+
           
           return new Promise<HealthResult>((resolve) => {
             const startTime = Date.now();

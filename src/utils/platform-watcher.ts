@@ -639,6 +639,7 @@ export class PlatformWatcher extends EventEmitter {
   // Generate unique watcher ID
   private generateWatcherId(watchPath: string): string {
     const normalized = path.normalize(watchPath);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const hash = require('crypto').createHash('md5').update(normalized).digest('hex').substr(0, 8);
     return `watcher_${hash}_${Date.now()}`;
   }

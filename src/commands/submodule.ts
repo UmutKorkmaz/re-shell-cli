@@ -263,15 +263,21 @@ export async function updateGitSubmodules(options: SubmoduleUpdateOptions = {}):
 export async function showSubmoduleStatus(): Promise<void> {
   try {
     // Ensure we're in a Git repository with timeout
-    const isGitRepo = await Promise.race([
-      isGitRepository(),
-      new Promise<boolean>((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout checking Git repository')), 3000)
-      ),
-    ]);
+    let isGitRepo: boolean;
+    try {
+      isGitRepo = await Promise.race([
+        isGitRepository(),
+        new Promise<boolean>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout checking Git repository')), 3000)
+        ),
+      ]);
+    } catch {
+      isGitRepo = false;
+    }
 
     if (!isGitRepo) {
-      throw new Error('Not in a Git repository.');
+      console.error(chalk.red('Error: Not in a git repository. Please run this command from within a git project.'));
+      process.exit(1);
     }
 
     const submodules = await Promise.race([
@@ -317,7 +323,7 @@ export async function showSubmoduleStatus(): Promise<void> {
     }
   } catch (error) {
     console.error(chalk.red('Error getting submodule status:'), error);
-    throw error;
+    process.exit(1);
   }
 }
 

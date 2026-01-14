@@ -319,7 +319,7 @@ export class DebugSystem extends EventEmitter {
 
     this.activeOperations.set(operationId, {
       start: Date.now(),
-      trace: this.currentSession?.traces.find(t => t.id === trace)!
+      trace: (this.currentSession?.traces.find(t => t.id === trace)) as DebugTrace
     });
 
     return operationId;

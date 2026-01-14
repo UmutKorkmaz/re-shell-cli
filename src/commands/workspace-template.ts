@@ -204,6 +204,7 @@ async function createTemplateInteractive(options: WorkspaceTemplateCommandOption
 
   // Add variables
   if (response.addVariables) {
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const varResponse = await prompts([
         {
@@ -595,6 +596,7 @@ async function interactiveTemplateManagement(options: WorkspaceTemplateCommandOp
       await createTemplateInteractive({ ...options, interactive: false });
       break;
     case 'apply':
+      {
       const applyResponse = await prompts({
         type: 'text',
         name: 'template',
@@ -604,7 +606,9 @@ async function interactiveTemplateManagement(options: WorkspaceTemplateCommandOp
         await applyTemplate({ ...options, template: applyResponse.template, interactive: false });
       }
       break;
+      }
     case 'show':
+      {
       const showResponse = await prompts({
         type: 'text',
         name: 'template',
@@ -614,7 +618,9 @@ async function interactiveTemplateManagement(options: WorkspaceTemplateCommandOp
         await showTemplate({ ...options, template: showResponse.template, interactive: false });
       }
       break;
+      }
     case 'export':
+      {
       const exportResponse = await prompts({
         type: 'text',
         name: 'name',
@@ -624,7 +630,9 @@ async function interactiveTemplateManagement(options: WorkspaceTemplateCommandOp
         await exportTemplate({ ...options, name: exportResponse.name, interactive: false });
       }
       break;
+      }
     case 'delete':
+      {
       const deleteResponse = await prompts({
         type: 'text',
         name: 'template',
@@ -642,5 +650,6 @@ async function interactiveTemplateManagement(options: WorkspaceTemplateCommandOp
         }
       }
       break;
+      }
   }
 }

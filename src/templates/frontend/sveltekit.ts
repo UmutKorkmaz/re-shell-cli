@@ -1324,7 +1324,7 @@ export async function POST({ request }) {
   function expand() {
     expanded = !expanded;
   }
-<\/script>
+</script>
 
 <div class="animated-card-container">
   <button on:click={toggle} class="toggle-btn">
@@ -1453,7 +1453,7 @@ export async function POST({ request }) {
       items = [...items.slice(0, idx), items[idx + 1], item, ...items.slice(idx + 2)];
     }
   }
-<\/script>
+</script>
 
 <div class="transition-list">
   <h2>Animated List with FLIP</h2>
@@ -1580,7 +1580,7 @@ export async function POST({ request }) {
     number -= 1;
     $count = number;
   }
-<\/script>
+</script>
 
 <div class="spring-demo">
   <h2>Spring Physics Demo</h2>
@@ -1704,7 +1704,7 @@ export async function POST({ request }) {
   function close() {
     isOpen = false;
   }
-<\/script>
+</script>
 
 <div class="click-outside-demo">
   <h2>Click Outside Action</h2>
@@ -1828,7 +1828,7 @@ export async function POST({ request }) {
     { id: 3, url: 'https://picsum.photos/400/300?random=3', alt: 'Random image 3' },
     { id: 4, url: 'https://picsum.photos/400/300?random=4', alt: 'Random image 4' }
   ];
-<\/script>
+</script>
 
 <div class="lazy-load-demo">
   <h2>Lazy Load Images Action</h2>
@@ -1966,7 +1966,7 @@ export async function POST({ request }) {
   }
 
   let tooltipPosition: 'top' | 'bottom' | 'left' | 'right' = 'top';
-<\/script>
+</script>
 
 <div class="tooltip-demo">
   <h2>Tooltip Action</h2>
@@ -2117,7 +2117,7 @@ export async function POST({ request }) {
     return `<script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { tweened } from 'svelte/motion';
-  import { browser } from '\$app/environment';
+  import { browser } from '$app/environment';
 
   // Performance metrics
   let fps = tweened(0, { duration: 500 });
@@ -2186,7 +2186,7 @@ export async function POST({ request }) {
       cancelAnimationFrame(animationFrameId);
     }
   });
-<\/script>
+</script>
 
 <div class="perf-monitor">
   <div class="perf-header">
@@ -2413,7 +2413,7 @@ export async function POST({ request }) {
       lastRender: 0
     }));
   }
-<\/script>
+</script>
 
 <div class="component-profiler">
   <div class="profiler-header">
@@ -2611,8 +2611,8 @@ export async function POST({ request }) {
  * in Svelte applications during development.
  */
 
-import { browser } from '\$app/environment';
-import { goto } from '\$app/navigation';
+import { browser } from '$app/environment';
+import { goto } from '$app/navigation';
 
 export interface DevLogOptions {
   level?: 'log' | 'warn' | 'error' | 'info' | 'debug';
@@ -3401,7 +3401,7 @@ describe('Header component', () => {
   protected generateWebComponentUserCard() {
     return `<script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '\$app/environment';
+  import { browser } from '$app/environment';
 
   export let name = 'John Doe';
   export let email = 'john@example.com';
@@ -3540,7 +3540,7 @@ describe('Header component', () => {
       customElements.define('user-card', UserCardElement);
     }
   });
-<\/script>
+</script>
 
 <div class="web-component-example">
   <h3>User Card Web Component</h3>
@@ -3591,7 +3591,7 @@ describe('Header component', () => {
   protected generateWebComponentButton() {
     return `<script lang="ts">
   import { onMount } from 'svelte';
-  import { browser } from '\$app/environment';
+  import { browser } from '$app/environment';
 
   export let variant: 'primary' | 'secondary' | 'danger' | 'success' = 'primary';
   export let size: 'small' | 'medium' | 'large' = 'medium';
@@ -3744,7 +3744,7 @@ describe('Header component', () => {
   function handleClick(e: CustomEvent) {
     console.log('Custom button clicked:', e.detail);
   }
-<\/script>
+</script>
 
 <div class="web-component-example">
   <h3>Custom Button Web Component</h3>
@@ -3791,7 +3791,7 @@ describe('Header component', () => {
   protected generateWebComponentCounter() {
     return `<script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { browser } from '\$app/environment';
+  import { browser } from '$app/environment';
 
   export let value = 0;
   export let min = 0;
@@ -3911,7 +3911,7 @@ describe('Header component', () => {
   function handleChange(e: CustomEvent) {
     localValue = e.detail.value;
   }
-<\/script>
+</script>
 
 <div class="web-component-example">
   <h3>Counter Web Component</h3>
@@ -3950,7 +3950,7 @@ describe('Header component', () => {
   protected generateWebComponentModal() {
     return `<script lang="ts">
   import { onMount } from 'svelte';
-  import { browser } from '\$app/environment';
+  import { browser } from '$app/environment';
 
   export let open = false;
   export let title = 'Modal Title';
@@ -4143,7 +4143,7 @@ describe('Header component', () => {
     console.log('Modal confirmed');
     open = false;
   }
-<\/script>
+</script>
 
 <div class="web-component-example">
   <h3>Modal Web Component</h3>
@@ -4194,7 +4194,7 @@ describe('Header component', () => {
  * It includes helper functions for safe component registration and lifecycle management.
  */
 
-import { browser } from '\$app/environment';
+import { browser } from '$app/environment';
 
 /**
  * Registry of all web components
@@ -4335,8 +4335,8 @@ export type CustomElementTag = typeof CUSTOM_ELEMENTS[number];
   protected generateFibonacciWasm() {
     return `<script lang="ts">
   import { onMount } from 'svelte';
-  import { browser } from '\$app/environment';
-  import { loadWasm, measureWasmVsJs } from '\$lib/components/wasm/wasm-utils';
+  import { browser } from '$app/environment';
+  import { loadWasm, measureWasmVsJs } from '$lib/components/wasm/wasm-utils';
 
   let wasmModule: WebAssembly.WebAssemblyInstantiatedSource | null = null;
   let wasmFib: ((n: number) => number) | null = null;
@@ -4413,7 +4413,7 @@ export type CustomElementTag = typeof CUSTOM_ELEMENTS[number];
   onMount(() => {
     loadWasmModule();
   });
-<\/script>
+</script>
 
 <div class="wasm-example">
   <h2>WebAssembly Fibonacci Calculator</h2>
@@ -4580,8 +4580,8 @@ export type CustomElementTag = typeof CUSTOM_ELEMENTS[number];
   protected generateImageProcessorWasm() {
     return `<script lang="ts">
   import { onMount } from 'svelte';
-  import { browser } from '\$app/environment';
-  import { processImageWithWasm, createGrayscaleFilter, createBlurFilter } from '\$lib/components/wasm/wasm-utils';
+  import { browser } from '$app/environment';
+  import { processImageWithWasm, createGrayscaleFilter, createBlurFilter } from '$lib/components/wasm/wasm-utils';
 
   let canvasElement: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -4703,7 +4703,7 @@ export type CustomElementTag = typeof CUSTOM_ELEMENTS[number];
     link.href = canvasElement.toDataURL();
     link.click();
   }
-<\/script>
+</script>
 
 <div class="image-processor">
   <h2>Image Processing with WebAssembly</h2>
@@ -4990,7 +4990,7 @@ export type CustomElementTag = typeof CUSTOM_ELEMENTS[number];
  * and working with WebAssembly modules in SvelteKit applications.
  */
 
-import { browser } from '\$app/environment';
+import { browser } from '$app/environment';
 
 /**
  * WASM module cache to avoid reloading the same module
@@ -5383,8 +5383,8 @@ export const wasmFeatures = {
   protected generateEventBus() {
     return `<script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '\$app/environment';
-  import { eventBus, EventBusEvent } from '\$lib/components/microfrontend/micro-frontend';
+  import { browser } from '$app/environment';
+  import { eventBus, EventBusEvent } from '$lib/components/microfrontend/micro-frontend';
 
   // Local state for this micro-frontend
   let message = '';
@@ -5430,7 +5430,7 @@ export const wasmFeatures = {
       time: new Date().toISOString()
     });
   }
-<\/script>
+</script>
 
 <div class="event-bus-demo">
   <h2>Micro-Frontend Event Bus</h2>
@@ -5662,8 +5662,8 @@ export const wasmFeatures = {
   protected generateSharedState() {
     return `<script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '\$app/environment';
-  import { sharedStore, SharedStoreKeys } from '\$lib/components/microfrontend/micro-frontend';
+  import { browser } from '$app/environment';
+  import { sharedStore, SharedStoreKeys } from '$lib/components/microfrontend/micro-frontend';
 
   // Local state synced with shared store
   let userSettings = {
@@ -5744,7 +5744,7 @@ export const wasmFeatures = {
     notifications = 0;
     sharedStore.set(SharedStoreKeys.NOTIFICATIONS, 0);
   }
-<\/script>
+</script>
 
 <div class="shared-state-demo" class:dark-mode={userSettings.theme === 'dark'}>
   <h2>Micro-Frontend Shared State</h2>
@@ -5992,8 +5992,8 @@ export const wasmFeatures = {
   protected generateMicroAppContainer() {
     return `<script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '\$app/environment';
-  import { eventBus, MicroAppLoader } from '\$lib/components/microfrontend/micro-frontend';
+  import { browser } from '$app/environment';
+  import { eventBus, MicroAppLoader } from '$lib/components/microfrontend/micro-frontend';
 
   // Available micro-apps
   const microApps = [
@@ -6095,7 +6095,7 @@ export const wasmFeatures = {
     unloadApp(appId);
     loadApp(appId);
   }
-<\/script>
+</script>
 
 <div class="micro-app-container">
   <h2>Micro-Frontend Container</h2>
@@ -6445,7 +6445,7 @@ export const wasmFeatures = {
  * - Micro-App Loader for dynamic module loading
  */
 
-import { browser } from '\$app/environment';
+import { browser } from '$app/environment';
 
 // ============================================================================
 // EVENT BUS
@@ -6992,8 +6992,8 @@ export function throttle<T extends (...args: any[]) => any>(
   protected generateReactWrapper() {
     return `<script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '\$app/environment';
-  import { renderReactComponent, unmountReactComponent } from '\$lib/components/cross-framework/cross-framework';
+  import { browser } from '$app/environment';
+  import { renderReactComponent, unmountReactComponent } from '$lib/components/cross-framework/cross-framework';
 
   export let component: any;
   export let props = {};
@@ -7022,12 +7022,12 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   });
 
-  \$: if (reactInstance && browser) {
+  $: if (reactInstance && browser) {
     // Re-render when props change
     unmountReactComponent(reactInstance, container);
     reactInstance = renderReactComponent(component, props, container);
   }
-<\/script>
+</script>
 
 <div bind:this={container} class={className}></div>
 
@@ -7046,8 +7046,8 @@ export function throttle<T extends (...args: any[]) => any>(
   protected generateVueWrapper() {
     return `<script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '\$app/environment';
-  import { renderVueComponent, unmountVueComponent } from '\$lib/components/cross-framework/cross-framework';
+  import { browser } from '$app/environment';
+  import { renderVueComponent, unmountVueComponent } from '$lib/components/cross-framework/cross-framework';
 
   export let component: any;
   export let props = {};
@@ -7069,11 +7069,11 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   });
 
-  \$: if (vueInstance && browser) {
+  $: if (vueInstance && browser) {
     // Update Vue component when props change
     Object.assign(vueInstance, props);
   }
-<\/script>
+</script>
 
 <div bind:this={container} class={className}></div>
 `;
@@ -7086,8 +7086,8 @@ export function throttle<T extends (...args: any[]) => any>(
   protected generateAngularWrapper() {
     return `<script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { browser } from '\$app/environment';
-  import { renderAngularComponent, unmountAngularComponent } from '\$lib/components/cross-framework/cross-framework';
+  import { browser } from '$app/environment';
+  import { renderAngularComponent, unmountAngularComponent } from '$lib/components/cross-framework/cross-framework';
 
   export let component: any;
   export let props = {};
@@ -7109,7 +7109,7 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   });
 
-  \$: if (angularRef && browser) {
+  $: if (angularRef && browser) {
     // Update Angular component when props change
     if (angularRef.setInput) {
       Object.entries(props).forEach(([key, value]) => {
@@ -7117,7 +7117,7 @@ export function throttle<T extends (...args: any[]) => any>(
       });
     }
   }
-<\/script>
+</script>
 
 <div bind:this={container} class={className}></div>
 `;
@@ -7139,7 +7139,7 @@ export function throttle<T extends (...args: any[]) => any>(
  * between frameworks, allowing any component to be wrapped and used anywhere.
  */
 
-import { browser } from '\$app/environment';
+import { browser } from '$app/environment';
 
 // ============================================================================
 // WEB COMPONENT ADAPTER
@@ -7202,8 +7202,8 @@ export function createWebComponentAdapter(
     }
 
     destroy() {
-      if (this.instance && typeof this.instance.\$destroy === 'function') {
-        this.instance.\$destroy();
+      if (this.instance && typeof this.instance.$destroy === 'function') {
+        this.instance.$destroy();
       }
       this.container.innerHTML = '';
     }
@@ -7349,7 +7349,7 @@ export function renderVueComponent(
     const app = Vue.createApp(component, props);
     const instance = app.mount(container);
     // Attach app to instance for unmounting
-    instance.\$app = app;
+    instance.$app = app;
     return instance;
   }
 
@@ -7359,7 +7359,7 @@ export function renderVueComponent(
     const instance = new VueConstructor({
       render: (h: any) => h(component, { props })
     });
-    instance.\$mount(container);
+    instance.$mount(container);
     return instance;
   }
 
@@ -7375,12 +7375,12 @@ export function unmountVueComponent(instance: any, container: HTMLElement): void
   if (!instance) return;
 
   // Vue 3
-  if (instance.\$app?.unmount) {
-    instance.\$app.unmount();
+  if (instance.$app?.unmount) {
+    instance.$app.unmount();
   }
   // Vue 2
-  else if (instance.\$destroy) {
-    instance.\$destroy();
+  else if (instance.$destroy) {
+    instance.$destroy();
   }
 
   container.innerHTML = '';
@@ -7725,7 +7725,7 @@ export class EventBridge {
  * and structured data for search engines and social media platforms.
  */
 
-import { browser } from '\$app/environment';
+import { browser } from '$app/environment';
 
 // ============================================================================
 // META TAG INTERFACES
@@ -8121,7 +8121,7 @@ export const TWITTER_HANDLE = '@yourhandle';
  * your content better and display rich snippets in search results.
  */
 
-import { browser } from '\$app/environment';
+import { browser } from '$app/environment';
 
 // ============================================================================
 // BASE TYPES
@@ -8570,13 +8570,13 @@ export function injectJsonLd(data: Thing): void {
   protected generateSeoHead() {
     return `<script context="module" lang="ts">
   import { onMount } from 'svelte';
-  import { browser } from '\$app/environment';
+  import { browser } from '$app/environment';
   import {
     setPageTitle,
     setMetaDescription,
     setCanonicalUrl,
     updateMetaTags
-  } from '\$lib/utils/seo';
+  } from '$lib/utils/seo';
 
   export let title = '';
   export let description = '';
@@ -8619,7 +8619,7 @@ export function injectJsonLd(data: Thing): void {
     updateMetaTags(meta);
   });
 
-  \$: if (browser) {
+  $: if (browser) {
     // Reactive updates when props change
     updateMetaTags({
       title,
@@ -8644,7 +8644,7 @@ export function injectJsonLd(data: Thing): void {
       }
     });
   }
-<\/script>
+</script>
 
 <svelte:head>
   {#if description}
@@ -8699,18 +8699,18 @@ export function injectJsonLd(data: Thing): void {
    */
   protected generateJsonLd() {
     return `<script lang="ts">
-  import { browser } from '\$app/environment';
+  import { browser } from '$app/environment';
 
   export let data = {};
   export let type = 'WebPage';
 
   // Generate JSON-LD string
-  \$: jsonLdString = JSON.stringify({
+  $: jsonLdString = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': type,
     ...data
   });
-<\/script>
+</script>
 
 <svelte:head>
   <script type="application/ld+json">

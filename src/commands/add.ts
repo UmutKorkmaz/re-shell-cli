@@ -75,6 +75,12 @@ export async function addMicrofrontend(
     },
   ]);
 
+  // Check for cancellation (Ctrl+C returns empty object)
+  if (!options.template && responses.template === undefined) {
+    console.log(chalk.yellow('Operation cancelled.'));
+    return;
+  }
+
   // Merge responses with options
   const finalOptions = {
     ...options,
@@ -114,7 +120,7 @@ export async function addMicrofrontend(
       initial: 0,
     });
 
-    if (action === 'cancel') {
+    if (!action || action === 'cancel') {
       console.log(chalk.yellow('Operation cancelled.'));
       return;
     }
