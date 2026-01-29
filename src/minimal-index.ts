@@ -4,14 +4,15 @@
 const startTime = Date.now();
 
 // Read package.json for version
-const { readFileSync } = require('fs');
-const { join } = require('path');
+import { readFileSync } from 'fs';
+import { join } from 'path';
 const packageJson = JSON.parse(
   readFileSync(join(__dirname, '../package.json'), 'utf-8')
 );
 
 // Fast path for version
 if (process.argv.includes('--version') || process.argv.includes('-v')) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const chalk = require('chalk');
   console.log(chalk.cyan(`
 ██████╗ ███████╗           ███████╗██╗  ██╗███████╗██╗     ██╗
@@ -51,6 +52,7 @@ program
 
 // Show help if no commands
 if (process.argv.length <= 2) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const chalk = require('chalk');
   console.log(chalk.cyan(`
 ██████╗ ███████╗           ███████╗██╗  ██╗███████╗██╗     ██╗

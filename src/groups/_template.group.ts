@@ -31,8 +31,9 @@ export function registerTemplateGroup(program: Command): void {
     .action(
       createAsyncCommand(async (options) => {
         await withTimeout(async () => {
-          const { someHandler } = await import('../commands/some-command');
-          await someHandler(options);
+          // Replace with: const { someHandler } = await import('../commands/some-command');
+          // await someHandler(options);
+          void options;
         }, 30000);
       })
     );
