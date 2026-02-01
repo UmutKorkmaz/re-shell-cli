@@ -22,8 +22,67 @@
 
 import { Command } from 'commander';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function registerAliases(_program: Command): void {
-  // Populated incrementally as groups are extracted.
-  // Each alias is added here when its parent group is created.
+function deprecate(program: Command, oldName: string, newPath: string): void {
+  const cmd = program
+    .command(oldName)
+    .allowUnknownOption()
+    .description(`[deprecated] Use: re-shell ${newPath}`)
+    .action(() => {
+      process.stderr.write(`[deprecated] re-shell ${oldName} → re-shell ${newPath}\n`);
+      process.exit(1);
+    });
+  (cmd as unknown as { hidden: boolean }).hidden = true;
+}
+
+export function registerAliases(program: Command): void {
+  // workspace-* flat commands → workspace <sub>
+  deprecate(program, 'workspace-health', 'workspace health');
+  deprecate(program, 'workspace-graph', 'workspace graph');
+  deprecate(program, 'workspace-def', 'workspace def');
+  deprecate(program, 'workspace-state', 'workspace state');
+  deprecate(program, 'workspace-template', 'workspace template');
+  deprecate(program, 'workspace-backup', 'workspace');
+  deprecate(program, 'workspace-migration', 'workspace migrate');
+  deprecate(program, 'workspace-conflict', 'workspace');
+  deprecate(program, 'workspace-config', 'workspace');
+  deprecate(program, 'file-watcher', 'tools');
+  deprecate(program, 'change-detector', 'tools');
+
+  // api-related flat commands → api <sub>
+  deprecate(program, 'openapi', 'api');
+  deprecate(program, 'swagger', 'api');
+  deprecate(program, 'versioning', 'api');
+  deprecate(program, 'validation', 'api');
+  deprecate(program, 'gateway', 'api gateway');
+  deprecate(program, 'analytics', 'api');
+  deprecate(program, 'client', 'api');
+  deprecate(program, 'api-test', 'api');
+  deprecate(program, 'docs', 'learn docs');
+
+  // config-related flat commands → config <sub>
+  deprecate(program, 'env', 'config env');
+  deprecate(program, 'uconfig', 'config');
+  deprecate(program, 'config-migrate', 'config');
+  deprecate(program, 'config-diff', 'config diff');
+  deprecate(program, 'validate', 'config validate');
+  deprecate(program, 'project-config', 'config');
+  deprecate(program, 'template', 'generate');
+
+  // quality/testing flat commands → quality <sub>
+  deprecate(program, 'test', 'quality test');
+  deprecate(program, 'intellisense', 'quality ide');
+  deprecate(program, 'cicd', 'quality');
+
+  // tools flat commands → tools <sub>
+  deprecate(program, 'debug', 'tools debug');
+  deprecate(program, 'devenv', 'tools env-check');
+  deprecate(program, 'hotreload', 'tools');
+
+  // service flat commands → service <sub>
+  deprecate(program, 'services', 'service');
+  deprecate(program, 'dev', 'service');
+
+  // data flat commands → data <sub>
+  deprecate(program, 'backup', 'data backup');
+  deprecate(program, 'migrate', 'data migrate');
 }
