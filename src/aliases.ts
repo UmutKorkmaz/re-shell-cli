@@ -23,15 +23,14 @@
 import { Command } from 'commander';
 
 function deprecate(program: Command, oldName: string, newPath: string): void {
-  const cmd = program
-    .command(oldName)
+  const cmd = new Command(oldName)
     .allowUnknownOption()
     .description(`[deprecated] Use: re-shell ${newPath}`)
     .action(() => {
       process.stderr.write(`[deprecated] re-shell ${oldName} → re-shell ${newPath}\n`);
       process.exit(1);
     });
-  (cmd as unknown as { hidden: boolean }).hidden = true;
+  program.addCommand(cmd, { hidden: true });
 }
 
 export function registerAliases(program: Command): void {
