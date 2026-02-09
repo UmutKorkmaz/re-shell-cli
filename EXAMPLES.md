@@ -5,6 +5,8 @@ This document provides comprehensive real-world scenarios and examples for using
 ## Table of Contents
 
 1. [Latest Features](#latest-features)
+   - [Extended Init Templates & Workspace Types (v0.25.0)](#extended-init-templates--workspace-types-v0250)
+   - [Complete C++ Ecosystem (v0.24.0)](#complete-c-ecosystem-v0240)
    - [Complete Go Ecosystem (v0.22.1)](#complete-go-ecosystem-v0221)
    - [Complete Ruby Ecosystem (v0.23.0)](#complete-ruby-ecosystem-v0230)
    - [Complete PHP Ecosystem (v0.21.0)](#complete-php-ecosystem-v0210)
@@ -19,13 +21,559 @@ This document provides comprehensive real-world scenarios and examples for using
    - [Real-Time Development (v0.4.0)](#real-time-development-v040)
    - [Enterprise Features (v0.3.1)](#enterprise-features-v031)
 2. [Getting Started](#getting-started)
-3. [Full-Stack Applications](#full-stack-applications)
+3. [Workspace Architecture Types](#workspace-architecture-types)
+   - [backend — Pure API Monorepo](#backend--pure-api-monorepo)
+   - [platform — Developer Platform / OSS Toolkit](#platform--developer-platform--oss-toolkit)
+   - [desktop — Cross-Platform Desktop App](#desktop--cross-platform-desktop-app)
+   - [mobile — React Native / Expo](#mobile--react-native--expo)
+   - [edge — Edge-First Serverless](#edge--edge-first-serverless)
+   - [data-platform — Data Engineering](#data-platform--data-engineering)
+4. [Domain Starter Templates](#domain-starter-templates)
+   - [ai-app — AI-Native Application](#ai-app--ai-native-application)
+   - [devtools — Developer Tooling / OSS](#devtools--developer-tooling--oss)
+   - [marketplace — Two-Sided Marketplace](#marketplace--two-sided-marketplace)
+   - [social — Social / Community Platform](#social--social--community-platform)
+   - [blog — Content Publishing Platform](#blog--content-publishing-platform)
+   - [fintech — Financial Services App](#fintech--financial-services-app)
+   - [healthcare — Patient / Provider Portal](#healthcare--patient--provider-portal)
+   - [gaming — Gaming Platform](#gaming--gaming-platform)
+   - [iot — IoT Device Management](#iot--iot-device-management)
+   - [cms — Content Management System](#cms--content-management-system)
+5. [Full-Stack Applications](#full-stack-applications)
    - [E-commerce Platform](#e-commerce-platform)
    - [Banking Dashboard](#banking-dashboard)
    - [SaaS Admin Panel](#saas-admin-panel)
    - [Healthcare Portal](#healthcare-portal)
    - [Educational Platform](#educational-platform)
-4. [Advanced Scenarios](#advanced-scenarios)
+6. [Advanced Scenarios](#advanced-scenarios)
+
+## Latest Features
+
+### Extended Init Templates & Workspace Types (v0.25.0)
+
+10 new architecture types and 14 domain starter templates added to `re-shell init`, covering
+every major modern application pattern — from pure API backends and edge-first serverless to
+AI-native apps, gaming platforms, and IoT management systems.
+
+---
+
+## Workspace Architecture Types
+
+Use `--type` to select the structural pattern for your monorepo. Each type scaffolds a
+different set of apps, packages, Docker topology, and CI pipeline.
+
+### `backend` — Pure API Monorepo
+
+No frontend shell. Multiple backend services, shared types, API gateway. Perfect for teams
+building APIs consumed by mobile apps, third-party integrations, or separate frontend repos.
+
+```bash
+# Initialize a pure backend monorepo
+re-shell init my-api-platform --type backend --package-manager pnpm
+
+# Scaffolds:
+#   services/api-gateway/     Express + OpenAPI aggregation
+#   services/auth-service/    JWT + refresh tokens + RBAC
+#   services/data-service/    CRUD + Prisma + migrations
+#   packages/types/           Shared TypeScript contracts (zod schemas)
+#   packages/db/              Shared Prisma client + seed scripts
+#   docker-compose.yml        Postgres + Redis + all services
+#   .github/workflows/        API contract tests + deploy pipeline
+
+# Add more backend services
+re-shell generate backend payments-service --framework fastify --language typescript
+re-shell generate backend notification-service --framework fastapi --language python
+re-shell generate backend file-service --framework gin --language go
+
+# Generate shared API client for frontend consumers
+re-shell api client --name my-api-platform --lang typescript
+re-shell api client --name my-api-platform --lang python
+
+# API contract validation
+re-shell api validate --name my-api-platform
+re-shell api openapi --name my-api-platform --output ./docs/openapi.json
+```
+
+---
+
+### `platform` — Developer Platform / OSS Toolkit
+
+Internal developer platform or open-source toolkit. Ships a docs site, interactive playground,
+publishable CLI, and a core library — all in one monorepo with a changesets publish workflow.
+
+```bash
+# Initialize an OSS platform monorepo
+re-shell init my-platform --type platform --package-manager pnpm
+
+# Scaffolds:
+#   apps/docs/             Starlight docs site with versioned content
+#   apps/playground/       Sandboxed interactive code runner
+#   packages/cli/          Commander.js CLI tool skeleton with tests
+#   packages/core/         Tree-shakeable publishable library
+#   packages/tokens/       Design tokens (CSS vars + JS exports)
+#   .changeset/            Changesets versioning config
+#   .github/workflows/     Docs deploy + npm publish on release
+
+# Add documentation pages
+re-shell learn technical-docs my-platform --framework starlight
+
+# Generate API reference from JSDoc
+re-shell api docs --name my-platform --source ./packages/core/src
+
+# Publish all packages
+cd packages/core && npm publish
+cd packages/cli && npm publish
+```
+
+---
+
+### `desktop` — Cross-Platform Desktop App
+
+Electron or Tauri shell hosting microfrontend renderer windows. Native OS API bridge,
+auto-updater, code-signing CI, type-safe IPC layer.
+
+```bash
+# Initialize a desktop app monorepo (Electron)
+re-shell init my-desktop-app --type desktop --runtime electron
+
+# Initialize with Tauri (Rust-based, smaller binary)
+re-shell init my-desktop-app --type desktop --runtime tauri
+
+# Scaffolds:
+#   apps/main/             Main Electron/Tauri process
+#   apps/renderer-shell/   Main renderer window (React microfrontend host)
+#   apps/renderer-tray/    System tray popover window
+#   packages/native/       Type-safe IPC bridge (main ↔ renderer)
+#   packages/ui/           Shared desktop UI components
+#   build/                 electron-builder / tauri.conf.json
+#   .github/workflows/     Code-signing + multi-platform release
+
+# Add a new renderer window (each is an independent microfrontend)
+re-shell add settings-window --template react-ts --port 5175
+re-shell add onboarding-window --template react-ts --port 5176
+
+# Build for all platforms
+re-shell build --desktop --platform all
+```
+
+---
+
+### `mobile` — React Native / Expo
+
+Mobile-first monorepo with shared UI components and API clients across native and web targets.
+
+```bash
+# Initialize a React Native / Expo monorepo
+re-shell init my-mobile-app --type mobile --package-manager pnpm
+
+# Scaffolds:
+#   apps/mobile/           Expo Router app (iOS + Android)
+#   apps/web/              React web companion app (React Native Web)
+#   packages/ui/           Cross-platform components (RN + Web)
+#   packages/api-client/   Type-safe API client (React Query + zod)
+#   packages/hooks/        Shared business logic hooks
+#   eas.json               EAS Build + EAS Update config
+#   .github/workflows/     Expo publish + store submission pipeline
+
+# Add a new screen module (isolated feature microfrontend pattern)
+re-shell add onboarding --template react-native --type screen
+re-shell add settings --template react-native --type screen
+
+# Generate typed API client from backend OpenAPI spec
+re-shell api client --name my-mobile-app --lang typescript --target react-native
+
+# Build and submit to stores
+npx eas build --platform all
+npx eas submit --platform ios
+```
+
+---
+
+### `edge` — Edge-First Serverless
+
+Cloudflare Workers / Deno Deploy / Vercel Edge monorepo. Per-route worker isolation,
+KV/D1/R2 bindings, global deployment pipeline.
+
+```bash
+# Initialize an edge-first monorepo (Cloudflare Workers)
+re-shell init my-edge-app --type edge --provider cloudflare
+
+# Initialize for Deno Deploy
+re-shell init my-edge-app --type edge --provider deno
+
+# Scaffolds (Cloudflare):
+#   workers/api/           Hono-based API worker with D1 SQL bindings
+#   workers/auth/          Auth worker (JWT validation at edge)
+#   workers/assets/        Static asset worker with R2 storage
+#   packages/types/        Shared TypeScript types + env bindings
+#   wrangler.toml          Workers config with KV/D1/R2 namespaces
+#   .github/workflows/     wrangler deploy pipeline
+
+# Add a new edge worker
+re-shell generate backend image-resize --framework hono --language typescript --target edge
+
+# Deploy all workers
+npx wrangler deploy --env production
+
+# Preview locally
+npx wrangler dev
+```
+
+---
+
+### `data-platform` — Data Engineering
+
+Data engineering monorepo: ingestion pipelines, ML model serving, dashboards, notebooks.
+
+```bash
+# Initialize a data engineering monorepo
+re-shell init my-data-platform --type data-platform --package-manager pip+pnpm
+
+# Scaffolds:
+#   services/ingestion/    FastAPI ingest service (webhook + batch)
+#   services/pipelines/    Prefect flow definitions + task library
+#   services/ml-api/       FastAPI model serving (scikit-learn / PyTorch)
+#   services/transform/    dbt project (models, tests, snapshots)
+#   apps/dashboard/        Streamlit analytics dashboard
+#   apps/notebooks/        JupyterHub config + starter notebooks
+#   infra/                 MinIO (S3-compatible) + TimescaleDB compose
+#   .github/workflows/     dbt test + Prefect deploy pipeline
+
+# Run the full data pipeline locally
+docker-compose up minio timescale prefect-server
+
+# Add a new ML model service
+re-shell generate backend recommendation-api --framework fastapi --language python \
+  --features "model-serving,batch-predict,monitoring"
+
+# Monitor pipeline runs
+re-shell observe metrics my-data-platform --source prefect
+```
+
+---
+
+## Domain Starter Templates
+
+Use `--template` to scaffold a pre-wired vertical app with the right packages, deps, and
+folder structure for your product category.
+
+### `ai-app` — AI-Native Application
+
+Streaming chat UI, LLM proxy with tool use, RAG pipeline, knowledge-base embedding, admin panel.
+Pre-wired with the Anthropic SDK (Claude claude-sonnet-4-6 default).
+
+```bash
+# Initialize an AI application
+re-shell init my-ai-app --template ai-app --package-manager pnpm
+
+# Scaffolds:
+#   apps/shell/            Streaming chat UI with message history + file upload
+#   apps/admin/            Model config, cost dashboard, prompt management
+#   services/api/          LLM proxy: Anthropic SDK, streaming SSE, tool-use, retries
+#   services/knowledge-base/ File ingest → chunk → embed → pgvector upsert pipeline
+#   packages/types/        Shared message/tool/embedding TypeScript types
+#   docker-compose.yml     Postgres (pgvector) + Redis + all services
+
+# Add more AI capabilities
+re-shell generate backend voice-api --framework fastapi --language python \
+  --features "whisper-transcription,tts,streaming"
+
+re-shell generate backend image-api --framework fastify --language typescript \
+  --features "vision,dalle,image-store"
+
+# Observe LLM usage and costs
+re-shell observe metrics my-ai-app --source openai
+re-shell observe metrics my-ai-app --source anthropic
+
+# Add RAG for additional document types
+re-shell generate feature pdf-ingestion --type file-upload
+re-shell generate feature web-scraper --type crawler
+```
+
+---
+
+### `devtools` — Developer Tooling / OSS
+
+Starlight docs, interactive playground, publishable CLI and core lib, changesets versioning.
+
+```bash
+# Initialize a developer tooling OSS project
+re-shell init my-framework --template devtools --package-manager pnpm
+
+# Scaffolds:
+#   apps/docs/             Starlight docs site (versioned, search, API ref)
+#   apps/playground/       Monaco-based interactive code runner
+#   packages/cli/          Commander.js CLI with tests + help generation
+#   packages/core/         Framework core (tree-shakeable, dual ESM/CJS)
+#   packages/tokens/       CSS variables + JS design token exports
+#   .changeset/            Changesets for semver automation
+#   .github/workflows/     Docs → GitHub Pages + npm publish on tag
+
+# Generate full API reference
+re-shell api docs --name my-framework --source ./packages/core/src --format typedoc
+
+# Add a new plugin package
+re-shell generate module my-plugin --type package --publishable
+
+# Release a new version
+npx changeset
+npx changeset version
+npx changeset publish
+```
+
+---
+
+### `marketplace` — Two-Sided Marketplace
+
+Shell, listings, seller portal, buyer portal, admin. Stripe Connect, search, geolocation.
+
+```bash
+# Initialize a two-sided marketplace
+re-shell init my-marketplace --template marketplace --package-manager pnpm
+
+# Scaffolds:
+#   apps/shell/            Host app + routing + auth
+#   apps/listings/         Browse/search MFE (Meilisearch, filters, map)
+#   apps/seller-portal/    Inventory, orders, payouts, analytics
+#   apps/buyer-portal/     Cart, checkout, order history, reviews
+#   apps/admin/            User moderation, dispute resolution, platform analytics
+#   services/payments/     Stripe Connect: onboarding, payouts, escrow
+#   services/search/       Meilisearch + indexing pipeline
+#   packages/types/        Shared listing/order/user TypeScript types
+#   docker-compose.yml     Postgres + Redis + Meilisearch + all services
+
+# Add geolocation search
+re-shell generate feature location-search --type geolocation --provider mapbox
+
+# Add review and rating system
+re-shell generate feature reviews --type crud --schema "rating,comment,author,listing"
+
+# Set up Stripe Connect payouts
+re-shell generate feature stripe-payouts --type payments --provider stripe-connect
+```
+
+---
+
+### `social` — Social / Community Platform
+
+Feed, profiles, messaging, notifications. Socket.io real-time, S3 media, Redis pub/sub.
+
+```bash
+# Initialize a social platform
+re-shell init my-social-app --template social --package-manager pnpm
+
+# Scaffolds:
+#   apps/shell/            Host app with auth flow
+#   apps/feed/             Activity feed (infinite scroll, like/comment/share)
+#   apps/profile/          User profile page + follower/following graph
+#   apps/messaging/        DMs + group chat (Socket.io rooms)
+#   apps/notifications/    Real-time notification bell + push notification settings
+#   services/media/        S3 upload + image resize + CDN serve
+#   services/realtime/     Socket.io server (presence, pub/sub, typing indicators)
+#   packages/types/        Shared post/user/notification TypeScript types
+#   docker-compose.yml     Postgres + Redis + MinIO + all services
+
+# Add story / ephemeral content feature
+re-shell generate feature stories --type media --ttl 24h
+
+# Add content moderation
+re-shell security content-moderation my-social-app --provider aws-rekognition
+
+# Scale real-time to multiple nodes
+re-shell generate service realtime-cluster --type socket-io --adapter redis
+```
+
+---
+
+### `blog` — Content Publishing Platform
+
+Rich-text editor, public blog, admin, RSS. MDX, ContentLayer, SEO, image optimization.
+
+```bash
+# Initialize a content publishing platform
+re-shell init my-blog --template blog --package-manager pnpm
+
+# Scaffolds:
+#   apps/shell/            Public-facing site (SSG/ISR, SEO optimized)
+#   apps/blog/             Article reader (reading time, TOC, code highlighting)
+#   apps/editor/           TipTap rich-text CMS (draft/publish/schedule)
+#   apps/admin/            Post management, analytics, author management
+#   services/rss/          RSS/Atom feed generator + sitemap
+#   packages/content/      ContentLayer content schema + MDX transforms
+#   packages/types/        Shared post/author/tag TypeScript types
+
+# Add newsletter integration
+re-shell generate feature newsletter --type email --provider resend
+
+# Add comments
+re-shell generate feature comments --type crud --auth required
+
+# Add full-text search
+re-shell generate feature search --type full-text --provider meilisearch
+
+# Generate and validate sitemap
+re-shell api docs --name my-blog --type sitemap
+```
+
+---
+
+### `fintech` — Financial Services App
+
+Accounts, payments, reporting, compliance audit trail. Plaid, Stripe, D3, PCI-DSS scaffolding.
+
+```bash
+# Initialize a fintech application
+re-shell init my-fintech-app --template fintech --package-manager pnpm
+
+# Scaffolds:
+#   apps/shell/            Auth flow + dashboard entry
+#   apps/accounts/         Balance display, transaction history, account linking (Plaid)
+#   apps/payments/         Send/receive/recurring transfers + payment confirmation
+#   apps/reporting/        D3 charts: spending trends, category breakdown, CSV export
+#   apps/compliance/       Immutable audit log viewer, consent records, data export
+#   services/ledger/       Double-entry accounting engine (Prisma, append-only table)
+#   services/fraud/        Transaction risk scoring + alert webhook
+#   packages/types/        Shared transaction/account/user TypeScript types
+#   docker-compose.yml     Postgres (ledger) + Redis (rate limit) + all services
+
+# Add bank account linking
+re-shell generate feature bank-linking --type oauth --provider plaid
+
+# Add compliance reporting
+re-shell security compliance-reporting my-fintech-app --standard pci-dss
+
+# Add fraud detection hooks
+re-shell security threat-detection my-fintech-app --mode transaction-scoring
+```
+
+---
+
+### `healthcare` — Patient / Provider Portal
+
+FHIR R4 data models, HIPAA audit trail, encrypted fields, telemedicine WebRTC stub.
+
+```bash
+# Initialize a HIPAA-ready healthcare platform
+re-shell init my-health-app --template healthcare --package-manager pnpm
+
+# Scaffolds:
+#   apps/patient-portal/   Appointments, records, test results, secure messaging
+#   apps/provider-portal/  Patient list, charting, prescription management
+#   apps/records/          FHIR R4 resource viewer (Patient, Observation, Condition)
+#   apps/telemedicine/     WebRTC video consult (waiting room + session)
+#   services/fhir-api/     FHIR R4 compliant REST API (fhir.js + Postgres)
+#   services/audit/        HIPAA audit trail (pino-audit, immutable log store)
+#   packages/types/        Shared FHIR R4 TypeScript types (Patient, Observation)
+#   docs/baa-template.md   Business Associate Agreement template
+#   docker-compose.yml     Postgres (encrypted at rest) + Redis + all services
+
+# Add HL7 message ingestion
+re-shell generate service hl7-ingest --type message-queue --format hl7v2
+
+# Add consent management
+re-shell generate feature consent --type crud --schema "patient,provider,scope,expiry"
+
+# Validate HIPAA audit coverage
+re-shell security audit my-health-app --standard hipaa
+re-shell security compliance-reporting my-health-app --standard hipaa
+```
+
+---
+
+### `gaming` — Gaming Platform
+
+Lobby, game client (WebGL host), leaderboard, item store. Socket.io rooms, Redis sorted sets.
+
+```bash
+# Initialize a gaming platform
+re-shell init my-game-platform --template gaming --package-manager pnpm
+
+# Scaffolds:
+#   apps/shell/            Auth + lobby entry + matchmaking UI
+#   apps/lobby/            Room browser, party formation, chat (Socket.io)
+#   apps/game-client/      Phaser/WebGL canvas host MFE + server-sync loop
+#   apps/leaderboard/      Global + seasonal rankings (Redis sorted sets)
+#   apps/store/            In-app purchase catalog + transaction history
+#   services/matchmaking/  ELO-based matchmaking + room allocation
+#   services/game-server/  Server-authoritative game state (Socket.io + Redis)
+#   services/iap/          In-app purchase validation (Stripe / Apple / Google)
+#   packages/types/        Shared game event / room / player TypeScript types
+#   docker-compose.yml     Postgres + Redis + all services
+
+# Add anti-cheat validation
+re-shell security threat-detection my-game-platform --mode server-authoritative
+
+# Add replay recording
+re-shell generate feature replay --type event-sourcing --storage s3
+
+# Add clan / guild system
+re-shell generate feature clans --type crud --schema "name,members,rank,emblem"
+```
+
+---
+
+### `iot` — IoT Device Management
+
+Device fleet management, MQTT telemetry, TimescaleDB, OTA firmware updates, alert rules.
+
+```bash
+# Initialize an IoT management platform
+re-shell init my-iot-platform --template iot --package-manager pnpm
+
+# Scaffolds:
+#   apps/dashboard/        Device map (Mapbox), status grid, real-time metrics
+#   apps/device-manager/   Fleet CRUD, device groups, config push, OTA trigger
+#   services/telemetry/    MQTT broker bridge → TimescaleDB hypertable ingestion
+#   services/alerts/       Threshold rule engine + notification dispatch (email/SMS/webhook)
+#   services/ota/          Firmware version registry + incremental update job queue
+#   packages/types/        Shared device/telemetry/alert TypeScript types
+#   docker-compose.yml     Mosquitto (MQTT) + TimescaleDB + Redis + all services
+
+# Add device shadow pattern (desired vs reported state)
+re-shell generate feature device-shadow --type state-sync --protocol mqtt
+
+# Add anomaly detection on telemetry
+re-shell observe anomaly my-iot-platform --source timescale --metric temperature
+
+# Set up Grafana dashboards
+re-shell observe metrics my-iot-platform --provider grafana --datasource timescale
+```
+
+---
+
+### `cms` — Content Management System
+
+Public site, TipTap editor, media library, preview, GraphQL/REST content API, admin.
+
+```bash
+# Initialize a CMS
+re-shell init my-cms --template cms --package-manager pnpm
+
+# Scaffolds:
+#   apps/public-site/      Server-rendered public frontend (SEO, sitemap, OG tags)
+#   apps/editor/           TipTap rich-text editor + drag-and-drop block builder
+#   apps/media-library/    Image/video/file upload + CDN delivery + tag management
+#   apps/preview/          Draft preview with secret token (bypass CDN cache)
+#   apps/admin/            Role-based team access, webhook management, audit log
+#   services/content-api/  GraphQL + REST content delivery API (graphql-yoga)
+#   services/webhooks/     Outbound webhook dispatcher (publish events → Zapier etc)
+#   packages/types/        Shared content/media/user TypeScript types
+#   docker-compose.yml     Postgres + Redis (draft cache) + MinIO (media) + all services
+
+# Add multi-tenancy (separate content spaces per team)
+re-shell generate feature multi-tenant --type isolation --strategy schema-per-tenant
+
+# Add full-text search across content
+re-shell generate feature content-search --type full-text --provider meilisearch
+
+# Integrate with CDN for asset invalidation
+re-shell cloud cdn my-cms --provider cloudflare --invalidate-on-publish
+
+# Set up scheduled publishing
+re-shell generate feature scheduled-publish --type cron --schema "content,publish_at,status"
+```
+
+---
 
 ## Latest Features
 
