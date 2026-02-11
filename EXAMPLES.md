@@ -86,12 +86,12 @@ re-shell generate backend notification-service --framework fastapi --language py
 re-shell generate backend file-service --framework gin --language go
 
 # Generate shared API client for frontend consumers
-re-shell api client --name my-api-platform --lang typescript
-re-shell api client --name my-api-platform --lang python
+re-shell api client generate ./openapi.yaml . --framework typescript
+re-shell api client generate ./openapi.yaml . --framework react --react-query
 
-# API contract validation
-re-shell api validate --name my-api-platform
-re-shell api openapi --name my-api-platform --output ./docs/openapi.json
+# API contract validation and spec generation
+re-shell api validate generate
+re-shell api openapi generate --output ./docs/openapi.json
 ```
 
 ---
@@ -117,8 +117,8 @@ re-shell init my-platform --type platform --package-manager pnpm
 # Add documentation pages
 re-shell learn technical-docs my-platform --framework starlight
 
-# Generate API reference from JSDoc
-re-shell api docs --name my-platform --source ./packages/core/src
+# Generate API reference docs from OpenAPI spec
+re-shell api docs generate ./openapi.yaml ./docs
 
 # Publish all packages
 cd packages/core && npm publish
@@ -180,7 +180,7 @@ re-shell add onboarding --template react-native --type screen
 re-shell add settings --template react-native --type screen
 
 # Generate typed API client from backend OpenAPI spec
-re-shell api client --name my-mobile-app --lang typescript --target react-native
+re-shell api client generate ./openapi.yaml . --framework react
 
 # Build and submit to stores
 npx eas build --platform all
@@ -309,8 +309,8 @@ re-shell init my-framework --template devtools --package-manager pnpm
 #   .changeset/            Changesets for semver automation
 #   .github/workflows/     Docs → GitHub Pages + npm publish on tag
 
-# Generate full API reference
-re-shell api docs --name my-framework --source ./packages/core/src --format typedoc
+# Generate full API reference from OpenAPI spec
+re-shell api docs generate ./openapi.yaml ./docs
 
 # Add a new plugin package
 re-shell generate module my-plugin --type package --publishable
@@ -411,8 +411,8 @@ re-shell generate feature comments --type crud --auth required
 # Add full-text search
 re-shell generate feature search --type full-text --provider meilisearch
 
-# Generate and validate sitemap
-re-shell api docs --name my-blog --type sitemap
+# Generate API docs from OpenAPI spec
+re-shell api docs generate ./openapi.yaml ./docs
 ```
 
 ---
