@@ -11,7 +11,8 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**']
     },
-    testTimeout: 10000, // 10 seconds timeout for tests
+    testTimeout: 120000, // 120 seconds timeout for tests (integration tests need time)
+    hookTimeout: 120000, // 120 seconds timeout for hooks (beforeEach/afterEach)
   },
   resolve: {
     alias: {
