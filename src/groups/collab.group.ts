@@ -939,7 +939,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--output <dir>', 'Output directory', './incident-response')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
   .action(async (name, options) => {
-    const { writeFiles, displayConfig, incidentResponse } = await import('../utils/incident-response.js');
+    const { writeFiles, displayConfig } = await import('../utils/incident-response.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
     if (options.enableAws) providers.push('aws');

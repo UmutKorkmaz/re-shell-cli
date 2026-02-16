@@ -1303,7 +1303,7 @@ export function registerConfigGroup(program: Command): void {
         flushOutput();
 
         await withTimeout(async () => {
-          await manageWorkspaceTemplates({ ...options, list: true, spinner });
+          await manageWorkspaceTemplates({ action: 'list', spinner, ...options });
         }, 15000);
 
         if (!options.json) {
@@ -1320,7 +1320,7 @@ export function registerConfigGroup(program: Command): void {
     .option('--interactive', 'Interactive template creation')
     .action(
       createAsyncCommand(async (options) => {
-        await manageWorkspaceTemplates({ ...options, create: true });
+        await manageWorkspaceTemplates({ action: 'create', ...options });
       })
     );
 
@@ -1336,7 +1336,7 @@ export function registerConfigGroup(program: Command): void {
         flushOutput();
 
         await withTimeout(async () => {
-          await manageWorkspaceTemplates({ ...options, show: true, template: name, spinner });
+          await manageWorkspaceTemplates({ action: 'show', templateId: name, spinner, ...options });
         }, 15000);
 
         if (!options.json) {
@@ -1360,7 +1360,7 @@ export function registerConfigGroup(program: Command): void {
         flushOutput();
 
         await withTimeout(async () => {
-          await manageWorkspaceTemplates({ ...options, apply: true, template: name, spinner });
+          await manageWorkspaceTemplates({ action: 'export', templateId: name, output: options.output, spinner, ...options });
         }, 30000);
 
         spinner.succeed(chalk.green(`Template '${name}' applied successfully!`));
@@ -1377,7 +1377,7 @@ export function registerConfigGroup(program: Command): void {
         flushOutput();
 
         await withTimeout(async () => {
-          await manageWorkspaceTemplates({ ...options, delete: true, template: name, spinner });
+          await manageWorkspaceTemplates({ action: 'delete', templateId: name, spinner, ...options });
         }, 15000);
 
         spinner.succeed(chalk.green(`Template '${name}' deleted!`));
@@ -1389,7 +1389,7 @@ export function registerConfigGroup(program: Command): void {
     .description('Interactive template management')
     .action(
       createAsyncCommand(async (options) => {
-        await manageWorkspaceTemplates({ ...options, interactive: true });
+        await manageWorkspaceTemplates({ action: 'create', ...options });
       })
     );
 

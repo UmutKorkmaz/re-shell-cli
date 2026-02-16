@@ -70,18 +70,18 @@ export function registerAliases(program: Command): void {
   // quality/testing flat commands → quality <sub>
   deprecate(program, 'test', 'quality test');
   deprecate(program, 'intellisense', 'quality ide');
-  deprecate(program, 'cicd', 'quality');
+  deprecate(program, 'cicd', 'tools cicd');
 
   // tools flat commands → tools <sub>
   deprecate(program, 'debug', 'tools debug');
-  deprecate(program, 'devenv', 'tools env-check');
-  deprecate(program, 'hotreload', 'tools');
+  deprecate(program, 'devenv', 'tools devenv');
+  deprecate(program, 'hotreload', 'tools hotreload');
+  deprecate(program, 'dev', 'tools dev');
 
   // service flat commands → service <sub>
   deprecate(program, 'services', 'service');
-  deprecate(program, 'dev', 'service');
 
-  // data flat commands → data <sub>
-  deprecate(program, 'backup', 'data backup');
-  deprecate(program, 'migrate', 'data migrate');
+  // migrate/backup flat commands → tools migrate <sub>
+  deprecate(program, 'backup', 'tools migrate backup');
+  deprecate(program, 'migrate', 'tools migrate');
 }
