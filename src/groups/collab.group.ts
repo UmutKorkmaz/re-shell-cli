@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { createAsyncCommand } from '../utils/error-handler';
 import { withTimeout } from '../utils/error-handler';
 import chalk from 'chalk';
 
@@ -22,7 +23,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './webrtc-sharing')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/webrtc-sharing.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -75,7 +76,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ WebRTC sharing configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Terminal broadcasting commands
   collab
@@ -96,7 +97,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './terminal-broadcasting')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/terminal-broadcasting.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -147,7 +148,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Terminal broadcasting configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Operational transform commands
   collab
@@ -170,7 +171,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './operational-transform')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/operational-transform.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -221,7 +222,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Operational transform configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Session recording commands
   collab
@@ -244,7 +245,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './session-recording')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/session-recording.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -296,7 +297,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Session recording configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Voice/video integration commands
   collab
@@ -319,7 +320,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './voice-video-integration')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/voice-video-integration.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -372,7 +373,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Voice/video integration configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Collaborative debugging commands
   collab
@@ -392,7 +393,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './collaborative-debugging')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/collaborative-debugging.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -436,7 +437,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Collaborative debugging configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Workspace sync commands
   collab
@@ -455,7 +456,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './workspace-sync')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/workspace-sync.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -503,7 +504,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Workspace sync configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Architecture design commands
   collab
@@ -523,7 +524,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './architecture-design')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/architecture-design.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -571,7 +572,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Architecture design configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Team coding sessions commands
   collab
@@ -589,7 +590,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './team-coding-sessions')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/team-coding-sessions.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -636,7 +637,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Team coding sessions configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Code review workflow commands
   collab
@@ -655,7 +656,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './code-review-workflow')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/code-review-workflow.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -700,7 +701,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Code review workflow configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Collaborative testing commands
   collab
@@ -718,7 +719,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './collaborative-testing')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/collaborative-testing.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -770,7 +771,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Collaborative testing configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Knowledge sharing commands
   collab
@@ -791,7 +792,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './knowledge-sharing')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/knowledge-sharing.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -842,7 +843,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Knowledge sharing configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Performance monitoring collaboration commands
   collab
@@ -862,7 +863,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './performance-monitoring-collab')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/performance-monitoring-collab.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -923,7 +924,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Performance monitoring collaboration configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Incident response commands
   collab
@@ -938,7 +939,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './incident-response')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/incident-response.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1013,7 +1014,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Incident response configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Developer productivity commands
   collab
@@ -1028,7 +1029,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './developer-productivity')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/developer-productivity.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1116,7 +1117,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Developer productivity configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Code quality trends commands
   collab
@@ -1131,7 +1132,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './code-quality-trends')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/code-quality-trends.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1275,7 +1276,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Code quality trends configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Velocity tracking commands
   collab
@@ -1290,7 +1291,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './velocity-tracking')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/velocity-tracking.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1399,7 +1400,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Velocity tracking configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Custom analytics commands
   collab
@@ -1414,7 +1415,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './custom-analytics')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/custom-analytics.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1510,7 +1511,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Custom analytics configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Team performance optimization commands
   collab
@@ -1525,7 +1526,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './team-performance-optimization')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/team-performance-optimization.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1666,7 +1667,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Team performance optimization configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Knowledge sharing automation commands
   collab
@@ -1682,7 +1683,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './knowledge-sharing-automation')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/knowledge-sharing-automation.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1771,7 +1772,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Knowledge sharing automation configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Skills assessment commands
   collab
@@ -1786,7 +1787,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './skills-assessment')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/skills-assessment.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1855,7 +1856,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Skills assessment configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
 // Communication analysis commands
   collab
@@ -1870,7 +1871,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP integration')
   .option('--output <dir>', 'Output directory', './communication-analysis')
   .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeFiles, displayConfig } = await import('../utils/communication-analysis.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1938,7 +1939,7 @@ export function registerCollabGroup(program: Command): void {
 
       console.log(chalk.green('✓ Communication analysis configuration generated successfully!'));
     }, 30000);
-  });
+  }));
 
   collab
   .command('workload-balancing')
@@ -1959,7 +1960,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './workload-balancing-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { workloadBalancing, writeFiles, displayConfig } = await import('../utils/workload-balancing.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -2207,7 +2208,7 @@ export function registerCollabGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: workload-balancing-config.json\n`));
 
     console.log(chalk.green('✓ Workload balancing configuration generated successfully!'));
-  });
+  }));
 
   collab
   .command('burnout-detection')
@@ -2223,7 +2224,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './burnout-detection-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { burnoutDetection, writeFiles, displayConfig } = await import('../utils/burnout-detection.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -2397,7 +2398,7 @@ export function registerCollabGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: burnout-detection-config.json\n`));
 
     console.log(chalk.green('✓ Burnout detection configuration generated successfully!'));
-  });
+  }));
 
   collab
   .command('project-mgmt')
@@ -2432,7 +2433,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './pm-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeProjectMgmtFiles, displayProjectMgmtConfig, createExampleProjectMgmtConfig } = await import('../utils/project-mgmt.js');
 
     const providers: Array<'aws' | 'azure' | 'gcp'> = [];
@@ -2486,7 +2487,7 @@ export function registerCollabGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: pm-config.json\n'));
 
     console.log(chalk.green('✓ Project management system configured successfully!'));
-  });
+  }));
 
   collab
   .command('collaboration')
@@ -2507,7 +2508,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './collaboration-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const {
       writeCollaborationFiles,
       displayCollaborationConfig,
@@ -2538,7 +2539,7 @@ export function registerCollabGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: terraform/provider/main.tf\n'));
 
     console.log(chalk.green('✓ Collaboration platform configured successfully!'));
-  });
+  }));
 
   collab
   .command('feature-flag')
@@ -2555,7 +2556,7 @@ export function registerCollabGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './feature-flag-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const {
       writeFeatureFlagFiles,
       displayFeatureFlagConfig,
@@ -2582,7 +2583,7 @@ export function registerCollabGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: terraform/provider/main.tf\n'));
 
     console.log(chalk.green('✓ Feature flag management system configured successfully!'));
-  });
+  }));
 
   program.addCommand(collab);
 }

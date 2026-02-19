@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { createAsyncCommand } from '../utils/error-handler';
 import { withTimeout } from '../utils/error-handler';
 import chalk from 'chalk';
 
@@ -29,7 +30,7 @@ export function registerObserveGroup(program: Command): void {
     .option('--anonymous-access', 'Enable anonymous Grafana access', false)
     .option('--output <dir>', 'Output directory', './prometheus-grafana')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/prometheus-grafana.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -116,7 +117,7 @@ export function registerObserveGroup(program: Command): void {
 
         console.log(chalk.green('✓ Prometheus/Grafana configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // distributed-tracing → observe trace
   observe
@@ -133,7 +134,7 @@ export function registerObserveGroup(program: Command): void {
     .option('--enable-metrics', 'Enable trace metrics', true)
     .option('--output <dir>', 'Output directory', './distributed-tracing')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/distributed-tracing.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -180,7 +181,7 @@ export function registerObserveGroup(program: Command): void {
 
         console.log(chalk.green('✓ Distributed tracing configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // log-aggregation → observe logs
   observe
@@ -198,7 +199,7 @@ export function registerObserveGroup(program: Command): void {
     .option('--enable-gcp', 'Enable GCP Cloud Logging integration')
     .option('--output <dir>', 'Output directory', './log-aggregation')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/log-aggregation.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -271,7 +272,7 @@ export function registerObserveGroup(program: Command): void {
 
         console.log(chalk.green('✓ Log aggregation configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // apm-integration → observe apm
   observe
@@ -291,7 +292,7 @@ export function registerObserveGroup(program: Command): void {
     .option('--enable-gcp', 'Enable GCP integration')
     .option('--output <dir>', 'Output directory', './apm-integration')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/apm-integration.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -349,7 +350,7 @@ export function registerObserveGroup(program: Command): void {
 
         console.log(chalk.green('✓ APM integration configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // business-metrics → observe business
   observe
@@ -366,7 +367,7 @@ export function registerObserveGroup(program: Command): void {
     .option('--enable-gcp', 'Enable GCP integration')
     .option('--output <dir>', 'Output directory', './business-metrics')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/business-metrics.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -417,7 +418,7 @@ export function registerObserveGroup(program: Command): void {
 
         console.log(chalk.green('✓ Business metrics configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // anomaly-detection → observe anomaly
   observe
@@ -436,7 +437,7 @@ export function registerObserveGroup(program: Command): void {
     .option('--enable-gcp', 'Enable GCP integration')
     .option('--output <dir>', 'Output directory', './anomaly-detection')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/anomaly-detection.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -489,7 +490,7 @@ export function registerObserveGroup(program: Command): void {
 
         console.log(chalk.green('✓ Anomaly detection configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // predictive-scaling → observe scale
   observe
@@ -508,7 +509,7 @@ export function registerObserveGroup(program: Command): void {
     .option('--enable-gcp', 'Enable GCP integration')
     .option('--output <dir>', 'Output directory', './predictive-scaling')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/predictive-scaling.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -563,7 +564,7 @@ export function registerObserveGroup(program: Command): void {
 
         console.log(chalk.green('✓ Predictive scaling configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // alert-management → observe alerts
   observe
@@ -578,7 +579,7 @@ export function registerObserveGroup(program: Command): void {
     .option('--enable-gcp', 'Enable GCP integration')
     .option('--output <dir>', 'Output directory', './alert-management')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/alert-management.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -653,7 +654,7 @@ export function registerObserveGroup(program: Command): void {
 
         console.log(chalk.green('✓ Alert management configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   program.addCommand(observe);
 }

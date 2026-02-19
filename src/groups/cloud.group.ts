@@ -277,7 +277,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--auto-scaling', 'Enable auto-scaling')
     .option('--failover', 'Enable automated failover')
     .option('--health-check', 'Enable health checks')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       console.log(chalk.cyan('🚀 Multi-Cloud Deployment Optimization and Vendor Lock-in Prevention\n'));
 
       const { writeFiles, displayConfig } = await import('../utils/multicloud-deployment');
@@ -359,7 +359,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Multi-cloud deployment configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // cloud-db → cloud db
   cloud
@@ -380,7 +380,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--enable-dr', 'Enable disaster recovery')
     .option('--cross-region', 'Enable cross-region replication')
     .option('--enable-monitoring', 'Enable monitoring and alerting')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       console.log(chalk.cyan('🚀 Cloud-Native Database Integration with Backup Strategies\n'));
 
       const { writeFiles, displayConfig } = await import('../utils/cloud-database');
@@ -459,7 +459,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Cloud-native database configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // serverless → cloud serverless
   cloud
@@ -480,7 +480,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--snap-start', 'Enable AWS SnapStart for cold start optimization')
     .option('--provisioned <concurrency>', 'AWS provisioned concurrency')
     .option('--arm64', 'Use ARM64 architecture on AWS')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       console.log(chalk.cyan('🚀 Serverless Function Deployment (Lambda, Azure Functions, Cloud Functions)\n'));
 
       const { writeFiles, displayConfig } = await import('../utils/serverless-functions');
@@ -569,7 +569,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Serverless function configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // cloud-storage → cloud storage
   cloud
@@ -587,7 +587,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--enable-classification', 'Enable data classification')
     .option('--enable-audit', 'Enable audit logging')
     .option('--compliance <standards>', 'Compliance standards (comma-separated: GDPR,HIPAA,SOC2,PCI-DSS)', 'GDPR,SOC2')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       console.log(chalk.cyan('🚀 Cloud Storage Integration and Data Pipeline Automation with Governance\n'));
 
       const { writeFiles, displayConfig } = await import('../utils/cloud-storage');
@@ -738,7 +738,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Cloud storage configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // iac → cloud iac
   cloud
@@ -753,7 +753,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--enable-drift-detection', 'Enable drift detection')
     .option('--state-encryption', 'Enable state encryption')
     .option('--state-versioning', 'Enable state versioning')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       console.log(chalk.cyan('🚀 Infrastructure as Code with Terraform/Pulumi and State Management\n'));
 
       const { writeFiles, displayConfig } = await import('../utils/infrastructure-as-code');
@@ -845,7 +845,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ IaC configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // dr → cloud dr
   cloud
@@ -866,7 +866,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--enable-dns-failover', 'Enable DNS failover')
     .option('--rto <minutes>', 'Recovery Time Objective (minutes)', '30')
     .option('--rpo <minutes>', 'Recovery Point Objective (minutes)', '15')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       console.log(chalk.cyan('🚀 Cross-Cloud Disaster Recovery and Backup Strategies with Testing\n'));
 
       const { writeFiles, displayConfig } = await import('../utils/disaster-recovery');
@@ -935,7 +935,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Disaster recovery configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // cost-opt → cloud cost
   cloud
@@ -956,7 +956,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--enable-scaling', 'Enable auto-scaling recommendations')
     .option('--enable-schedule', 'Enable scheduled start/stop')
     .option('--enable-anomaly', 'Enable cost anomaly detection')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       console.log(chalk.cyan('🚀 Cloud Cost Optimization and Budget Management with Alerts and Recommendations\n'));
 
       const { writeFiles, displayConfig } = await import('../utils/cost-optimization');
@@ -1026,7 +1026,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Cost optimization configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // hybrid-cloud → cloud hybrid
   cloud
@@ -1051,7 +1051,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--regions <regions>', 'Regions (comma-separated)', 'us-east-1,us-west-2,eu-west-1')
     .option('--output <dir>', 'Output directory', './hybrid-cloud')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/hybrid-cloud.js');
 
       const secondaryClouds = options.secondaryClouds ? options.secondaryClouds.split(',').map((s: string) => s.trim().toLowerCase()) as ('aws' | 'azure' | 'gcp' | 'on-prem' | 'edge')[] : [];
@@ -1105,7 +1105,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Hybrid cloud configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // resource-lifecycle → cloud resources
   cloud
@@ -1130,7 +1130,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--slack-webhook <url>', 'Slack webhook URL', '')
     .option('--output <dir>', 'Output directory', './resource-lifecycle')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/resource-lifecycle.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1204,7 +1204,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Resource lifecycle configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   // multi-cloud-network → cloud network
   cloud
@@ -1227,7 +1227,7 @@ export function registerCloudGroup(program: Command): void {
     .option('--bandwidth <mbps>', 'Connection bandwidth in Mbps', '10000')
     .option('--output <dir>', 'Output directory', './multi-cloud-networking')
     .option('--language <lang>', 'Language for manager code (typescript|python)', 'typescript')
-    .action(async (name, options) => {
+    .action(createAsyncCommand(async (name, options) => {
       const { writeFiles, displayConfig } = await import('../utils/multi-cloud-networking.js');
 
       const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1285,7 +1285,7 @@ export function registerCloudGroup(program: Command): void {
 
         console.log(chalk.green('✓ Multi-cloud networking configuration generated successfully!'));
       }, 30000);
-    });
+    }));
 
   program.addCommand(cloud);
 }

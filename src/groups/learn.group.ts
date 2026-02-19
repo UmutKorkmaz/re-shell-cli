@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { createAsyncCommand } from '../utils/error-handler';
 import chalk from 'chalk';
 
 export function registerLearnGroup(program: Command): void {
@@ -22,7 +23,7 @@ export function registerLearnGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './tutorials-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { interactiveTutorials, writeFiles, displayConfig } = await import('../utils/interactive-tutorials.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -260,7 +261,7 @@ export function registerLearnGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: interactive-tutorials-config.json\n`));
 
     console.log(chalk.green('✓ Interactive tutorials configuration generated successfully!'));
-  });
+  }));
 
   learn
   .command('skill-assessment')
@@ -277,7 +278,7 @@ export function registerLearnGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './skill-assessment-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { skillAssessment, writeFiles, displayConfig } = await import('../utils/skill-assessment-tracking.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -501,7 +502,7 @@ export function registerLearnGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: skill-assessment-config.json\n`));
 
     console.log(chalk.green('✓ Skill assessment configuration generated successfully!'));
-  });
+  }));
 
   learn
   .command('mentorship')
@@ -517,7 +518,7 @@ export function registerLearnGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './mentorship-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { mentorship, writeFiles, displayConfig } = await import('../utils/mentorship-matching.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -703,7 +704,7 @@ export function registerLearnGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: mentorship-config.json\n`));
 
     console.log(chalk.green('✓ Mentorship program configuration generated successfully!'));
-  });
+  }));
 
   learn
   .command('code-quality-coaching')
@@ -721,7 +722,7 @@ export function registerLearnGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './code-quality-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { codeQualityCoaching, writeFiles, displayConfig } = await import('../utils/code-quality-coaching.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -900,7 +901,7 @@ export function registerLearnGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: code-quality-coaching-config.json\n`));
 
     console.log(chalk.green('✓ Code quality coaching configuration generated successfully!'));
-  });
+  }));
 
   learn
   .command('best-practices')
@@ -918,7 +919,7 @@ export function registerLearnGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './best-practices-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { bestPractices, writeFiles, displayConfig } = await import('../utils/best-practices-sharing.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1084,7 +1085,7 @@ export function registerLearnGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: best-practices-config.json\n`));
 
     console.log(chalk.green('✓ Best practices library configuration generated successfully!'));
-  });
+  }));
 
   learn
   .command('technical-docs')
@@ -1103,7 +1104,7 @@ export function registerLearnGroup(program: Command): void {
   .option('--versioning-strategy <strategy>', 'Versioning strategy (semantic, date-based, git-hash)', 'semantic')
   .option('--output <directory>', 'Output directory', './technical-docs-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { technicalDocumentation, writeFiles, displayConfig } = await import('../utils/technical-documentation.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1627,7 +1628,7 @@ export function registerLearnGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: technical-documentation-config.json\n`));
 
     console.log(chalk.green('✓ Technical documentation project configuration generated successfully!'));
-  });
+  }));
 
   program.addCommand(learn);
 }

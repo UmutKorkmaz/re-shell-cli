@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { createAsyncCommand } from '../utils/error-handler';
 import chalk from 'chalk';
 import * as crypto from 'crypto';
 
@@ -24,7 +25,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--fail-on-severity <severity>', 'Fail build on severity threshold', 'high')
   .option('--output <directory>', 'Output directory', './vulnerability-scan-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { dependencyVulnerabilityScanning, writeFiles, displayConfig } = await import('../utils/dependency-vulnerability-scanning.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -347,7 +348,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: dependency-vulnerability-config.json\n`));
 
     console.log(chalk.green('✓ Dependency vulnerability scanning project configured successfully!'));
-  });
+  }));
 
   security
   .command('container-security')
@@ -369,7 +370,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './container-security-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { containerSecurity, writeFiles, displayConfig } = await import('../utils/container-security.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -564,7 +565,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: container-security-config.json\n`));
 
     console.log(chalk.green('✓ Container security project configured successfully!'));
-  });
+  }));
 
   security
   .command('code-security')
@@ -586,7 +587,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './code-security-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { codeSecurityAnalysis, writeFiles, displayConfig } = await import('../utils/code-security-analysis.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -821,7 +822,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green(`✅ Generated: code-security-config.json\n`));
 
     console.log(chalk.green('✓ Code security analysis project configured successfully!'));
-  });
+  }));
 
   security
   .command('secret-detection')
@@ -845,7 +846,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './secret-detection-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeSecretDetectionFiles, displaySecretDetectionConfig } = await import('../utils/secret-detection.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1191,7 +1192,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: secret-detection-config.json\n'));
 
     console.log(chalk.green('✓ Secret detection and management project configured successfully!'));
-  });
+  }));
 
   security
   .command('infrastructure-security')
@@ -1215,7 +1216,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './infrastructure-security-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeInfrastructureSecurityFiles, displayInfrastructureSecurityConfig } = await import('../utils/infrastructure-security.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1638,7 +1639,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: infrastructure-security-config.json\n'));
 
     console.log(chalk.green('✓ Infrastructure security scanning project configured successfully!'));
-  });
+  }));
 
   security
   .command('zero-trust')
@@ -1663,7 +1664,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './zero-trust-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeZeroTrustFiles, displayZeroTrustConfig } = await import('../utils/zero-trust-security.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -1899,7 +1900,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: zero-trust-config.json\n'));
 
     console.log(chalk.green('✓ Zero-trust security model configured successfully!'));
-  });
+  }));
 
   security
   .command('threat-detection')
@@ -1919,7 +1920,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './threat-detection-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeThreatDetectionFiles, displayThreatDetectionConfig } = await import('../utils/threat-detection.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -2225,7 +2226,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: threat-detection-config.json\n'));
 
     console.log(chalk.green('✓ Advanced threat detection and response configured successfully!'));
-  });
+  }));
 
   security
   .command('incident-management')
@@ -2248,7 +2249,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './incident-management-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeIncidentManagementFiles, displayIncidentManagementConfig } = await import('../utils/incident-management.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -2854,7 +2855,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: incident-management-config.json\n'));
 
     console.log(chalk.green('✓ Security incident management and forensics configured successfully!'));
-  });
+  }));
 
   security
   .command('penetration-testing')
@@ -2874,7 +2875,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './penetration-testing-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writePenetrationTestingFiles, displayPenetrationTestingConfig } = await import('../utils/penetration-testing.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -3398,7 +3399,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: penetration-testing-config.json\n'));
 
     console.log(chalk.green('✓ Penetration testing automation and reporting configured successfully!'));
-  });
+  }));
 
   security
   .command('supply-chain-security')
@@ -3420,7 +3421,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './supply-chain-security-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeSupplyChainSecurityFiles, displaySupplyChainSecurityConfig } = await import('../utils/supply-chain-security.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -3703,7 +3704,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: supply-chain-security-config.json\n'));
 
     console.log(chalk.green('✓ Supply chain security and SBOM generation configured successfully!'));
-  });
+  }));
 
   security
   .command('security-training')
@@ -3723,7 +3724,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './security-training-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeSecurityTrainingFiles, displaySecurityTrainingConfig } = await import('../utils/security-training.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -4011,7 +4012,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: security-training-config.json\n'));
 
     console.log(chalk.green('✓ Security training and awareness program configured successfully!'));
-  });
+  }));
 
   security
   .command('security-policy')
@@ -4030,7 +4031,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './security-policy-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeSecurityPolicyFiles, displaySecurityPolicyConfig } = await import('../utils/security-policy.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -4516,7 +4517,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: security-policy-config.json\n'));
 
     console.log(chalk.green('✓ Security policy as code configured successfully!'));
-  });
+  }));
 
   security
   .command('compliance-reporting')
@@ -4535,7 +4536,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './compliance-reporting-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeComplianceReportingFiles, displayComplianceReportingConfig } = await import('../utils/compliance-reporting.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -4895,7 +4896,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: compliance-reporting-config.json\n'));
 
     console.log(chalk.green('✓ Compliance reporting and automation configured successfully!'));
-  });
+  }));
 
   security
   .command('custom-policy')
@@ -4915,7 +4916,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './custom-policy-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeCustomPolicyFiles, displayCustomPolicyConfig } = await import('../utils/custom-policy.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -5354,7 +5355,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: custom-policy-config.json\n'));
 
     console.log(chalk.green('✓ Custom security policies and enforcement configured successfully!'));
-  });
+  }));
 
   security
   .command('rbac')
@@ -5380,7 +5381,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './rbac-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeRBACFiles, displayRBACConfig } = await import('../utils/rbac-manager.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -6315,7 +6316,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: rbac-config.json\n'));
 
     console.log(chalk.green('✓ RBAC and access control management configured successfully!'));
-  });
+  }));
 
   security
   .command('audit')
@@ -6348,7 +6349,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './audit-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeAuditFiles, displayAuditConfig } = await import('../utils/audit-trail.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -6665,7 +6666,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: audit-config.json\n'));
 
     console.log(chalk.green('✓ Comprehensive audit trail and tamper-proof logging configured successfully!'));
-  });
+  }));
 
   security
   .command('privacy')
@@ -6699,7 +6700,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './privacy-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writePrivacyFiles, displayPrivacyConfig } = await import('../utils/data-privacy.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -7033,7 +7034,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: privacy-config.json\n'));
 
     console.log(chalk.green('✓ Data privacy and protection compliance configured successfully!'));
-  });
+  }));
 
   security
   .command('regulatory')
@@ -7061,7 +7062,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './regulatory-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeRegulatoryFiles, displayRegulatoryConfig } = await import('../utils/regulatory-reporting.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -7799,7 +7800,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: config.example.json\n'));
 
     console.log(chalk.green('✓ Regulatory reporting automation configured successfully!'));
-  });
+  }));
 
   security
   .command('risk')
@@ -7829,7 +7830,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './risk-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeRiskFiles, displayRiskConfig } = await import('../utils/risk-assessment.js');
 
     const providers: ('aws' | 'azure' | 'gcp')[] = [];
@@ -8544,7 +8545,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: config.example.json\n'));
 
     console.log(chalk.green('✓ Risk assessment and management configured successfully!'));
-  });
+  }));
 
   security
   .command('vendor')
@@ -8572,7 +8573,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './vendor-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeVendorFiles, displayVendorConfig } = await import('../utils/vendor-assessment.js');
 
     const providers: Array<'aws' | 'azure' | 'gcp'> = [];
@@ -9642,7 +9643,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: config.example.json\n'));
 
     console.log(chalk.green('✓ Vendor security assessment configured successfully!'));
-  });
+  }));
 
   security
   .command('bcp')
@@ -9671,7 +9672,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './bcp-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeBCPFiles, displayBCPConfig, createExampleBCPConfig } = await import('../utils/business-continuity.js');
 
     const providers: Array<'aws' | 'azure' | 'gcp'> = [];
@@ -9722,7 +9723,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: bcp-config.json\n'));
 
     console.log(chalk.green('✓ Business continuity planning configured successfully!'));
-  });
+  }));
 
   security
   .command('governance')
@@ -9757,7 +9758,7 @@ export function registerSecurityGroup(program: Command): void {
   .option('--enable-gcp', 'Enable GCP provider')
   .option('--output <directory>', 'Output directory', './governance-output')
   .option('--language <language>', 'Language (typescript, python)', 'typescript')
-  .action(async (name, options) => {
+  .action(createAsyncCommand(async (name, options) => {
     const { writeGovernanceFiles, displayGovernanceConfig, createExampleGovernanceConfig } = await import('../utils/governance-policy.js');
 
     const providers: Array<'aws' | 'azure' | 'gcp'> = [];
@@ -9812,7 +9813,7 @@ export function registerSecurityGroup(program: Command): void {
     console.log(chalk.green('✅ Generated: governance-config.json\n'));
 
     console.log(chalk.green('✓ Governance policy management configured successfully!'));
-  });
+  }));
 
   program.addCommand(security);
 }
