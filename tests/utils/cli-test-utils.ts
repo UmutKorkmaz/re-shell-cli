@@ -125,7 +125,7 @@ export function getCliPath(): string {
  */
 export function buildCli(): boolean {
   try {
-    execSync('pnpm run build', { stdio: 'ignore' });
+    execSync('npm run build', { stdio: 'ignore' });
     return true;
   } catch (error) {
     console.error('Failed to build CLI:', error);

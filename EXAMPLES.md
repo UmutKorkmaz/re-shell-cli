@@ -1875,6 +1875,24 @@ re-shell cicd deploy --platform aws --environment production
 
 ## Getting Started
 
+### CLI Validation And Safe Preview
+
+```bash
+# Run the executable CLI test plan
+npm run test:plan
+
+# Preview a workspace app creation without writing files
+re-shell create inventory --framework react-ts --route /inventory --dry-run --verbose
+
+# JSON-producing commands
+re-shell list --json
+re-shell workspace health --json
+re-shell workspace optimize --json
+
+# Test generation expects a workspace path
+re-shell generate test apps/my-react
+```
+
 ### Installation
 
 ```bash
@@ -2480,4 +2498,3 @@ For more information:
 - Plugin Registry: https://re-shell.dev/plugins
 - GitHub: https://github.com/re-shell/cli
 - Support: support@re-shell.dev
-

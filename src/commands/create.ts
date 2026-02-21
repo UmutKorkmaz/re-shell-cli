@@ -96,7 +96,9 @@ interface CreateProjectOptions {
   port?: string;
   route?: string;
   isProject?: boolean;
+  dryRun?: boolean;
   spinner?: ProgressSpinner;
+  verbose?: boolean;
 }
 
 /**
@@ -165,6 +167,11 @@ export async function createProject(name: string, options: CreateProjectOptions)
   const monorepoRoot = await findMonorepoRoot();
   const inMonorepo = !!monorepoRoot;
 
+  if (options.dryRun) {
+    previewProjectCreation(name, options, monorepoRoot);
+    return;
+  }
+
   // Handle polyglot microservices creation
   if (options.polyglot) {
     await createPolyglotProject(name, options, monorepoRoot);
@@ -184,6 +191,98 @@ export async function createProject(name: string, options: CreateProjectOptions)
     await createWorkspace(name, options, monorepoRoot);
   } else {
     await createMonorepoProject(name, options);
+  }
+}
+
+function previewProjectCreation(
+  name: string,
+  options: CreateProjectOptions,
+  monorepoRoot?: string | null
+): void {
+  const normalizedName = name.toLowerCase().replace(/\s+/g, '-');
+  const rootPath = monorepoRoot || process.cwd();
+  const workspaceType = options.type || 'app';
+  const workspaceDir =
+    workspaceType === 'package'
+      ? 'packages'
+      : workspaceType === 'lib'
+      ? 'libs'
+      : workspaceType === 'tool'
+      ? 'tools'
+      : 'apps';
+  const inMonorepo = !!monorepoRoot;
+  const targetPaths: string[] = [];
+  const previewFiles: string[] = [];
+
+  if (options.polyglot) {
+    targetPaths.push(path.join(rootPath, normalizedName));
+    previewFiles.push(
+      `${normalizedName}/package.json`,
+      `${normalizedName}/gateway/package.json`,
+      `${normalizedName}/services/<service-name>/Dockerfile`
+    );
+  } else if (options.microfrontend) {
+    targetPaths.push(path.join(rootPath, normalizedName));
+    previewFiles.push(
+      `${normalizedName}/shell/package.json`,
+      `${normalizedName}/shell/vite.config.ts`,
+      `${normalizedName}/package.json`
+    );
+  } else if (inMonorepo || options.type) {
+    const workspacePath = path.join(rootPath, workspaceDir, normalizedName);
+    targetPaths.push(workspacePath);
+    previewFiles.push(
+      `${workspaceDir}/${normalizedName}/package.json`,
+      `${workspaceDir}/${normalizedName}/src/App.tsx`,
+      `${workspaceDir}/${normalizedName}/vite.config.ts`
+    );
+
+    if (options.fullstack || options.backend) {
+      const serviceName = `${normalizedName}-api`;
+      targetPaths.push(path.join(rootPath, 'services', serviceName));
+      previewFiles.push(
+        `services/${serviceName}/package.json`,
+        `services/${serviceName}/src/index.ts`
+      );
+    }
+  } else {
+    targetPaths.push(path.join(rootPath, normalizedName));
+    previewFiles.push(
+      `${normalizedName}/package.json`,
+      `${normalizedName}/README.md`,
+      `${normalizedName}/apps/`,
+      `${normalizedName}/packages/`
+    );
+  }
+
+  console.log(chalk.cyan('\n🔎 Dry Run Preview\n'));
+  console.log(chalk.gray('No files will be created.\n'));
+  console.log(`Mode: ${options.polyglot ? 'polyglot' : options.microfrontend ? 'microfrontend' : (options.fullstack || options.backend) ? 'fullstack' : 'frontend'}`);
+  console.log(`Name: ${normalizedName}`);
+  console.log(`Root: ${rootPath}`);
+  if (options.framework) {
+    console.log(`Frontend: ${options.framework}`);
+  }
+  if (options.backend) {
+    console.log(`Backend: ${options.backend}`);
+  }
+  if (options.route) {
+    console.log(`Route: ${options.route}`);
+  }
+  if (options.port) {
+    console.log(`Port: ${options.port}`);
+  }
+
+  console.log('\nTargets:');
+  for (const targetPath of targetPaths) {
+    console.log(`  • ${targetPath}`);
+  }
+
+  if (options.verbose) {
+    console.log('\nPreview files:');
+    for (const file of previewFiles) {
+      console.log(`  • ${file}`);
+    }
   }
 }
 

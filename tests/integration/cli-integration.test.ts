@@ -42,7 +42,7 @@ describe('CLI Integration Tests', () => {
   beforeAll(() => {
     // Ensure CLI is built
     try {
-      execSync('pnpm run build', { stdio: 'ignore', shell: true as any });
+      execSync('npm run build', { stdio: 'ignore', shell: true as any });
     } catch (error) {
       console.error('Failed to build CLI:', error);
       throw error;

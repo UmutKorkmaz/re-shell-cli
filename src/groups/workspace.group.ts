@@ -137,9 +137,11 @@ export function registerWorkspaceGroup(program: Command): void {
     .option('--verbose', 'Show detailed recommendations')
     .action(
       createAsyncCommand(async options => {
-        const spinner = createSpinner('Analyzing workspace...').start();
-        processManager.addCleanup(() => spinner.stop());
-        flushOutput();
+        const spinner = options.json ? undefined : createSpinner('Analyzing workspace...').start();
+        if (spinner) {
+          processManager.addCleanup(() => spinner.stop());
+          flushOutput();
+        }
 
         await withTimeout(async () => {
           await optimizeWorkspace({ ...options, spinner });

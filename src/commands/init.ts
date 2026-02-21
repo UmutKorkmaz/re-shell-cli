@@ -219,6 +219,7 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
   if (errors.length > 0) {
     console.error(chalk.red('System requirements not met:'));
     errors.forEach(err => console.error(chalk.red(`  • ${err}`)));
+    process.exitCode = 1;
     return;
   }
 
@@ -236,12 +237,13 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
   }
 
   // Check if package manager is installed
-  if (options.packageManager) {
+  if (options.packageManager && !options.skipInstall) {
     try {
       execSync(`${options.packageManager} --version`, { stdio: 'ignore' });
     } catch {
       console.error(chalk.red(`Error: ${options.packageManager} is not installed`));
       console.log(chalk.gray(`You can install it with: npm install -g ${options.packageManager}`));
+      process.exitCode = 1;
       return;
     }
   }
@@ -252,6 +254,7 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
     presetConfig = await loadPreset(options.preset);
     if (!presetConfig) {
       console.error(chalk.red(`Error: Preset "${options.preset}" not found`));
+      process.exitCode = 1;
       return;
     }
     // Merge preset with options (options take precedence)
@@ -279,6 +282,7 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
   const nameValidation = validateProjectName(name);
   if (nameValidation !== true) {
     console.error(chalk.red(`Error: ${nameValidation}`));
+    process.exitCode = 1;
     return;
   }
 
@@ -286,6 +290,13 @@ export async function initMonorepo(name: string, options: InitOptions = {}): Pro
   let projectPath = path.resolve(process.cwd(), normalizedName);
 
   // Check if directory already exists
+  if (fs.existsSync(projectPath) && !options.force && (options.yes || !process.stdout.isTTY || process.env.CI)) {
+    console.error(chalk.red(`Error: Directory "${normalizedName}" already exists`));
+    console.log(chalk.gray('Use --force to overwrite the existing directory.'));
+    process.exitCode = 1;
+    return;
+  }
+
   while (fs.existsSync(projectPath) && !options.force) {
     const questions: any[] = [{
       type: 'list',

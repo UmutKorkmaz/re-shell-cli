@@ -3,7 +3,12 @@ import * as path from 'path';
 import * as yaml from 'yaml';
 import chalk from 'chalk';
 import { ValidationError } from './error-handler';
-import { WorkspaceDefinition, WorkspaceEntry, WorkspaceDependency } from './workspace-schema';
+import {
+  WorkspaceDefinition,
+  WorkspaceEntry,
+  WorkspaceDependency,
+  loadWorkspaceDefinition as loadValidatedWorkspaceDefinition,
+} from './workspace-schema';
 
 // Conflict detection interfaces
 export interface WorkspaceConflict {
@@ -803,12 +808,7 @@ export class WorkspaceConflictManager {
 
   // Helper methods
   private async loadWorkspaceDefinition(filePath: string): Promise<WorkspaceDefinition> {
-    if (!(await fs.pathExists(filePath))) {
-      throw new ValidationError(`Workspace file not found: ${filePath}`);
-    }
-
-    const content = await fs.readFile(filePath, 'utf8');
-    return yaml.parse(content) as WorkspaceDefinition;
+    return loadValidatedWorkspaceDefinition(filePath);
   }
 
   private async saveWorkspaceDefinition(

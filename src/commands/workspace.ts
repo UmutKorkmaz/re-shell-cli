@@ -1270,7 +1270,9 @@ export async function checkWorkspaceHealth(options: any = {}): Promise<void> {
   const { spinner, json = false, verbose = false } = options;
 
   try {
-    console.log(chalk.cyan.bold('\n🏥 Workspace Health Check\n'));
+    if (!json) {
+      console.log(chalk.cyan.bold('\n🏥 Workspace Health Check\n'));
+    }
 
     const configPath = path.join(process.cwd(), 're-shell.workspaces.yaml');
 
@@ -1296,15 +1298,17 @@ export async function checkWorkspaceHealth(options: any = {}): Promise<void> {
     displayHealthResults(healthChecks, json, verbose);
 
     // Overall health status
-    const allHealthy = healthChecks.every(check => check.status === 'healthy' || check.status === 'warning');
-    if (allHealthy) {
-      console.log(chalk.green('\n✓ Overall workspace health: GOOD\n'));
-    } else {
-      const hasCritical = healthChecks.some(check => check.status === 'critical');
-      if (hasCritical) {
-        console.log(chalk.red('\n✗ Overall workspace health: CRITICAL ISSUES\n'));
+    if (!json) {
+      const allHealthy = healthChecks.every(check => check.status === 'healthy' || check.status === 'warning');
+      if (allHealthy) {
+        console.log(chalk.green('\n✓ Overall workspace health: GOOD\n'));
       } else {
-        console.log(chalk.yellow('\n⚠ Overall workspace health: NEEDS ATTENTION\n'));
+        const hasCritical = healthChecks.some(check => check.status === 'critical');
+        if (hasCritical) {
+          console.log(chalk.red('\n✗ Overall workspace health: CRITICAL ISSUES\n'));
+        } else {
+          console.log(chalk.yellow('\n⚠ Overall workspace health: NEEDS ATTENTION\n'));
+        }
       }
     }
 
@@ -2032,7 +2036,9 @@ export async function optimizeWorkspace(options: any = {}): Promise<void> {
   const { spinner, type, severity, fix = false, json = false, verbose = false } = options;
 
   try {
-    console.log(chalk.cyan.bold('\n⚡ Workspace Optimization\n'));
+    if (!json) {
+      console.log(chalk.cyan.bold('\n⚡ Workspace Optimization\n'));
+    }
 
     const configPath = path.join(process.cwd(), 're-shell.workspaces.yaml');
 

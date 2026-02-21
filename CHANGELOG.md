@@ -5,6 +5,21 @@ All notable changes to the `@re-shell/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.2] - 2026-03-18
+
+### Fixed
+
+- `init --skip-install` no longer fails on missing package managers and now exits non-zero correctly for real init errors
+- `create --dry-run` now performs a real preview without writing files
+- `list --json`, `workspace health --json`, and `workspace optimize --json` now emit clean JSON on stdout
+- workspace diagnostics score rendering no longer prints chalk function bodies
+- `workspace conflict detect` now fails with actionable guidance instead of a raw runtime error when a workspace-definition file is missing or invalid
+- integration test helpers now build the CLI with `npm run build` instead of assuming `pnpm` is on `PATH`
+
+### Added
+
+- executable CLI plan runner: `npm run test:plan`
+
 ## [0.23.0] - 2025-07-01
 
 ### 🚀 Ruby Ecosystem - Complete Ruby Development Platform

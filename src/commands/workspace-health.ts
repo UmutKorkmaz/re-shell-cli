@@ -349,7 +349,7 @@ async function showHealthStatus(options: WorkspaceHealthCommandOptions, spinner?
                        result.status === 'degraded' ? chalk.yellow : chalk.red;
 
     console.log(`\\nOverall Status: ${statusIcon} ${statusColor(result.status.toUpperCase())}`);
-    console.log(`Health Score: ${getScoreColor(result.score)}${result.score}%${chalk.reset()}`);
+    console.log(`Health Score: ${getScoreColor(result.score)(`${result.score}%`)}`);
     
     if (result.criticalIssues > 0) {
       console.log(`Critical Issues: ${chalk.red(result.criticalIssues)}`);
@@ -441,7 +441,7 @@ function displayHealthReport(
                      report.overall.status === 'degraded' ? chalk.yellow : chalk.red;
 
   console.log(`\\n${statusIcon} Overall: ${statusColor(report.overall.status.toUpperCase())}`);
-  console.log(`📊 Health Score: ${getScoreColor(report.overall.score)}${report.overall.score}%${chalk.reset()}`);
+  console.log(`📊 Health Score: ${getScoreColor(report.overall.score)(`${report.overall.score}%`)}`);
   console.log(`⏱️  Duration: ${report.duration}ms`);
   console.log(`💬 ${report.overall.summary}`);
 
@@ -479,7 +479,7 @@ function displayHealthCategory(category: HealthCheckCategory, detailed: boolean)
   const categoryIcon = getCategoryIcon(category.id);
   const scoreColor = getScoreColor(category.summary.score);
   
-  console.log(`\\n${categoryIcon} ${chalk.cyan(category.name)} - ${scoreColor}${category.summary.score}%${chalk.reset()}`);
+  console.log(`\\n${categoryIcon} ${chalk.cyan(category.name)} - ${scoreColor(`${category.summary.score}%`)}`);
   console.log(`   ${chalk.gray(category.description)}`);
   
   if (category.summary.failed > 0) {
@@ -570,7 +570,7 @@ function displayQuickHealthResult(result: any, fileName: string): void {
                      result.status === 'degraded' ? chalk.yellow : chalk.red;
 
   console.log(`\\n${statusIcon} Status: ${statusColor(result.status.toUpperCase())}`);
-  console.log(`📊 Score: ${getScoreColor(result.score)}${result.score}%${chalk.reset()}`);
+  console.log(`📊 Score: ${getScoreColor(result.score)(`${result.score}%`)}`);
   
   if (result.criticalIssues > 0) {
     console.log(`🚨 Critical Issues: ${chalk.red(result.criticalIssues)}`);

@@ -85,8 +85,12 @@ export async function manageWorkspaceConflict(options: WorkspaceConflictCommandO
   } catch (error) {
     if (error instanceof ValidationError) {
       if (spinner) spinner.stop();
-      console.log(chalk.yellow('\n⚠️  No workspace definition found.'));
-      console.log(chalk.cyan('\nRun \'re-shell workspace-def init\' to initialize your workspace.'));
+      console.log(chalk.yellow(`\n⚠️  ${error.message}`));
+      console.log(
+        chalk.cyan(
+          '\nWorkspace conflict commands require a workspace definition created with \'re-shell workspace def init\'.'
+        )
+      );
       process.exit(1);
     }
     if (spinner) spinner.fail(chalk.red('Conflict management failed'));

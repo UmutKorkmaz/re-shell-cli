@@ -191,6 +191,10 @@ program
 
       // Get success info stored by initMonorepo
       const successInfo = (global as any).__RE_SHELL_INIT_SUCCESS__;
+      if (!successInfo) {
+        spinner.stop();
+        return;
+      }
       spinner.succeed(chalk.green(`Monorepo "${name}" initialized successfully!`));
 
       // Display next steps
@@ -271,7 +275,11 @@ program
         await createProject(name, { ...options, isProject: true, spinner });
       }, 180000); // 3 minute timeout
 
-      spinner.succeed(chalk.green(`Re-Shell project "${name}" created successfully!`));
+      if (options.dryRun) {
+        spinner.succeed(chalk.green(`Dry run completed for "${name}"`));
+      } else {
+        spinner.succeed(chalk.green(`Re-Shell project "${name}" created successfully!`));
+      }
     })
   );
 
@@ -327,18 +335,18 @@ program
   .option('--json', 'Output as JSON')
   .action(
     createAsyncCommand(async options => {
-      const spinner = createSpinner('Loading microfrontends...').start();
-      processManager.addCleanup(() => spinner.stop());
-      flushOutput();
+      const spinner = options.json ? undefined : createSpinner('Loading microfrontends...').start();
+      if (spinner) {
+        processManager.addCleanup(() => spinner.stop());
+        flushOutput();
+      }
 
       await withTimeout(async () => {
         await listMicrofrontends({ ...options, spinner });
       }, 30000); // 30 second timeout
 
-      if (!options.json) {
+      if (spinner) {
         spinner.succeed(chalk.green('Microfrontends listed successfully!'));
-      } else {
-        spinner.stop();
       }
     })
   );
@@ -447,7 +455,7 @@ registerAliases(program);
 
 program.parseAsync(process.argv).then(() => {
   if (!processManager.shouldKeepRunning()) {
-    process.exit(0);
+    process.exit(process.exitCode ?? 0);
   }
 }).catch((err) => {
   console.error(err.message || err);

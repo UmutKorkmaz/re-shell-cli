@@ -1,4 +1,4 @@
-# Re-Shell CLI v0.23.0
+# Re-Shell CLI v0.23.2
 
 **Full-Stack Development Platform - Microservices & Microfrontends United**
 
@@ -111,6 +111,22 @@ pnpm add -g @re-shell/cli
 
 # Verify installation
 re-shell --version
+```
+
+### Validation
+
+```bash
+# Exhaustive command coverage + behavior checks
+npm run test:plan
+
+# Preview a create operation without writing files
+re-shell create demo-app --framework react-ts --route /demo --dry-run --verbose
+
+# Machine-readable health output
+re-shell workspace health --json
+
+# Generate tests for an app workspace path
+re-shell generate test apps/my-react
 ```
 
 ### Create Your First Full-Stack Application
