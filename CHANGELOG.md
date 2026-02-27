@@ -5,7 +5,11 @@ All notable changes to the `@re-shell/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.23.2] - 2026-03-18
+## [0.25.1] - 2026-03-18
+
+### Changed
+
+- normalized the public CLI version line to `0.25.x` so package metadata matches the accumulated feature set since `0.23.0`
 
 ### Fixed
 
@@ -19,6 +23,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - executable CLI plan runner: `npm run test:plan`
+
+## [0.25.0] - 2026-03-18
+
+### Added
+
+- regrouped the CLI into 15 command groups, including `workspace`, `api`, `service`, `data`, `k8s`, `cloud`, `security`, `observe`, `quality`, `tools`, `config`, and `generate`
+- added hidden backward-compatibility aliases for renamed commands with deprecation guidance
+- added the `check` project health command
+- added new workspace architecture types: `backend`, `platform`, `desktop`, `mobile`, `edge`, and `data-platform`
+- added domain starter templates: `ai-app`, `devtools`, `marketplace`, `social`, `blog`, `fintech`, `healthcare`, `gaming`, `iot`, and `cms`
+- expanded utility modules and source layout to support the new grouped command architecture
+
+## [0.24.0] - 2025-07-04
+
+### Added
+
+- complete C++ backend ecosystem with Crow, Drogon, cpp-httplib, Pistache, and Beast templates
+- OpenAPI/Swagger integration, sanitizer suites, Valgrind workflows, clang-format, clang-tidy, and modern CMake support for C++ projects
+- Google Test integration, JWT authentication, structured logging, Docker builds, and hot-reload development workflows for generated C++ services
 
 ## [0.23.0] - 2025-07-01
 

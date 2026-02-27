@@ -1,4 +1,4 @@
-# Re-Shell CLI v0.23.2
+# Re-Shell CLI v0.25.1
 
 **Full-Stack Development Platform - Microservices & Microfrontends United**
 
@@ -24,59 +24,33 @@ Re-Shell CLI is a comprehensive full-stack development platform that revolutioni
 - **🛡️ Enterprise Security**: JWT authentication, OAuth2, API gateways, and compliance features
 - **☁️ Production Ready**: Docker orchestration, Kubernetes manifests, and cloud provider configs
 
-### 🆕 What's New in v0.22.0
+### 🆕 What's New in v0.25.1
 
-- **🚀 Complete Go Ecosystem**: 6 production-ready Go templates for high-performance development
-- **💎 Complete Ruby Ecosystem**: 3 production-ready Ruby templates for rapid API development
-- **⚡ Go Frameworks**: Gin, Echo, Fiber, Chi, gRPC with Protocol Buffers, and sqlx for raw SQL
-- **🔧 Go Infrastructure**: GORM ORM, database migrations, hot reload with Air, Docker support
-- **🛡️ Go Security**: JWT authentication, bcrypt hashing, rate limiting, secure middleware
-- **📊 Go Monitoring**: Structured logging (Zap/Zerolog), Prometheus metrics, health checks
-- **🧪 Go Testing**: Testify framework, mocking, coverage reports, benchmark support
-- **🏗️ Go Architecture**: Clean architecture, dependency injection, context handling
-- **🐳 Go DevOps**: Multi-stage builds, minimal Alpine images, docker-compose orchestration
+- **🧪 Executable CLI Validation**: `npm run test:plan` now performs exhaustive command coverage and behavior checks
+- **🛠️ Safer Project Creation**: `create --dry-run` now previews output without writing files
+- **📦 Stronger Init Flow**: `init --skip-install` handles missing package managers correctly and exits non-zero on real failures
+- **🧾 Clean JSON Output**: `list --json`, `workspace health --json`, and `workspace optimize --json` now emit valid JSON without spinner/banner noise
+- **🔍 Better Diagnostics**: workspace health scores render correctly and workspace conflict commands fail with actionable guidance
+- **🏷️ Versioning Normalized**: release metadata now matches the actual feature milestones added since `v0.23.0`
 
 ### Previous Releases
 
-#### v0.22.1 (Current)
-- **🔧 Documentation Updates**: Enhanced README and EXAMPLES with complete Go ecosystem coverage
-- **📝 Commit History Cleanup**: Removed task completion artifacts for cleaner git history
-- **🏷️ Version Management**: Improved release workflow and tagging process
-- **📚 Examples Enhancement**: Added comprehensive Go framework examples and use cases
+#### v0.25.0
+- **🧭 Command Surface Expansion**: regrouped the CLI into 15 command groups covering workspace, api, service, data, k8s, cloud, observe, security, quality, tools, and more
+- **🏗️ Workspace Templates**: added new workspace architecture types and 10 domain starter templates
+- **🔄 Compatibility Layer**: added hidden deprecated aliases for renamed commands with migration guidance
+- **🩺 Project Health**: introduced the project health check command and expanded workspace tooling
+
+#### v0.24.0
+- **⚙️ Complete C++ Ecosystem**: added Crow, Drogon, cpp-httplib, Pistache, and Beast backend templates
+- **🧪 Native Tooling**: added sanitizer support, Valgrind workflows, clang-format, clang-tidy, and Google Test integration
+- **📚 API And Build Tooling**: added OpenAPI/Swagger support, modern CMake setups, JWT auth, logging, and Dockerized workflows
+
+#### v0.23.0
+- **💎 Complete Ruby Ecosystem**: added Rails API, Sinatra, and Grape templates with production-ready auth, docs, and testing
 
 #### v0.22.0
-- **🚀 Complete Go Ecosystem**: 6 production-ready Go templates for high-performance development
-- **💎 Complete Ruby Ecosystem**: 3 production-ready Ruby templates for rapid API development
-- **⚡ Go Frameworks**: Gin, Echo, Fiber, Chi, gRPC with Protocol Buffers, and sqlx for raw SQL
-- **🔧 Go Infrastructure**: GORM ORM, database migrations, hot reload with Air, Docker support
-- **🛡️ Go Security**: JWT authentication, bcrypt hashing, rate limiting, secure middleware
-- **📊 Go Monitoring**: Structured logging (Zap/Zerolog), Prometheus metrics, health checks
-- **🧪 Go Testing**: Testify framework, mocking, coverage reports, benchmark support
-- **🏗️ Go Architecture**: Clean architecture, dependency injection, context handling
-- **🐳 Go DevOps**: Multi-stage builds, minimal Alpine images, docker-compose orchestration
-
-#### v0.21.0
-- **🐘 Complete PHP Ecosystem**: 6 enterprise-grade PHP templates for modern web development
-- **🚀 PHP Frameworks**: Symfony, Laravel, Slim, and CodeIgniter 4 with full feature sets
-- **🔧 PHP Infrastructure**: PHP-FPM configuration, Composer integration, Docker support
-- **🛡️ PHP Security**: CSRF protection, XSS filtering, SQL injection prevention
-- **⚡ PHP Performance**: OPcache with JIT, connection pooling, Redis caching
-- **🧪 PHP Testing**: PHPUnit integration, code coverage, fixture management
-- **📊 PHP Monitoring**: Health endpoints, error logging, performance metrics
-- **🐳 PHP DevOps**: Alpine containers, Nginx integration, Xdebug support
-
-#### v0.20.0
-
-- **🔷 Complete .NET Ecosystem**: 12 enterprise-grade .NET templates covering every development scenario
-- **🔐 Advanced Authentication**: JWT with 2FA, external OAuth (Google, Facebook, Microsoft), rate limiting
-- **📊 Comprehensive Monitoring**: Serilog with multiple sinks, performance tracking, audit logging
-- **📚 Enterprise Documentation**: Swagger/OpenAPI with code generation, XML documentation, examples
-- **🧪 Advanced Testing**: xUnit with FluentAssertions, Moq, integration tests, test containers
-- **⚡ Development Experience**: Hot reload with dotnet watch, file monitoring, development utilities
-- **🏗️ Specialized Templates**: Entity Framework Core, Dapper, AutoMapper, Blazor Server, gRPC
-- **🛡️ Production Security**: Identity framework, authorization policies, security headers, CORS
-- **📈 Performance Optimization**: Output caching, rate limiting, Redis integration, AOT compilation
-- **🐳 Infrastructure Ready**: Docker support, health checks, configuration management
+- **🚀 Complete Go Ecosystem**: added Gin, Echo, Fiber, Chi, gRPC, and sqlx-based Go templates with production tooling
 
 ## 📋 Table of Contents
 
