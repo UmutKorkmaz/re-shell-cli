@@ -5,11 +5,12 @@ All notable changes to the `@re-shell/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.1] - 2026-03-18
+## [0.27.1] - 2026-03-18
 
 ### Changed
 
-- normalized the public CLI version line to `0.25.x` so package metadata matches the accumulated feature set since `0.23.0`
+- normalized the public CLI version line to `0.27.x` so package metadata matches the current npm update stream
+- fixed the update notification rendering to use proper box layout instead of hard-coded ANSI-width padding
 
 ### Fixed
 
@@ -24,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - executable CLI plan runner: `npm run test:plan`
 
-## [0.25.0] - 2026-03-18
+## [0.27.0] - 2026-03-18
 
 ### Added
 

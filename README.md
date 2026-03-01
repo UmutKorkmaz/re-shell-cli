@@ -1,4 +1,4 @@
-# Re-Shell CLI v0.25.1
+# Re-Shell CLI v0.27.1
 
 **Full-Stack Development Platform - Microservices & Microfrontends United**
 
@@ -24,18 +24,18 @@ Re-Shell CLI is a comprehensive full-stack development platform that revolutioni
 - **🛡️ Enterprise Security**: JWT authentication, OAuth2, API gateways, and compliance features
 - **☁️ Production Ready**: Docker orchestration, Kubernetes manifests, and cloud provider configs
 
-### 🆕 What's New in v0.25.1
+### 🆕 What's New in v0.27.1
 
 - **🧪 Executable CLI Validation**: `npm run test:plan` now performs exhaustive command coverage and behavior checks
 - **🛠️ Safer Project Creation**: `create --dry-run` now previews output without writing files
 - **📦 Stronger Init Flow**: `init --skip-install` handles missing package managers correctly and exits non-zero on real failures
 - **🧾 Clean JSON Output**: `list --json`, `workspace health --json`, and `workspace optimize --json` now emit valid JSON without spinner/banner noise
 - **🔍 Better Diagnostics**: workspace health scores render correctly and workspace conflict commands fail with actionable guidance
-- **🏷️ Versioning Normalized**: release metadata now matches the actual feature milestones added since `v0.23.0`
+- **🏷️ Versioning Normalized**: release metadata now follows the current `0.27.x` line
 
 ### Previous Releases
 
-#### v0.25.0
+#### v0.27.0
 - **🧭 Command Surface Expansion**: regrouped the CLI into 15 command groups covering workspace, api, service, data, k8s, cloud, observe, security, quality, tools, and more
 - **🏗️ Workspace Templates**: added new workspace architecture types and 10 domain starter templates
 - **🔄 Compatibility Layer**: added hidden deprecated aliases for renamed commands with migration guidance

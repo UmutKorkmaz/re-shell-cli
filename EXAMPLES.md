@@ -5,7 +5,7 @@ This document provides comprehensive real-world scenarios and examples for using
 ## Table of Contents
 
 1. [Latest Features](#latest-features)
-   - [Extended Init Templates & Workspace Types (v0.25.0)](#extended-init-templates--workspace-types-v0250)
+   - [Extended Init Templates & Workspace Types (v0.27.0)](#extended-init-templates--workspace-types-v0270)
    - [Complete C++ Ecosystem (v0.24.0)](#complete-c-ecosystem-v0240)
    - [Complete Go Ecosystem (v0.22.1)](#complete-go-ecosystem-v0221)
    - [Complete Ruby Ecosystem (v0.23.0)](#complete-ruby-ecosystem-v0230)
@@ -49,7 +49,7 @@ This document provides comprehensive real-world scenarios and examples for using
 
 ## Latest Features
 
-### Extended Init Templates & Workspace Types (v0.25.0)
+### Extended Init Templates & Workspace Types (v0.27.0)
 
 10 new architecture types and 14 domain starter templates added to `re-shell init`, covering
 every major modern application pattern — from pure API backends and edge-first serverless to

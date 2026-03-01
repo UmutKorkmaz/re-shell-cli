@@ -1,6 +1,7 @@
 import * as https from 'https';
 import * as semver from 'semver';
 import chalk from 'chalk';
+import boxen from 'boxen';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { spawn } from 'child_process';
@@ -95,16 +96,26 @@ function fetchLatestVersion(packageName: string): Promise<string | null> {
 }
 
 function showUpdateNotification(currentVersion: string, latestVersion: string): void {
+  const notification = [
+    `${chalk.bold.white('Update available!')} ${chalk.gray(currentVersion)} ${chalk.gray('→')} ${chalk.green.bold(latestVersion)}`,
+    '',
+    `Run ${chalk.cyan.bold('npm install -g @re-shell/cli@latest')} to update`,
+    '',
+    chalk.gray('Changelog: https://github.com/Re-Shell/cli/releases'),
+  ].join('\n');
+
+  const terminalWidth = process.stdout.columns || 80;
+  const maxWidth = Math.max(terminalWidth - 2, 40);
+  const width = Math.min(68, maxWidth);
+
   console.log();
-  console.log(chalk.yellow('╔════════════════════════════════════════════════════════════════╗'));
-  console.log(chalk.yellow('║') + '                                                                ' + chalk.yellow('║'));
-  console.log(chalk.yellow('║') + chalk.bold.white('  Update available! ') + chalk.gray(`${currentVersion} → `) + chalk.green.bold(latestVersion) + '                              ' + chalk.yellow('║'));
-  console.log(chalk.yellow('║') + '                                                                ' + chalk.yellow('║'));
-  console.log(chalk.yellow('║') + '  Run ' + chalk.cyan.bold('npm install -g @re-shell/cli@latest') + ' to update        ' + chalk.yellow('║'));
-  console.log(chalk.yellow('║') + '                                                                ' + chalk.yellow('║'));
-  console.log(chalk.yellow('║') + chalk.gray('  Changelog: https://github.com/Re-Shell/cli/releases') + '          ' + chalk.yellow('║'));
-  console.log(chalk.yellow('║') + '                                                                ' + chalk.yellow('║'));
-  console.log(chalk.yellow('╚════════════════════════════════════════════════════════════════╝'));
+  console.log(
+    boxen(notification, {
+      borderColor: 'yellow',
+      padding: { top: 1, bottom: 1, left: 1, right: 1 },
+      width,
+    })
+  );
   console.log();
   
   // Force flush output
