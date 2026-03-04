@@ -13,6 +13,14 @@ interface NpmPackageInfo {
   versions: Record<string, unknown>;
 }
 
+function isNewerVersion(candidate: string | null | undefined, currentVersion: string): boolean {
+  if (!candidate || !semver.valid(candidate) || !semver.valid(currentVersion)) {
+    return false;
+  }
+
+  return semver.gt(candidate, currentVersion);
+}
+
 export async function checkForUpdates(currentVersion: string): Promise<void> {
   try {
     // Check if we should skip the update check (e.g., in CI environments)
@@ -26,9 +34,20 @@ export async function checkForUpdates(currentVersion: string): Promise<void> {
     if (await fs.pathExists(cacheFile)) {
       const lastCheck = await fs.readJson(cacheFile).catch(() => null);
       if (lastCheck && Date.now() - lastCheck.timestamp < 86400000) { // 24 hours
-        // If there was a cached update notification, show it
-        if (lastCheck.hasUpdate) {
-          showUpdateNotification(currentVersion, lastCheck.latestVersion);
+        const cachedLatestVersion = typeof lastCheck.latestVersion === 'string'
+          ? lastCheck.latestVersion
+          : null;
+
+        // Only replay cached update notifications when the cached version is
+        // still newer than the current CLI version.
+        if (lastCheck.hasUpdate && isNewerVersion(cachedLatestVersion, currentVersion)) {
+          showUpdateNotification(currentVersion, cachedLatestVersion);
+        } else if (lastCheck.hasUpdate) {
+          await fs.writeJson(cacheFile, {
+            timestamp: Date.now(),
+            hasUpdate: false,
+            latestVersion: cachedLatestVersion
+          }).catch(() => { /* Ignore cache write errors */ });
         }
         return;
       }
@@ -37,7 +56,7 @@ export async function checkForUpdates(currentVersion: string): Promise<void> {
     // Fetch latest version from npm registry
     const latestVersion = await fetchLatestVersion('@re-shell/cli');
     
-    if (latestVersion && semver.gt(latestVersion, currentVersion)) {
+    if (isNewerVersion(latestVersion, currentVersion)) {
       // Cache the update check result
       await fs.writeJson(cacheFile, {
         timestamp: Date.now(),
