@@ -5,6 +5,14 @@ All notable changes to the `@re-shell/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.27.2] - 2026-03-18
+
+### Fixed
+
+- monorepo initialization now seeds new workspaces with `@re-shell/cli` `^0.27.0` instead of the stale `^0.2.5` range
+- project health checks now recognize `index.tsx`, `index.jsx`, `main.tsx`, and `main.jsx` as valid source entry points
+- cached update notifications are suppressed when the cached "latest" version is older than or equal to the running CLI version
+
 ## [0.27.1] - 2026-03-18
 
 ### Changed

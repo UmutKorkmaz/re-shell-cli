@@ -4587,13 +4587,23 @@ async function checkSourceStructure(projectPath: string, config?: Partial<Projec
   }
 
   // Check for common patterns
-  const hasIndex = srcEntries.includes('index.ts') || srcEntries.includes('index.js') || srcEntries.includes('main.ts') || srcEntries.includes('main.js');
+  const entryCandidates = [
+    'index.ts',
+    'index.tsx',
+    'index.js',
+    'index.jsx',
+    'main.ts',
+    'main.tsx',
+    'main.js',
+    'main.jsx',
+  ];
+  const hasIndex = entryCandidates.some(entry => srcEntries.includes(entry));
 
   if (!hasIndex) {
     return {
       name: 'Source Structure',
       status: 'warn',
-      message: 'No entry point file found (index.ts, main.ts, etc.)',
+      message: 'No entry point file found (index.ts[x], main.ts[x], etc.)',
       suggestion: 'Create an entry point file',
     };
   }
@@ -4736,4 +4746,3 @@ export function formatValidationResult(result: ValidationResult): string {
 
   return lines.join('\n');
 }
-

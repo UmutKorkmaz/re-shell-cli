@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import YAML from 'yaml';
 import { globSync } from 'glob';
+import * as semver from 'semver';
 
 export interface MonorepoConfig {
   name: string;
@@ -32,6 +33,22 @@ export const DEFAULT_MONOREPO_STRUCTURE = {
   tools: 'tools',
   docs: 'docs',
 };
+
+function getRecommendedCliVersion(): string {
+  try {
+    const packageJsonPath = path.resolve(__dirname, '../../package.json');
+    const packageJson = fs.readJsonSync(packageJsonPath);
+    const currentVersion = typeof packageJson.version === 'string' ? packageJson.version : null;
+
+    if (currentVersion && semver.valid(currentVersion)) {
+      return `^${semver.major(currentVersion)}.${semver.minor(currentVersion)}.0`;
+    }
+  } catch {
+    // Fall back to the npm dist-tag when local metadata is unavailable.
+  }
+
+  return 'latest';
+}
 
 export async function initializeMonorepo(
   name: string,
@@ -73,7 +90,7 @@ export async function initializeMonorepo(
       'workspace:update': 're-shell workspace update',
     },
     devDependencies: {
-      '@re-shell/cli': '^0.2.5',
+      '@re-shell/cli': getRecommendedCliVersion(),
     },
     engines: {
       node: '>=16.0.0',
