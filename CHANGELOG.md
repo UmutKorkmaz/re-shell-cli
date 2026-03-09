@@ -5,6 +5,14 @@ All notable changes to the `@re-shell/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.27.3] - 2026-03-18
+
+### Fixed
+
+- React and React TypeScript workspace scaffolds now generate a Vite-compatible root `index.html` and `src/main.tsx`
+- generated React/Vite apps now build successfully instead of failing on `src/main.tsx` entry resolution
+- generated React/Vite dev servers now serve valid HTML on both `/` and configured app routes instead of falling into template/layout 404s
+
 ## [0.27.2] - 2026-03-18
 
 ### Fixed

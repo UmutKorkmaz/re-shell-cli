@@ -40,8 +40,8 @@ export class ReactTemplate extends BaseTemplate {
 
     // Main entry file
     files.push({
-      path: `src/index.${ext}`,
-      content: this.generateIndexFile()
+      path: `src/main.${ext}`,
+      content: this.generateMainFile()
     });
 
     // App component
@@ -58,7 +58,7 @@ export class ReactTemplate extends BaseTemplate {
 
     // HTML file for development
     files.push({
-      path: 'public/index.html',
+      path: 'index.html',
       content: this.generateHtmlFile()
     });
 
@@ -107,7 +107,7 @@ export class ReactTemplate extends BaseTemplate {
     return files;
   }
 
-  private generateIndexFile(): string {
+  private generateMainFile(): string {
     const { normalizedName, hasTypeScript } = this.context;
     const componentName = normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1).replace(/-./g, x => x[1].toUpperCase());
 
@@ -158,7 +158,7 @@ window.${componentName} = {
 };
 
 // For development mode
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   const devContainer = document.getElementById('root');
   if (devContainer) {
     window.${componentName}.mount('root');
@@ -202,7 +202,7 @@ window.${componentName} = {
 };
 
 // For development mode
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   const devContainer = document.getElementById('root');
   if (devContainer) {
     window.${componentName}.mount('root');
@@ -383,7 +383,7 @@ export const eventBus = new EventBus();`;
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="/src/index.${this.context.hasTypeScript ? 'tsx' : 'jsx'}"></script>
+  <script type="module" src="/src/main.${this.context.hasTypeScript ? 'tsx' : 'jsx'}"></script>
 </body>
 </html>`;
   }

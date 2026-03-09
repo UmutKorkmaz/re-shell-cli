@@ -348,6 +348,9 @@ function runBehaviorSuite() {
   record('core create and remove', () => {
     let result = runInWorkspace(['create', 'my-react', '--framework', 'react-ts', '--route', '/my-react', '--port', '4100']);
     assert(result.status === 0, `create my-react failed: ${result.stderr || result.stdout}`);
+    assert(fs.existsSync(path.join(workspaceRoot, 'apps', 'my-react', 'index.html')), 'create my-react missing root index.html');
+    assert(fs.existsSync(path.join(workspaceRoot, 'apps', 'my-react', 'src', 'main.tsx')), 'create my-react missing src/main.tsx');
+    assert(!fs.existsSync(path.join(workspaceRoot, 'apps', 'my-react', 'public', 'index.html')), 'create my-react should not generate public/index.html');
     result = runInWorkspace(['create', 'fs-app', '--fullstack', '--framework', 'react-ts', '--backend', 'express', '--route', '/fs-app']);
     assert(result.status === 0, `create fs-app failed: ${result.stderr || result.stdout}`);
     result = runInWorkspace(['create', 'dry-run-app', '--framework', 'react-ts', '--route', '/dry-run-app', '--dry-run', '--verbose']);

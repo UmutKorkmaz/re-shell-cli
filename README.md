@@ -1,4 +1,4 @@
-# Re-Shell CLI v0.27.2
+# Re-Shell CLI v0.27.3
 
 **Full-Stack Development Platform - Microservices & Microfrontends United**
 
@@ -24,7 +24,7 @@ Re-Shell CLI is a comprehensive full-stack development platform that revolutioni
 - **🛡️ Enterprise Security**: JWT authentication, OAuth2, API gateways, and compliance features
 - **☁️ Production Ready**: Docker orchestration, Kubernetes manifests, and cloud provider configs
 
-### 🆕 What's New in v0.27.2
+### 🆕 What's New in v0.27.3
 
 - **🧪 Executable CLI Validation**: `npm run test:plan` now performs exhaustive command coverage and behavior checks
 - **🛠️ Safer Project Creation**: `create --dry-run` now previews output without writing files
