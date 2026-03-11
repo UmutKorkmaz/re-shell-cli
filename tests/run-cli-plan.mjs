@@ -22,16 +22,24 @@ function parseSuite() {
 }
 
 function runCli(args, options = {}) {
+  const env = {
+    ...process.env,
+    HOME: options.home || process.env.HOME,
+    NO_COLOR: '1',
+    FORCE_COLOR: '0',
+    ...(options.env || {}),
+  };
+  for (const [key, value] of Object.entries(env)) {
+    if (typeof value === 'undefined') {
+      delete env[key];
+    }
+  }
+
   const result = spawnSync(process.execPath, [cliPath, ...args], {
     cwd: options.cwd || packageRoot,
     encoding: 'utf8',
     timeout: options.timeout || 40000,
-    env: {
-      ...process.env,
-      HOME: options.home || process.env.HOME,
-      NO_COLOR: '1',
-      FORCE_COLOR: '0',
-    },
+    env,
   });
 
   return {
@@ -213,6 +221,10 @@ function expectJsonStdout(result, label) {
   }
 }
 
+function expectNoStderr(result, label) {
+  assert(result.stderr.trim() === '', `${label} emitted stderr: ${result.stderr.slice(0, 400)}`);
+}
+
 function runHelpSuite() {
   const commands = commandInventory();
   const failures = [];
@@ -361,6 +373,14 @@ function runBehaviorSuite() {
     result = runInWorkspace(['list', '--json']);
     assert(result.status === 0, `list --json failed: ${result.stderr || result.stdout}`);
     expectJsonStdout(result, 'list --json');
+    result = runCli(['list', '--json'], {
+      cwd: workspaceRoot,
+      home: homeDir,
+      env: { FORCE_COLOR: undefined },
+    });
+    assert(result.status === 0, `list --json with NO_COLOR failed: ${result.stderr || result.stdout}`);
+    expectJsonStdout(result, 'list --json with NO_COLOR');
+    expectNoStderr(result, 'list --json with NO_COLOR');
     result = runInWorkspace(['remove', 'extra-app', '--force']);
     assert(result.status === 0, `remove extra-app failed: ${result.stderr || result.stdout}`);
     for (const args of [['build', '--help'], ['serve', '--help'], ['tui', '--help']]) {
@@ -375,11 +395,27 @@ function runBehaviorSuite() {
     result = runInWorkspace(['workspace', 'health', '--json']);
     assert(result.status === 0, `workspace health --json failed: ${result.stderr || result.stdout}`);
     expectJsonStdout(result, 'workspace health --json');
+    result = runCli(['workspace', 'health', '--json'], {
+      cwd: workspaceRoot,
+      home: homeDir,
+      env: { FORCE_COLOR: undefined },
+    });
+    assert(result.status === 0, `workspace health --json with NO_COLOR failed: ${result.stderr || result.stdout}`);
+    expectJsonStdout(result, 'workspace health --json with NO_COLOR');
+    expectNoStderr(result, 'workspace health --json with NO_COLOR');
     result = runInWorkspace(['workspace', 'validate']);
     assert(result.status === 0, `workspace validate failed: ${result.stderr || result.stdout}`);
     result = runInWorkspace(['workspace', 'optimize', '--json']);
     assert(result.status === 0, `workspace optimize --json failed: ${result.stderr || result.stdout}`);
     expectJsonStdout(result, 'workspace optimize --json');
+    result = runCli(['workspace', 'optimize', '--json'], {
+      cwd: workspaceRoot,
+      home: homeDir,
+      env: { FORCE_COLOR: undefined },
+    });
+    assert(result.status === 0, `workspace optimize --json with NO_COLOR failed: ${result.stderr || result.stdout}`);
+    expectJsonStdout(result, 'workspace optimize --json with NO_COLOR');
+    expectNoStderr(result, 'workspace optimize --json with NO_COLOR');
     result = runInWorkspace(['workspace', 'docs']);
     assert(result.status === 0, `workspace docs failed: ${result.stderr || result.stdout}`);
     result = runInWorkspace(['workspace', 'diff', '--from', 're-shell.workspaces.yaml', '--to', 're-shell.workspaces.yaml']);
@@ -401,6 +437,7 @@ function runBehaviorSuite() {
     assert(result.status === 1, 'workspace diagnostics quick should surface unhealthy state with exit 1');
     assert(result.stdout.includes('Quick Health Check'), 'workspace diagnostics quick missing summary');
     assert(result.stdout.includes('Score:') || result.stdout.includes('📊 Score:'), 'workspace diagnostics quick missing score');
+    assert(!result.stdout.includes('\\n'), 'workspace diagnostics quick rendered escaped newlines');
 
     result = runInWorkspace(['workspace', 'conflict', 'detect']);
     assert(result.status === 1, 'workspace conflict detect should fail cleanly without workspace definition');
@@ -452,8 +489,6 @@ function runBehaviorSuite() {
 
   record('quality command behavior', () => {
     for (const args of [
-      ['quality', 'test', 'frameworks'],
-      ['quality', 'test', 'info'],
       ['quality', 'intellisense', 'list-languages'],
       ['quality', 'intellisense', 'extensions', 'typescript'],
       ['quality', 'intellisense', 'vim-config'],
@@ -462,11 +497,30 @@ function runBehaviorSuite() {
       const result = runInWorkspace(args);
       assert(result.status === 0, `${args.join(' ')} failed: ${result.stderr || result.stdout}`);
     }
+
+    let result = runInWorkspace(['quality', 'test', 'frameworks']);
+    assert(result.status === 0, `quality test frameworks failed: ${result.stderr || result.stdout}`);
+    assert(!result.stdout.includes('\n═\n═'), 'quality test frameworks rendered a broken divider');
+
+    result = runInWorkspace(['quality', 'test', 'info']);
+    assert(result.status === 0, `quality test info failed: ${result.stderr || result.stdout}`);
   });
 
   record('api command behavior', () => {
     fs.mkdirSync(apiRoot, { recursive: true });
-    let result = runInApi(['api', 'openapi', 'generate', '--output', './openapi.yaml']);
+    let result = runInApi([
+      'api',
+      'openapi',
+      'generate',
+      '--output',
+      './openapi.yaml',
+      '--format',
+      'yaml',
+      '--title',
+      'Manual Test API',
+      '--version',
+      '0.25.1',
+    ]);
     assert(result.status === 0, `api openapi generate failed: ${result.stderr || result.stdout}`);
     assert(fs.existsSync(path.join(apiRoot, 'openapi.yaml')), 'openapi.yaml missing');
     for (const args of [

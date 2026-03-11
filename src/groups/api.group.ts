@@ -12,6 +12,19 @@ function toCamelCase(str: string): string {
     .replace(/\s/g, '');
 }
 
+async function parseOpenApiSpec(specContent: string): Promise<any> {
+  try {
+    return JSON.parse(specContent);
+  } catch {
+    const yaml = await import('js-yaml');
+    const parsed = yaml.load(specContent);
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error('Invalid OpenAPI document');
+    }
+    return parsed;
+  }
+}
+
 function generateSchemaCode(framework: string, modelName: string, fields: Array<{name: string; type: string; validations: string[]}>): string {
   const templates: Record<string, string> = {
     express: `// ${modelName} schema (Joi)
@@ -1220,7 +1233,7 @@ export function registerApiGroup(program: Command): void {
         }
 
         const specContent = await fs.readFile(specPath, 'utf-8');
-        const spec = JSON.parse(specContent);
+        const spec = await parseOpenApiSpec(specContent);
         const config = openAPIToInteractiveDocs(spec, options.baseUrl);
 
         // Apply overrides
@@ -1267,7 +1280,7 @@ export function registerApiGroup(program: Command): void {
         }
 
         const specContent = await fs.readFile(specPath, 'utf-8');
-        const spec = JSON.parse(specContent);
+        const spec = await parseOpenApiSpec(specContent);
         const config = openAPIToInteractiveDocs(spec, options.baseUrl);
 
         console.log(chalk.cyan('\n📘 Interactive Documentation Server\n'));
@@ -1294,7 +1307,7 @@ export function registerApiGroup(program: Command): void {
         }
 
         const specContent = await fs.readFile(specPath, 'utf-8');
-        const spec = JSON.parse(specContent);
+        const spec = await parseOpenApiSpec(specContent);
         const config = openAPIToInteractiveDocs(spec, options.baseUrl);
 
         console.log(formatInteractiveDocsConfig(config));
@@ -1751,15 +1764,10 @@ export function registerApiGroup(program: Command): void {
         const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
         let spec;
         try {
-          spec = JSON.parse(specContent);
+          spec = await parseOpenApiSpec(specContent);
         } catch {
-          try {
-            // Try YAML (basic, just for JSON-like YAML)
-            spec = JSON.parse(specContent.replace(/'/g, '"'));
-          } catch {
-            console.log(chalk.yellow(`\n❌ Failed to parse spec file. Please ensure it's valid JSON or YAML.\n`));
-            return;
-          }
+          console.log(chalk.yellow(`\n❌ Failed to parse spec file. Please ensure it's valid JSON or YAML.\n`));
+          return;
         }
 
         const validation = validateSpec(spec);
@@ -1926,7 +1934,7 @@ export function registerApiGroup(program: Command): void {
         const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
         let spec;
         try {
-          spec = JSON.parse(specContent);
+          spec = await parseOpenApiSpec(specContent);
         } catch {
           console.log(chalk.yellow(`\n❌ Failed to parse spec file.\n`));
           return;
@@ -1975,7 +1983,7 @@ export function registerApiGroup(program: Command): void {
         const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
         let spec;
         try {
-          spec = JSON.parse(specContent);
+          spec = await parseOpenApiSpec(specContent);
         } catch {
           console.log(chalk.yellow(`\n❌ Failed to parse spec file.\n`));
           return;
@@ -2018,7 +2026,7 @@ export function registerApiGroup(program: Command): void {
         const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
         let spec;
         try {
-          spec = JSON.parse(specContent);
+          spec = await parseOpenApiSpec(specContent);
         } catch {
           console.log(chalk.yellow(`\n❌ Failed to parse spec file.\n`));
           return;
@@ -2067,7 +2075,7 @@ export function registerApiGroup(program: Command): void {
         const specContent = await fs.readFile(resolvedSpecPath, 'utf-8');
         let spec;
         try {
-          spec = JSON.parse(specContent);
+          spec = await parseOpenApiSpec(specContent);
         } catch {
           console.log(chalk.yellow(`\n❌ Failed to parse spec file.\n`));
           return;

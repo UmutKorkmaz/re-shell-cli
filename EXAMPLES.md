@@ -5,6 +5,7 @@ This document provides comprehensive real-world scenarios and examples for using
 ## Table of Contents
 
 1. [Latest Features](#latest-features)
+   - [CLI Stability Fixes (v0.27.4)](#cli-stability-fixes-v0274)
    - [Extended Init Templates & Workspace Types (v0.27.0)](#extended-init-templates--workspace-types-v0270)
    - [Complete C++ Ecosystem (v0.24.0)](#complete-c-ecosystem-v0240)
    - [Complete Go Ecosystem (v0.22.1)](#complete-go-ecosystem-v0221)
@@ -48,6 +49,24 @@ This document provides comprehensive real-world scenarios and examples for using
 6. [Advanced Scenarios](#advanced-scenarios)
 
 ## Latest Features
+
+### CLI Stability Fixes (v0.27.4)
+
+These examples cover the command paths hardened in the `0.27.4` patch release.
+
+```bash
+# Machine-readable JSON stays clean even when NO_COLOR is exported
+NO_COLOR=1 re-shell list --json
+NO_COLOR=1 re-shell workspace health --json
+
+# Nested --version belongs to the API spec, not the CLI banner
+re-shell api openapi generate --output ./openapi.yaml --format yaml --title "Manual Test API" --version 0.25.1
+re-shell api client validate ./openapi.yaml
+
+# Diagnostics and framework lists render cleanly in interactive terminals
+re-shell workspace diagnostics quick
+re-shell quality test frameworks
+```
 
 ### Extended Init Templates & Workspace Types (v0.27.0)
 

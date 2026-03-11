@@ -4,8 +4,15 @@
 import { mark, isVersionRequest, getFromCache, setCache } from './startup-optimizer';
 mark('startup-begin');
 
-// Ensure immediate output for better terminal experience
-process.env.FORCE_COLOR = '1'; // Enable colors in terminal
+// Only force color in interactive terminals and never override NO_COLOR.
+const shouldForceColor =
+  (process.stdout.isTTY || process.stderr.isTTY) &&
+  !process.env.NO_COLOR &&
+  typeof process.env.FORCE_COLOR === 'undefined';
+
+if (shouldForceColor) {
+  process.env.FORCE_COLOR = '1';
+}
 if (process.stdout.isTTY) {
   process.stdout.setEncoding('utf8');
 }
@@ -150,6 +157,7 @@ program
   .description(
     'Re-Shell CLI - Full-Stack Development Platform with microfrontends, microservices, security, and collaboration tools'
   )
+  .enablePositionalOptions()
   .version(version);
 
 // ─── Standalone commands ─────────────────────────────────────────────────────

@@ -290,14 +290,14 @@ async function fixHealthIssues(options: WorkspaceHealthCommandOptions, spinner?:
       return;
     }
 
-    console.log(chalk.cyan(`\\n🔧 Auto-Fix Analysis`));
+    console.log(chalk.cyan(`\n🔧 Auto-Fix Analysis`));
     console.log(chalk.gray('═'.repeat(50)));
 
-    console.log(`\\nFound ${fixableIssues.length} potentially fixable issue(s):`);
+    console.log(`\nFound ${fixableIssues.length} potentially fixable issue(s):`);
     
     for (let i = 0; i < fixableIssues.length; i++) {
       const issue = fixableIssues[i];
-      console.log(`\\n${i + 1}. ${issue.name}`);
+      console.log(`\n${i + 1}. ${issue.name}`);
       console.log(`   Issue: ${issue.message}`);
       console.log(`   Suggestions:`);
       for (const suggestion of issue.suggestions!) {
@@ -305,7 +305,7 @@ async function fixHealthIssues(options: WorkspaceHealthCommandOptions, spinner?:
       }
     }
 
-    console.log(chalk.yellow('\\n⚠️  Auto-fix implementation coming in next update'));
+    console.log(chalk.yellow('\n⚠️  Auto-fix implementation coming in next update'));
     console.log(chalk.gray('For now, please apply fixes manually based on suggestions above.'));
 
   } catch (error) {
@@ -324,9 +324,9 @@ async function showHealthStatus(options: WorkspaceHealthCommandOptions, spinner?
     if (!(await fs.pathExists(inputPath))) {
       if (spinner) spinner.stop();
       
-      console.log(chalk.yellow('\\n⚠️  No workspace definition found'));
+      console.log(chalk.yellow('\n⚠️  No workspace definition found'));
       console.log(chalk.gray(`Expected: ${inputFile}`));
-      console.log(chalk.cyan('\\n🚀 Quick start:'));
+      console.log(chalk.cyan('\n🚀 Quick start:'));
       console.log('  re-shell workspace-def init');
       return;
     }
@@ -340,7 +340,7 @@ async function showHealthStatus(options: WorkspaceHealthCommandOptions, spinner?
       return;
     }
 
-    console.log(chalk.cyan('\\n🏥 Workspace Health Status'));
+    console.log(chalk.cyan('\n🏥 Workspace Health Status'));
     console.log(chalk.gray('═'.repeat(50)));
 
     const statusIcon = result.status === 'healthy' ? '✅' : 
@@ -348,7 +348,7 @@ async function showHealthStatus(options: WorkspaceHealthCommandOptions, spinner?
     const statusColor = result.status === 'healthy' ? chalk.green : 
                        result.status === 'degraded' ? chalk.yellow : chalk.red;
 
-    console.log(`\\nOverall Status: ${statusIcon} ${statusColor(result.status.toUpperCase())}`);
+    console.log(`\nOverall Status: ${statusIcon} ${statusColor(result.status.toUpperCase())}`);
     console.log(`Health Score: ${getScoreColor(result.score)(`${result.score}%`)}`);
     
     if (result.criticalIssues > 0) {
@@ -357,7 +357,7 @@ async function showHealthStatus(options: WorkspaceHealthCommandOptions, spinner?
       console.log(`Critical Issues: ${chalk.green('None')}`);
     }
 
-    console.log(chalk.cyan('\\n🛠️  Available Commands:'));
+    console.log(chalk.cyan('\n🛠️  Available Commands:'));
     console.log('  • re-shell workspace-health check --detailed');
     console.log('  • re-shell workspace-health topology');
     console.log('  • re-shell workspace-health watch');
@@ -377,7 +377,7 @@ async function interactiveHealthManagement(options: WorkspaceHealthCommandOption
   const exists = await fs.pathExists(inputPath);
 
   if (!exists) {
-    console.log(chalk.yellow('\\n⚠️  No workspace definition found'));
+    console.log(chalk.yellow('\n⚠️  No workspace definition found'));
     console.log(chalk.gray('Create one first with: re-shell workspace-def init'));
     return;
   }
@@ -429,7 +429,7 @@ function displayHealthReport(
   detailed: boolean,
   categoryFilter?: string
 ): void {
-  console.log(chalk.cyan('\\n🏥 Workspace Health Report'));
+  console.log(chalk.cyan('\n🏥 Workspace Health Report'));
   console.log(chalk.gray(`File: ${fileName}`));
   console.log(chalk.gray(`Generated: ${new Date(report.timestamp).toLocaleString()}`));
   console.log(chalk.gray('═'.repeat(60)));
@@ -440,13 +440,13 @@ function displayHealthReport(
   const statusColor = report.overall.status === 'healthy' ? chalk.green : 
                      report.overall.status === 'degraded' ? chalk.yellow : chalk.red;
 
-  console.log(`\\n${statusIcon} Overall: ${statusColor(report.overall.status.toUpperCase())}`);
+  console.log(`\n${statusIcon} Overall: ${statusColor(report.overall.status.toUpperCase())}`);
   console.log(`📊 Health Score: ${getScoreColor(report.overall.score)(`${report.overall.score}%`)}`);
   console.log(`⏱️  Duration: ${report.duration}ms`);
   console.log(`💬 ${report.overall.summary}`);
 
   // Metrics
-  console.log(`\\n📈 Metrics:`);
+  console.log(`\n📈 Metrics:`);
   console.log(`  Workspaces: ${report.metrics.workspaceCount}`);
   console.log(`  Dependencies: ${report.metrics.dependencyCount}`);
   console.log(`  Cycles: ${report.metrics.cycleCount}`);
@@ -464,7 +464,7 @@ function displayHealthReport(
 
   // Recommendations
   if (report.recommendations.length > 0) {
-    console.log(chalk.cyan(`\\n💡 Recommendations:`));
+    console.log(chalk.cyan(`\n💡 Recommendations:`));
     for (let i = 0; i < Math.min(report.recommendations.length, 5); i++) {
       console.log(`  ${i + 1}. ${report.recommendations[i]}`);
     }
@@ -479,7 +479,7 @@ function displayHealthCategory(category: HealthCheckCategory, detailed: boolean)
   const categoryIcon = getCategoryIcon(category.id);
   const scoreColor = getScoreColor(category.summary.score);
   
-  console.log(`\\n${categoryIcon} ${chalk.cyan(category.name)} - ${scoreColor(`${category.summary.score}%`)}`);
+  console.log(`\n${categoryIcon} ${chalk.cyan(category.name)} - ${scoreColor(`${category.summary.score}%`)}`);
   console.log(`   ${chalk.gray(category.description)}`);
   
   if (category.summary.failed > 0) {
@@ -506,7 +506,7 @@ function displayHealthCheck(check: HealthCheckResult): void {
                     check.status === 'fail' ? '❌' : 
                     check.status === 'warning' ? '⚠️' : 'ℹ️';
   
-  console.log(`\\n     ${statusIcon} ${check.name}`);
+  console.log(`\n     ${statusIcon} ${check.name}`);
   console.log(`        ${check.message}`);
   
   if (check.suggestions && check.suggestions.length > 0) {
@@ -518,17 +518,17 @@ function displayHealthCheck(check: HealthCheckResult): void {
 }
 
 function displayTopologyValidation(validation: TopologyValidation, fileName: string): void {
-  console.log(chalk.cyan('\\n🏗️  Workspace Topology Validation'));
+  console.log(chalk.cyan('\n🏗️  Workspace Topology Validation'));
   console.log(chalk.gray(`File: ${fileName}`));
   console.log(chalk.gray('═'.repeat(60)));
 
   const statusIcon = validation.isValid ? '✅' : '❌';
   const statusColor = validation.isValid ? chalk.green : chalk.red;
   
-  console.log(`\\n${statusIcon} Topology: ${statusColor(validation.isValid ? 'VALID' : 'INVALID')}`);
+  console.log(`\n${statusIcon} Topology: ${statusColor(validation.isValid ? 'VALID' : 'INVALID')}`);
 
   // Structure metrics
-  console.log(`\\n📊 Structure Metrics:`);
+  console.log(`\n📊 Structure Metrics:`);
   console.log(`  Depth: ${validation.structure.depth}`);
   console.log(`  Breadth: ${validation.structure.breadth}`);
   console.log(`  Complexity: ${validation.structure.complexity.toFixed(2)}`);
@@ -536,7 +536,7 @@ function displayTopologyValidation(validation: TopologyValidation, fileName: str
 
   // Errors
   if (validation.errors.length > 0) {
-    console.log(chalk.red(`\\n❌ Errors (${validation.errors.length}):`));
+    console.log(chalk.red(`\n❌ Errors (${validation.errors.length}):`));
     for (const error of validation.errors) {
       console.log(`  • ${error.message}`);
     }
@@ -544,7 +544,7 @@ function displayTopologyValidation(validation: TopologyValidation, fileName: str
 
   // Warnings
   if (validation.warnings.length > 0) {
-    console.log(chalk.yellow(`\\n⚠️  Warnings (${validation.warnings.length}):`));
+    console.log(chalk.yellow(`\n⚠️  Warnings (${validation.warnings.length}):`));
     for (const warning of validation.warnings) {
       console.log(`  • ${warning}`);
     }
@@ -552,7 +552,7 @@ function displayTopologyValidation(validation: TopologyValidation, fileName: str
 
   // Suggestions
   if (validation.suggestions.length > 0) {
-    console.log(chalk.cyan(`\\n💡 Suggestions (${validation.suggestions.length}):`));
+    console.log(chalk.cyan(`\n💡 Suggestions (${validation.suggestions.length}):`));
     for (const suggestion of validation.suggestions) {
       console.log(`  • ${suggestion}`);
     }
@@ -560,7 +560,7 @@ function displayTopologyValidation(validation: TopologyValidation, fileName: str
 }
 
 function displayQuickHealthResult(result: any, fileName: string): void {
-  console.log(chalk.cyan('\\n⚡ Quick Health Check'));
+  console.log(chalk.cyan('\n⚡ Quick Health Check'));
   console.log(chalk.gray(`File: ${fileName}`));
   console.log(chalk.gray('═'.repeat(40)));
 
@@ -569,7 +569,7 @@ function displayQuickHealthResult(result: any, fileName: string): void {
   const statusColor = result.status === 'healthy' ? chalk.green : 
                      result.status === 'degraded' ? chalk.yellow : chalk.red;
 
-  console.log(`\\n${statusIcon} Status: ${statusColor(result.status.toUpperCase())}`);
+  console.log(`\n${statusIcon} Status: ${statusColor(result.status.toUpperCase())}`);
   console.log(`📊 Score: ${getScoreColor(result.score)(`${result.score}%`)}`);
   
   if (result.criticalIssues > 0) {
@@ -578,7 +578,7 @@ function displayQuickHealthResult(result: any, fileName: string): void {
     console.log(`🚨 Critical Issues: ${chalk.green('None')}`);
   }
 
-  console.log(chalk.cyan('\\n💡 Run detailed check:'));
+  console.log(chalk.cyan('\n💡 Run detailed check:'));
   console.log('  re-shell workspace-health check --detailed');
 }
 

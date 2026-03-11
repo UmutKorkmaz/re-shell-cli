@@ -11,7 +11,8 @@ const packageJson = JSON.parse(
 );
 
 // Fast path for version
-if (process.argv.includes('--version') || process.argv.includes('-v')) {
+const args = process.argv.slice(2);
+if (args.length === 1 && ['--version', '-v', '-V'].includes(args[0])) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const chalk = require('chalk');
   console.log(chalk.cyan(`
@@ -40,6 +41,7 @@ const program = new Command();
 program
   .name('re-shell')
   .description('Re-Shell CLI - Universal Full-Stack Development Platform')
+  .enablePositionalOptions()
   .version(packageJson.version);
 
 // Minimal commands for testing

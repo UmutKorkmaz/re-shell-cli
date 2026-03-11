@@ -679,7 +679,7 @@ export function registerToolsGroup(program: Command): void {
           }
         }
 
-        console.log(chalk.gray('\n═'.repeat(70)));
+        console.log(chalk.gray(`\n${'═'.repeat(70)}`));
         console.log(chalk.gray('Legend: ⚡ HMR  🔄 Restart  🔧 Custom'));
         console.log(chalk.gray('\nUsage: re-shell hotreload start [--framework <name>]'));
       })

@@ -38,6 +38,7 @@ const lazyLoad = {
 program
   .name('re-shell')
   .description('Re-Shell CLI - Universal Full-Stack Development Platform')
+  .enablePositionalOptions()
   .version(packageJson.version, '-v, --version')
   .option('-d, --debug', 'Enable debug mode')
   .option('--no-update-check', 'Skip update check')
@@ -167,7 +168,8 @@ Object.entries(commandLoaders).forEach(([name, loader]) => {
 profiler.mark('commands-registered');
 
 // Fast path for version check
-if (process.argv.includes('--version') || process.argv.includes('-v')) {
+const versionArgs = process.argv.slice(2);
+if (versionArgs.length === 1 && ['--version', '-v', '-V'].includes(versionArgs[0])) {
   // Display version immediately without loading anything else
   if (!lazyLoad.chalk) {
     lazyLoad.chalk = require('chalk');

@@ -5,6 +5,16 @@ All notable changes to the `@re-shell/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.27.4] - 2026-03-18
+
+### Fixed
+
+- JSON commands now respect `NO_COLOR` and no longer emit color-environment warnings alongside machine-readable output
+- workspace health diagnostics now render real newlines instead of literal `\n` escape sequences
+- quality and tools framework listings now render closing dividers correctly instead of repeating single-character lines
+- nested subcommand `--version` flags no longer trigger the global CLI version banner
+- API docs and client commands now parse generated YAML OpenAPI specs correctly instead of assuming JSON-only input
+
 ## [0.27.3] - 2026-03-18
 
 ### Fixed

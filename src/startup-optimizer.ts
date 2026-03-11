@@ -46,7 +46,8 @@ export function setCache<T>(key: string, value: T): void {
 
 // Fast path for version display
 export function isVersionRequest(): boolean {
-  return process.argv.includes('--version') || process.argv.includes('-v');
+  const args = process.argv.slice(2);
+  return args.length === 1 && ['--version', '-v', '-V'].includes(args[0]);
 }
 
 export function isHelpRequest(): boolean {
