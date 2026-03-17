@@ -132,7 +132,7 @@ export function registerServiceGroup(program: Command): void {
             detached: options.detached,
             build: options.build,
             forceRecreate: options.forceRecreate,
-            noDeps: options.noDeps,
+            noDeps: options.deps === false,
             scale,
             timeout: parseInt(options.timeout),
             verbose: options.verbose,
@@ -271,7 +271,7 @@ export function registerServiceGroup(program: Command): void {
         const { servicesExec } = await import('../commands/services');
 
         await servicesExec(process.cwd(), service, command, {
-          interactive: !options.noTty,
+          interactive: options.tty !== false,
           verbose: options.verbose,
         });
       })

@@ -307,8 +307,10 @@ export function registerWorkspaceGroup(program: Command): void {
         flushOutput();
 
         await withTimeout(async () => {
-          await importFromMonorepo({ ...options, spinner });
+          await importFromMonorepo({ ...options, includeDev: options.dev !== false, detectFrameworks: options.detect !== false, spinner });
         }, 120000); // 2 minute timeout
+
+        spinner.succeed(chalk.green('Workspace imported successfully!'));
       })
     );
 
@@ -1351,7 +1353,7 @@ export function registerWorkspaceGroup(program: Command): void {
     .command('upgrade')
     .description('Upgrade workspace to target version')
     .option('--workspace-file <file>', 'Workspace definition file', 're-shell.workspaces.yaml')
-    .option('--target-version <version>', 'Target version for upgrade', true)
+    .option('--target-version <version>', 'Target version for upgrade')
     .option('--force', 'Force upgrade without confirmations')
     .option('--dry-run', 'Preview upgrade without making changes')
     .option('--no-backup', 'Skip automatic backup creation')
@@ -1372,7 +1374,7 @@ export function registerWorkspaceGroup(program: Command): void {
           await manageWorkspaceMigration({
             ...options,
             upgrade: true,
-            backup: !options.noBackup,
+            backup: options.backup !== false,
             spinner
           });
         }, 300000); // 5 minute timeout

@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { createAsyncCommand } from '../utils/error-handler';
-import chalk from 'chalk';
 import * as crypto from 'crypto';
+import chalk from 'chalk';
 
 export function registerSecurityGroup(program: Command): void {
   const security = new Command('security')

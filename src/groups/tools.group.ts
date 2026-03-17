@@ -100,37 +100,37 @@ export function registerToolsGroup(program: Command): void {
   toolsCommand
     .command('snapshots')
     .description('List available rollback snapshots')
-    .action(async () => {
-      const { listSnapshots } = await import('../utils/rollback');
+    .action(createAsyncCommand(async () => {
+      const { listSnapshots } = await import('../utils/rollback.js');
       await listSnapshots();
-    });
+    }));
 
   toolsCommand
     .command('rollback <snapshot-id>')
     .description('Rollback to a specific snapshot (undo failed operation)')
     .option('--keep-backup', 'Keep backup files after rollback')
     .option('--force', 'Skip confirmation prompts')
-    .action(async (snapshotId, options) => {
-      const { rollbackOperation } = await import('../utils/rollback');
+    .action(createAsyncCommand(async (snapshotId, options) => {
+      const { rollbackOperation } = await import('../utils/rollback.js');
       await rollbackOperation(snapshotId, options);
-    });
+    }));
 
   toolsCommand
     .command('recover <snapshot-id>')
     .description('Recover state from a specific snapshot')
-    .action(async (snapshotId) => {
-      const { recoverFromSnapshot } = await import('../utils/rollback');
+    .action(createAsyncCommand(async (snapshotId) => {
+      const { recoverFromSnapshot } = await import('../utils/rollback.js');
       await recoverFromSnapshot(snapshotId);
-    });
+    }));
 
   toolsCommand
     .command('cleanup-snapshots')
     .description('Clean up old rollback snapshots')
     .option('--keep <number>', 'Number of snapshots to keep', '5')
-    .action(async (options) => {
-      const { cleanupSnapshots } = await import('../utils/rollback');
+    .action(createAsyncCommand(async (options) => {
+      const { cleanupSnapshots } = await import('../utils/rollback.js');
       await cleanupSnapshots(parseInt(options.keep));
-    });
+    }));
 
   // Submodule subgroup
   const submoduleCommand = toolsCommand.command('submodule').description('Manage Git submodules');
@@ -384,6 +384,9 @@ export function registerToolsGroup(program: Command): void {
           await manageDevMode({
             ...options,
             start: true,
+            noValidation: options.validation === false,
+            noBackup: options.backup === false,
+            noRestore: options.restore === false,
             spinner,
             services: options.services ? options.services.flat() : undefined,
           });
@@ -433,6 +436,9 @@ export function registerToolsGroup(program: Command): void {
           await manageDevMode({
             ...options,
             restart: true,
+            noValidation: options.validation === false,
+            noBackup: options.backup === false,
+            noRestore: options.restore === false,
             spinner,
             services: options.services ? options.services.flat() : undefined,
           });
