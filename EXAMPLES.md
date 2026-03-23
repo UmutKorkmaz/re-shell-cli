@@ -1,5 +1,7 @@
 # Re-Shell CLI Examples
 
+Need a smaller, feature-by-feature entry point? Start with `examples/README.md` in this package for grouped workflow guides.
+
 This document provides comprehensive real-world scenarios and examples for using the Re-Shell CLI to build full-stack applications with microfrontends and microservices.
 
 ## Table of Contents
@@ -49,6 +51,24 @@ This document provides comprehensive real-world scenarios and examples for using
 6. [Advanced Scenarios](#advanced-scenarios)
 
 ## Latest Features
+
+### Structured Example Library (v0.27.5)
+
+```bash
+# Browse the new guide index
+cat examples/README.md
+
+# Open the core command examples
+cat examples/core-workflows.md
+
+# Jump straight to grouped feature references
+cat examples/workspace-and-config.md
+cat examples/scaffolding-api-and-generation.md
+cat examples/services-tools-and-quality.md
+cat examples/plugins-and-data.md
+cat examples/cloud-k8s-and-observability.md
+cat examples/security-collaboration-and-learning.md
+```
 
 ### CLI Stability Fixes (v0.27.4)
 

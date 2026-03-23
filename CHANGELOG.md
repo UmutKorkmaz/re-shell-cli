@@ -5,6 +5,14 @@ All notable changes to the `@re-shell/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.27.5] - 2026-03-23
+
+### Added
+
+- added a structured example library under `packages/cli/examples/` with task-focused guides for core workflows, workspace/config, API/codegen, services/tools/quality, plugins/data, cloud/k8s/observability, and security/collaboration/learning
+- added an index for the new example library so users can jump to the right command group quickly
+- publish the `examples/` directory with the CLI package so the new guides ship alongside the existing README and EXAMPLES reference
+
 ## [0.27.4] - 2026-03-18
 
 ### Fixed

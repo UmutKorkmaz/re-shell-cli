@@ -1,4 +1,4 @@
-# Re-Shell CLI v0.27.4
+# Re-Shell CLI v0.27.5
 
 **Full-Stack Development Platform - Microservices & Microfrontends United**
 
@@ -24,15 +24,20 @@ Re-Shell CLI is a comprehensive full-stack development platform that revolutioni
 - **🛡️ Enterprise Security**: JWT authentication, OAuth2, API gateways, and compliance features
 - **☁️ Production Ready**: Docker orchestration, Kubernetes manifests, and cloud provider configs
 
-### 🆕 What's New in v0.27.4
+### 🆕 What's New in v0.27.5
 
+- **📚 Structured Example Library**: the CLI now ships with focused guides in `examples/` for every major command area instead of a single monolithic reference only
+- **🗂️ Easier Feature Discovery**: the new examples index maps standalone commands and grouped features to the right guide quickly
+- **📦 Published Example Guides**: the `examples/` directory is now included with the package so local installs keep the workflow guides close to the CLI
+
+### Previous Releases
+
+#### v0.27.4
 - **🧾 JSON Stays Machine-Readable**: the CLI now respects `NO_COLOR` and no longer leaks color-env warnings into JSON output
 - **🔧 Terminal Rendering Cleanup**: workspace diagnostics and quality framework listings now render clean dividers and real newlines
 - **📘 API Toolchain Consistency**: generated YAML OpenAPI specs validate correctly across `api client` and docs subcommands
 - **🏷️ Nested `--version` Flags Fixed**: subcommands like `api openapi generate --version 0.25.1` now work instead of triggering the CLI version banner
 - **🌐 React Dev Server Verified**: generated React/Vite apps honor configured ports and return valid HTML on both `/` and route paths
-
-### Previous Releases
 
 #### v0.27.3
 - **🧪 Executable CLI Validation**: `npm run test:plan` now performs exhaustive command coverage and behavior checks
@@ -1006,6 +1011,8 @@ services:
 ```
 
 ## 🎯 Examples
+
+For task-focused, file-by-file workflow examples, start with `examples/README.md`. Keep `EXAMPLES.md` for the long-form reference and release walkthroughs.
 
 ### E-Commerce Platform
 
