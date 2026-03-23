@@ -1,14 +1,14 @@
-# Re-Shell CLI v0.27.5
+# Re-Shell CLI v0.28.0
 
 **Full-Stack Development Platform - Microservices & Microfrontends United**
 
 The most comprehensive and powerful command-line interface for building complete full-stack applications with distributed microservices and microfrontend architectures. Re-Shell unites backend and frontend development under a single CLI, providing enterprise-grade reliability, seamless integration, and exceptional developer experience.
 
-[![Version](https://img.shields.io/npm/v/@re-shell/cli.svg)](https://www.npmjs.com/package/@re-shell/cli)
-[![License](https://img.shields.io/npm/l/@re-shell/cli.svg)](https://github.com/re-shell/cli/blob/main/LICENSE)
-[![Build Status](https://img.shields.io/github/workflow/status/re-shell/cli/CI)](https://github.com/re-shell/cli/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/re-shell/cli)](https://codecov.io/gh/re-shell/cli)
-[![Downloads](https://img.shields.io/npm/dm/@re-shell/cli.svg)](https://www.npmjs.com/package/@re-shell/cli)
+[![Version](https://img.shields.io/npm/v/@umutkorkmaz/re-shell-cli.svg)](https://www.npmjs.com/package/@umutkorkmaz/re-shell-cli)
+[![License](https://img.shields.io/npm/l/@umutkorkmaz/re-shell-cli.svg)](https://github.com/umutkorkmaz/re-shell-cli/blob/main/LICENSE)
+[![Build Status](https://img.shields.io/github/workflow/status/umutkorkmaz/re-shell-cli/CI)](https://github.com/umutkorkmaz/re-shell-cli/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/umutkorkmaz/re-shell-cli)](https://codecov.io/gh/umutkorkmaz/re-shell-cli)
+[![Downloads](https://img.shields.io/npm/dm/@umutkorkmaz/re-shell-cli.svg)](https://www.npmjs.com/package/@umutkorkmaz/re-shell-cli)
 
 ## 🚀 Platform Overview
 
@@ -24,13 +24,18 @@ Re-Shell CLI is a comprehensive full-stack development platform that revolutioni
 - **🛡️ Enterprise Security**: JWT authentication, OAuth2, API gateways, and compliance features
 - **☁️ Production Ready**: Docker orchestration, Kubernetes manifests, and cloud provider configs
 
-### 🆕 What's New in v0.27.5
+### 🆕 What's New in v0.28.0
 
+- **📦 New npm Package Scope**: the CLI now publishes as `@umutkorkmaz/re-shell-cli`
+- **🔄 Updated Upgrade Flow**: self-update prompts and generated monorepos now point at the new package name
+- **🔗 Personal GitHub Metadata**: badges, links, and package metadata now resolve to the personal `umutkorkmaz/re-shell-cli` repository
+
+### Previous Releases
+
+#### v0.27.5
 - **📚 Structured Example Library**: the CLI now ships with focused guides in `examples/` for every major command area instead of a single monolithic reference only
 - **🗂️ Easier Feature Discovery**: the new examples index maps standalone commands and grouped features to the right guide quickly
 - **📦 Published Example Guides**: the `examples/` directory is now included with the package so local installs keep the workflow guides close to the CLI
-
-### Previous Releases
 
 #### v0.27.4
 - **🧾 JSON Stays Machine-Readable**: the CLI now respects `NO_COLOR` and no longer leaks color-env warnings into JSON output
@@ -87,13 +92,13 @@ Re-Shell CLI is a comprehensive full-stack development platform that revolutioni
 
 ```bash
 # Install globally using npm
-npm install -g @re-shell/cli
+npm install -g @umutkorkmaz/re-shell-cli
 
 # Using yarn
-yarn global add @re-shell/cli
+yarn global add @umutkorkmaz/re-shell-cli
 
 # Using pnpm
-pnpm add -g @re-shell/cli
+pnpm add -g @umutkorkmaz/re-shell-cli
 
 # Verify installation
 re-shell --version
@@ -1088,7 +1093,7 @@ We welcome contributions from the community! Please see our [Contributing Guide]
 
 ```bash
 # Clone the repository
-git clone https://github.com/re-shell/cli.git
+git clone https://github.com/umutkorkmaz/re-shell-cli.git
 cd cli
 
 # Install dependencies
@@ -1117,7 +1122,7 @@ pnpm dev
 
 ### Community Support
 
-- **GitHub Discussions**: [https://github.com/re-shell/cli/discussions](https://github.com/re-shell/cli/discussions)
+- **GitHub Discussions**: [https://github.com/umutkorkmaz/re-shell-cli/discussions](https://github.com/umutkorkmaz/re-shell-cli/discussions)
 - **Discord Community**: [https://discord.gg/re-shell](https://discord.gg/re-shell)
 - **Stack Overflow**: Tag questions with `re-shell-cli`
 

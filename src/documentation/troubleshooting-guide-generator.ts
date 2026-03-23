@@ -565,7 +565,7 @@ export class TroubleshootingGuideGenerator extends EventEmitter {
             {
               order: 1,
               description: 'Run Re-Shell using npx',
-              command: 'npx @re-shell/cli init my-project'
+              command: 'npx @umutkorkmaz/re-shell-cli init my-project'
             }
           ],
           effectiveness: 'high',

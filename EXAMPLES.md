@@ -1936,7 +1936,7 @@ re-shell generate test apps/my-react
 
 ```bash
 # Install Re-Shell CLI globally
-npm install -g @re-shell/cli
+npm install -g @umutkorkmaz/re-shell-cli
 
 # Verify installation
 re-shell --version
@@ -2535,5 +2535,5 @@ Re-Shell CLI with its plugin ecosystem provides unlimited extensibility for buil
 For more information:
 - Documentation: https://re-shell.dev/docs
 - Plugin Registry: https://re-shell.dev/plugins
-- GitHub: https://github.com/re-shell/cli
+- GitHub: https://github.com/umutkorkmaz/re-shell-cli
 - Support: support@re-shell.dev

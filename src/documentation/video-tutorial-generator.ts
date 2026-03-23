@@ -552,7 +552,7 @@ export class VideoTutorialGenerator extends EventEmitter {
                 {
                   timestamp: 5,
                   type: 'type',
-                  value: 'npm install -g @re-shell/cli',
+                  value: 'npm install -g @umutkorkmaz/re-shell-cli',
                   description: 'Install Re-Shell CLI'
                 }
               ],
@@ -560,7 +560,7 @@ export class VideoTutorialGenerator extends EventEmitter {
                 {
                   timestamp: 10,
                   language: 'bash',
-                  code: 'npm install -g @re-shell/cli',
+                  code: 'npm install -g @umutkorkmaz/re-shell-cli',
                   duration: 5
                 }
               ]
@@ -757,7 +757,7 @@ export class VideoTutorialGenerator extends EventEmitter {
           type: 'action',
           content: {
             text: 'Run the following command to install Re-Shell CLI:',
-            command: 'npm install -g @re-shell/cli',
+            command: 'npm install -g @umutkorkmaz/re-shell-cli',
             expectedOutput: 'added 1 package in'
           },
           validation: {

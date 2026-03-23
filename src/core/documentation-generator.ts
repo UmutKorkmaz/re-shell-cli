@@ -428,7 +428,7 @@ export class DocumentationGenerator extends EventEmitter {
     // Footer
     sections.push('---');
     sections.push('');
-    sections.push(`Generated with ❤️ by [Re-Shell CLI](https://github.com/re-shell/cli)`);
+    sections.push(`Generated with ❤️ by [Re-Shell CLI](https://github.com/umutkorkmaz/re-shell-cli)`);
 
     return sections.join('\n');
   }

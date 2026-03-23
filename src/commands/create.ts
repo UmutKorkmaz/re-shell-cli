@@ -1161,7 +1161,7 @@ async function generateMicrofrontendReadme(projectPath: string, config: Microfro
 
   const readmeContent = `# ${config.name}
 
-A microfrontend project created with [Re-Shell CLI](https://github.com/re-shell/cli) using Module Federation.
+A microfrontend project created with [Re-Shell CLI](https://github.com/umutkorkmaz/re-shell-cli) using Module Federation.
 
 ## Architecture
 
@@ -1323,7 +1323,7 @@ MIT
 
 ---
 
-Generated with ❤️ by [Re-Shell CLI](https://github.com/re-shell/cli)
+Generated with ❤️ by [Re-Shell CLI](https://github.com/umutkorkmaz/re-shell-cli)
 `;
 
   await fs.writeFile(path.join(projectPath, 'README.md'), readmeContent);
@@ -2168,7 +2168,7 @@ async function generatePolyglotReadme(projectPath: string, config: PolyglotConfi
 
   const readmeContent = `# ${config.name}
 
-A polyglot microservices project created with [Re-Shell CLI](https://github.com/re-shell/cli).
+A polyglot microservices project created with [Re-Shell CLI](https://github.com/umutkorkmaz/re-shell-cli).
 
 ## Overview
 
@@ -2288,7 +2288,7 @@ MIT
 
 ---
 
-Generated with ❤️ by [Re-Shell CLI](https://github.com/re-shell/cli)
+Generated with ❤️ by [Re-Shell CLI](https://github.com/umutkorkmaz/re-shell-cli)
 `;
 
   await fs.writeFile(path.join(projectPath, 'README.md'), readmeContent);

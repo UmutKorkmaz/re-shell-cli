@@ -1073,9 +1073,9 @@ ${exampleProps}
             stepNumber: 1,
             title: 'Install Re-Shell CLI',
             description: 'Install the Re-Shell CLI globally using npm',
-            code: 'npm install -g @re-shell/cli',
+            code: 'npm install -g @umutkorkmaz/re-shell-cli',
             explanation: 'This installs the Re-Shell command line interface globally on your system',
-            output: 'Successfully installed @re-shell/cli@latest',
+            output: 'Successfully installed @umutkorkmaz/re-shell-cli@latest',
             tips: ['Use sudo on Linux/Mac if you encounter permission errors']
           },
           {
@@ -1098,7 +1098,7 @@ ${exampleProps}
           }
         ],
         fullCode: `# Complete setup process
-npm install -g @re-shell/cli
+npm install -g @umutkorkmaz/re-shell-cli
 re-shell init my-first-app --template basic
 cd my-first-app
 re-shell dev`,
@@ -1283,7 +1283,7 @@ re-shell build`,
       environment: {
         type: 'browser',
         runtime: 'nodejs',
-        dependencies: ['@re-shell/cli'],
+        dependencies: ['@umutkorkmaz/re-shell-cli'],
         timeout: 30000,
         memoryLimit: 512
       },

@@ -3303,7 +3303,7 @@ function generateReadme(config: ProjectDocsConfig): { path: string; content: str
 
   const content = `# ${name}
 
-${description ? description : `A ${type} built with [Re-Shell CLI](https://github.com/re-shell/cli).`}
+${description ? description : `A ${type} built with [Re-Shell CLI](https://github.com/umutkorkmaz/re-shell-cli).`}
 
 ## Version
 
@@ -3380,7 +3380,7 @@ ${author}` : ''}
 
 ---
 
-Generated with ❤️ by [Re-Shell CLI](https://github.com/re-shell/cli)
+Generated with ❤️ by [Re-Shell CLI](https://github.com/umutkorkmaz/re-shell-cli)
 `;
 
   return {

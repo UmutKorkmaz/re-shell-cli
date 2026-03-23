@@ -1,9 +1,17 @@
 # Changelog
 
-All notable changes to the `@re-shell/cli` package will be documented in this file.
+All notable changes to the `@umutkorkmaz/re-shell-cli` package will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.28.0] - 2026-03-23
+
+### Changed
+
+- rebranded the npm package from `@re-shell/cli` to `@umutkorkmaz/re-shell-cli`
+- updated CLI self-update guidance, monorepo scaffolding defaults, and generated install instructions to use the new package scope
+- repointed package metadata and documentation links to the personal GitHub repository
 
 ## [0.27.5] - 2026-03-23
 

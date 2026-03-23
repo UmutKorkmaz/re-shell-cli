@@ -771,7 +771,7 @@ ${hook.script}
     
     return `# ${projectName}
 
-This project was initialized with [Re-Shell CLI](https://github.com/re-shell/cli).
+This project was initialized with [Re-Shell CLI](https://github.com/umutkorkmaz/re-shell-cli).
 
 ## Getting Started
 
